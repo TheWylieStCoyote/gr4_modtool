@@ -41,10 +41,10 @@ def _cmake_prefix(name: str) -> str:
 def _blocks_cmake(cfg: ProjectConfig) -> str:
     lines = [
         f"function({cfg.cmake_prefix}_add_ut_test target_name source_file)",
-        f"  add_executable(${{target_name}} ${{source_file}})",
-        f"  target_link_libraries(${{target_name}} PRIVATE ${{GR4_OOT_GNURADIO4_TARGET}} ${{GR4_OOT_BOOST_UT_TARGET}})",
-        f"  add_test(NAME ${{target_name}} COMMAND ${{target_name}})",
-        f"endfunction()",
+        "  add_executable(${target_name} ${source_file})",
+        "  target_link_libraries(${target_name} PRIVATE ${GR4_OOT_GNURADIO4_TARGET} ${GR4_OOT_BOOST_UT_TARGET})",
+        "  add_test(NAME ${target_name} COMMAND ${target_name})",
+        "endfunction()",
         "",
     ]
     for name in cfg.groups:

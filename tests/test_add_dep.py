@@ -8,7 +8,6 @@ import pytest
 
 from gr4_modtool.commands.add_dep import add_cmake_dep, add_meson_dep
 
-
 _DEPS_CMAKE_CONTENT = """\
 include_guard(GLOBAL)
 

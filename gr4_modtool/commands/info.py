@@ -10,13 +10,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from gr4_modtool.project.discovery import load_config, discover_groups
+from gr4_modtool.project.discovery import discover_groups, load_config
 
 
 def _block_detail(block_path: Path) -> dict:
     """Return ports and params for a block header; empty lists on parse failure."""
     try:
-        from gr4_modtool.commands.add_test import parse_header_info, parse_annotated_params
+        from gr4_modtool.commands.add_test import parse_annotated_params, parse_header_info
         text = block_path.read_text()
         info = parse_header_info(block_path)
         params = parse_annotated_params(text)

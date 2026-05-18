@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from gr4_modtool.project.discovery import ProjectConfig
 from gr4_modtool.commands.newblock import write_block_files
+from gr4_modtool.project.discovery import ProjectConfig
 
 
 def _basic_answers(group: str = "basic", block: str = "MyFilter") -> dict:

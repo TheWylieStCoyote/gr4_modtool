@@ -4,35 +4,34 @@ from __future__ import annotations
 
 import click
 
-from gr4_modtool.commands.info import cmd as info_cmd
-from gr4_modtool.commands.newmod import cmd as newmod_cmd
-from gr4_modtool.commands.newgroup import cmd as newgroup_cmd
-from gr4_modtool.commands.newblock import cmd as newblock_cmd
-from gr4_modtool.commands.rm import cmd as rm_cmd
-from gr4_modtool.commands.rename import cmd as rename_cmd
-from gr4_modtool.commands.init import cmd as init_cmd
-from gr4_modtool.commands.check import cmd as check_cmd
-from gr4_modtool.commands.mv import cmd as mv_cmd
-from gr4_modtool.commands.cp import cmd as cp_cmd
+from gr4_modtool import plugins as _plugins
+from gr4_modtool.commands.add_dep import cmd as add_dep_cmd
 from gr4_modtool.commands.add_test import cmd as add_test_cmd
-from gr4_modtool.commands.newbench import cmd as newbench_cmd
 from gr4_modtool.commands.build import cmd as build_cmd
-from gr4_modtool.commands.show import cmd as show_cmd
-from gr4_modtool.commands.newparam import cmd as newparam_cmd
-from gr4_modtool.commands.run_test import cmd as test_cmd
-from gr4_modtool.commands.format import cmd as format_cmd
-from gr4_modtool.commands.devcontainer import cmd as devcontainer_cmd
-from gr4_modtool.commands.tidy import cmd as tidy_cmd
-from gr4_modtool.commands.sanitizers import cmd as presets_cmd
-from gr4_modtool.commands.vscode import cmd as vscode_cmd
+from gr4_modtool.commands.check import cmd as check_cmd
 from gr4_modtool.commands.ci import cmd as ci_cmd
 from gr4_modtool.commands.completion import cmd as completion_cmd
-from gr4_modtool.commands.precommit import cmd as precommit_cmd
+from gr4_modtool.commands.cp import cmd as cp_cmd
+from gr4_modtool.commands.devcontainer import cmd as devcontainer_cmd
 from gr4_modtool.commands.docs import cmd as docs_cmd
-from gr4_modtool.commands.add_dep import cmd as add_dep_cmd
+from gr4_modtool.commands.format import cmd as format_cmd
+from gr4_modtool.commands.info import cmd as info_cmd
+from gr4_modtool.commands.init import cmd as init_cmd
+from gr4_modtool.commands.mv import cmd as mv_cmd
+from gr4_modtool.commands.newbench import cmd as newbench_cmd
+from gr4_modtool.commands.newblock import cmd as newblock_cmd
+from gr4_modtool.commands.newgroup import cmd as newgroup_cmd
+from gr4_modtool.commands.newmod import cmd as newmod_cmd
+from gr4_modtool.commands.newparam import cmd as newparam_cmd
 from gr4_modtool.commands.port import cmd as port_cmd
-from gr4_modtool import plugins as _plugins
-
+from gr4_modtool.commands.precommit import cmd as precommit_cmd
+from gr4_modtool.commands.rename import cmd as rename_cmd
+from gr4_modtool.commands.rm import cmd as rm_cmd
+from gr4_modtool.commands.run_test import cmd as test_cmd
+from gr4_modtool.commands.sanitizers import cmd as presets_cmd
+from gr4_modtool.commands.show import cmd as show_cmd
+from gr4_modtool.commands.tidy import cmd as tidy_cmd
+from gr4_modtool.commands.vscode import cmd as vscode_cmd
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
@@ -76,8 +75,9 @@ cli.add_command(port_cmd, name="port")
 @click.option("--project-dir", default=None, type=click.Path(exists=True))
 def tui_cmd(project_dir: str | None) -> None:
     """Launch the interactive Textual TUI."""
-    from gr4_modtool.tui.app import GR4ModtoolApp
     from pathlib import Path
+
+    from gr4_modtool.tui.app import GR4ModtoolApp
 
     app = GR4ModtoolApp(project_dir=Path(project_dir) if project_dir else None)
     app.run()

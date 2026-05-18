@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, ChoiceLoader, StrictUndefined
-
+from jinja2 import ChoiceLoader, Environment, FileSystemLoader, StrictUndefined
 
 _BUILTIN_TEMPLATES = Path(__file__).parent / "templates"
 
@@ -42,8 +41,12 @@ def make_env(project_root: Path | None = None, extra_dirs: list[Path] | None = N
     )
 
 
-def render(template_name: str, context: dict, project_root: Path | None = None,
-           extra_dirs: list[Path] | None = None) -> str:
+def render(
+    template_name: str,
+    context: dict,
+    project_root: Path | None = None,
+    extra_dirs: list[Path] | None = None,
+) -> str:
     env = make_env(project_root=project_root, extra_dirs=extra_dirs)
     tmpl = env.get_template(template_name)
     return tmpl.render(**context)

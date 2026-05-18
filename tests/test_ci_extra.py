@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from gr4_modtool.project.discovery import ProjectConfig, save_config
 from gr4_modtool.commands.ci import write_ci_coverage, write_ci_release
+from gr4_modtool.project.discovery import ProjectConfig, save_config
 
 
 @pytest.fixture()

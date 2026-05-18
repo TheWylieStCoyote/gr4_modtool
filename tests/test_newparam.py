@@ -2,8 +2,8 @@
 
 import pytest
 
-from gr4_modtool.commands.newparam import add_param
 from gr4_modtool.commands.newblock import write_block_files
+from gr4_modtool.commands.newparam import add_param
 from gr4_modtool.project.discovery import ProjectConfig
 
 
@@ -35,7 +35,7 @@ def test_newparam_updates_gr_make_reflectable(project: ProjectConfig) -> None:
     text = (project.group_include_dir("basic") / "MyFilter.hpp").read_text()
     assert "GR_MAKE_REFLECTABLE" in text
     # param_name must appear after the macro open-paren
-    macro_line = next(l for l in text.splitlines() if "GR_MAKE_REFLECTABLE" in l)
+    macro_line = next(line for line in text.splitlines() if "GR_MAKE_REFLECTABLE" in line)
     assert "gain" in macro_line
 
 

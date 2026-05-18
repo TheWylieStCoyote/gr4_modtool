@@ -10,8 +10,8 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import load_config, ProjectConfig, discover_groups
 from gr4_modtool.commands.newblock import ARCHETYPES, write_block_files
+from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 _GR3_BASE_MAP: dict[str, str | None] = {
     "sync_block": "filter",

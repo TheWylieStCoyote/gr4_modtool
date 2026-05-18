@@ -10,7 +10,7 @@ import questionary
 from rich.console import Console
 from rich.syntax import Syntax
 
-from gr4_modtool.project.discovery import load_config, discover_groups, ProjectConfig
+from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 
 def show_block(

@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-
 
 CONFIG_FILE = ".gr4modtool.toml"
 _HEURISTIC_MARKERS = ("CMakeLists.txt", "meson.build")

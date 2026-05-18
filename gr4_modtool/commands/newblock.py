@@ -9,11 +9,10 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import load_config, discover_groups
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project import meson as meson_mod
+from gr4_modtool.project.discovery import discover_groups, load_config
 from gr4_modtool.templates import render
-
 
 # --------------------------------------------------------------------------- #
 # Archetypes
@@ -349,18 +348,6 @@ def cmd(project_dir: str | None, group: str | None, template: str | None) -> Non
         sys.exit(0)
 
     click.echo("\nFiles to be written:")
-    ctx = _build_template_ctx(
-        block_name=answers["block_name"],
-        namespace=cfg.cpp_namespace + f"::{answers['group_name']}",
-        group=answers["group_name"],
-        description=answers["description"],
-        template_params=answers["template_params"],
-        in_ports=answers["in_ports"],
-        out_ports=answers["out_ports"],
-        type_list=answers["type_list"],
-        processing_style=answers["processing_style"],
-        gr4_include_prefix=cfg.gr4_include_prefix,
-    )
     header = cfg.group_include_dir(answers["group_name"]) / f"{answers['block_name']}.hpp"
     click.echo(f"  {header}")
     if answers.get("gen_test"):

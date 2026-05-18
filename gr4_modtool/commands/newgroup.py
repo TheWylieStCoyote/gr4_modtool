@@ -8,9 +8,9 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import ProjectConfig, load_config, save_config
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project import meson as meson_mod
+from gr4_modtool.project.discovery import ProjectConfig, load_config, save_config
 from gr4_modtool.templates import render
 
 

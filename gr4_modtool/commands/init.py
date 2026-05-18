@@ -9,7 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import ProjectConfig, save_config, CONFIG_FILE
+from gr4_modtool.project.discovery import CONFIG_FILE, ProjectConfig, save_config
 
 
 def scan_project_dir(project_dir: Path) -> dict:

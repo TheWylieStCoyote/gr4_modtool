@@ -1,15 +1,13 @@
 """Tests for --json output on info and check commands."""
 
 import json
-import sys
 
-import pytest
 from click.testing import CliRunner
 
 from gr4_modtool.cli import cli
 from gr4_modtool.commands.newblock import write_block_files
-from gr4_modtool.project.discovery import ProjectConfig
 from gr4_modtool.project import cmake as cmake_mod
+from gr4_modtool.project.discovery import ProjectConfig
 
 
 def _basic_answers(block: str = "MyFilter") -> dict:

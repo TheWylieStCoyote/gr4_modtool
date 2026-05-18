@@ -11,7 +11,7 @@ from rich.syntax import Syntax
 from rich.text import Text
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical, ScrollableContainer
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -126,6 +126,7 @@ Label {
 # Port spec helper
 # ---------------------------------------------------------------------------
 
+
 def _parse_ports(raw: str) -> list[dict]:
     """Parse 'in:T; aux:std::complex<T>' into [{"name": "in", "type": "T"}, …]."""
     ports = []
@@ -144,6 +145,7 @@ def _parse_ports(raw: str) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Project tree
 # ---------------------------------------------------------------------------
+
 
 class ProjectTree(Tree):
     """Left-panel tree: groups → blocks with status badges."""
@@ -183,14 +185,18 @@ class ProjectTree(Tree):
 # Detail panel
 # ---------------------------------------------------------------------------
 
+
 class DetailPanel(ScrollableContainer):
     """Right-panel: syntax-highlighted block preview or project stats."""
 
     def show_welcome(self, cfg: ProjectConfig, groups: list[GroupInfo]) -> None:
         self.remove_children()
-        build = " + ".join(
-            s for s, flag in [("CMake", cfg.build_cmake), ("Meson", cfg.build_meson)] if flag
-        ) or "none"
+        build = (
+            " + ".join(
+                s for s, flag in [("CMake", cfg.build_cmake), ("Meson", cfg.build_meson)] if flag
+            )
+            or "none"
+        )
         total = sum(len(g.blocks) for g in groups)
         g_s = "s" if len(groups) != 1 else ""
         b_s = "s" if total != 1 else ""
@@ -204,7 +210,9 @@ class DetailPanel(ScrollableContainer):
         )
         for g in groups:
             bc = len(g.blocks)
-            self.mount(Static(f"  [cyan]{g.name}[/cyan]  [dim]{bc} block{'s' if bc != 1 else ''}[/dim]"))
+            self.mount(
+                Static(f"  [cyan]{g.name}[/cyan]  [dim]{bc} block{'s' if bc != 1 else ''}[/dim]")
+            )
         self.mount(
             Static(""),
             Static("[dim]Select a block in the tree  •  [bold]?[/bold] for help[/dim]"),
@@ -232,6 +240,7 @@ class DetailPanel(ScrollableContainer):
 # Help modal
 # ---------------------------------------------------------------------------
 
+
 class HelpScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [
         Binding("escape", "dismiss", "Close"),
@@ -252,6 +261,7 @@ class HelpScreen(ModalScreen):
 # ---------------------------------------------------------------------------
 # Build output screen
 # ---------------------------------------------------------------------------
+
 
 class BuildOutputScreen(ModalScreen):
     """Runs one or more commands sequentially, streaming output into a log."""
@@ -274,6 +284,7 @@ class BuildOutputScreen(ModalScreen):
 
     def _run_all(self) -> None:
         import subprocess
+
         log = self.query_one(RichLog)
         for cmd in self._cmds:
             self.app.call_from_thread(
@@ -313,6 +324,7 @@ class BuildOutputScreen(ModalScreen):
 # New group modal
 # ---------------------------------------------------------------------------
 
+
 class NewGroupScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
 
@@ -342,6 +354,7 @@ class NewGroupScreen(ModalScreen):
 # New block modal
 # ---------------------------------------------------------------------------
 
+
 class NewBlockScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
 
@@ -358,6 +371,7 @@ class NewBlockScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         from gr4_modtool.commands.newblock import ARCHETYPES
+
         options = [(g.name, g.name) for g in self._groups]
         default = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
         archetype_opts = [("custom", "custom")] + [(k, k) for k in ARCHETYPES]
@@ -395,12 +409,17 @@ class NewBlockScreen(ModalScreen):
         if event.select.id != "archetype-select":
             return
         from gr4_modtool.commands.newblock import ARCHETYPES
+
         arch = str(event.value)
         if arch == "custom" or arch not in ARCHETYPES:
             return
         a = ARCHETYPES[arch]
-        in_str = "; ".join(f"{p['name']}:{p['type']}" for p in a["in_ports"]) if a["in_ports"] else ""
-        out_str = "; ".join(f"{p['name']}:{p['type']}" for p in a["out_ports"]) if a["out_ports"] else ""
+        in_str = (
+            "; ".join(f"{p['name']}:{p['type']}" for p in a["in_ports"]) if a["in_ports"] else ""
+        )
+        out_str = (
+            "; ".join(f"{p['name']}:{p['type']}" for p in a["out_ports"]) if a["out_ports"] else ""
+        )
         self.query_one("#in-ports", Input).value = in_str
         self.query_one("#out-ports", Input).value = out_str
         self.query_one("#style-select", Select).value = a["processing_style"]
@@ -418,22 +437,25 @@ class NewBlockScreen(ModalScreen):
         in_ports = _parse_ports(self.query_one("#in-ports", Input).value or "in:T")
         out_ports = _parse_ports(self.query_one("#out-ports", Input).value or "out:T")
         type_list = self.query_one("#type-list", Input).value.strip() or "float, double"
-        self.dismiss({
-            "group_name": self.query_one("#group-select", Select).value,
-            "block_name": block_name,
-            "description": self.query_one("#description", Input).value.strip(),
-            "template_params": template_params,
-            "in_ports": in_ports,
-            "out_ports": out_ports,
-            "processing_style": self.query_one("#style-select", Select).value,
-            "type_list": type_list,
-            "gen_test": True,
-        })
+        self.dismiss(
+            {
+                "group_name": self.query_one("#group-select", Select).value,
+                "block_name": block_name,
+                "description": self.query_one("#description", Input).value.strip(),
+                "template_params": template_params,
+                "in_ports": in_ports,
+                "out_ports": out_ports,
+                "processing_style": self.query_one("#style-select", Select).value,
+                "type_list": type_list,
+                "gen_test": True,
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Rename modal
 # ---------------------------------------------------------------------------
+
 
 class RenameBlockScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -453,7 +475,9 @@ class RenameBlockScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         options = [(g.name, g.name) for g in self._groups]
-        default_group = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
+        default_group = self._default_group or (
+            self._groups[0].name if self._groups else Select.BLANK
+        )
         with Vertical(classes="modal-form modal-form--narrow"):
             yield Label("[bold]Rename Block[/bold]")
             yield Label("Group:")
@@ -476,16 +500,19 @@ class RenameBlockScreen(ModalScreen):
         if not re.match(r"^[A-Z][A-Za-z0-9]*$", new_name):
             self.query_one("#new-name", Input).border_title = "Must be CamelCase!"
             return
-        self.dismiss({
-            "group": self.query_one("#group-select", Select).value,
-            "old_name": self.query_one("#old-name", Input).value.strip(),
-            "new_name": new_name,
-        })
+        self.dismiss(
+            {
+                "group": self.query_one("#group-select", Select).value,
+                "old_name": self.query_one("#old-name", Input).value.strip(),
+                "new_name": new_name,
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Delete confirmation modal
 # ---------------------------------------------------------------------------
+
 
 class ConfirmDeleteScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -500,8 +527,7 @@ class ConfirmDeleteScreen(ModalScreen):
             yield Label("[bold red]Delete Block[/bold red]")
             yield Static("")
             yield Static(
-                f"Delete [bold]{self._block_name}[/bold] "
-                f"from group [cyan]{self._group}[/cyan]?"
+                f"Delete [bold]{self._block_name}[/bold] from group [cyan]{self._group}[/cyan]?"
             )
             yield Static("[dim]Removes header, test file, and build entries.[/dim]")
             yield Static("")
@@ -518,6 +544,7 @@ class ConfirmDeleteScreen(ModalScreen):
 # ---------------------------------------------------------------------------
 # Add parameter modal
 # ---------------------------------------------------------------------------
+
 
 class NewParamScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -537,7 +564,9 @@ class NewParamScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         options = [(g.name, g.name) for g in self._groups]
-        default_group = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
+        default_group = self._default_group or (
+            self._groups[0].name if self._groups else Select.BLANK
+        )
         with Vertical(classes="modal-form"):
             yield Label("[bold]Add Parameter[/bold]")
             yield Label("Group:")
@@ -562,19 +591,22 @@ class NewParamScreen(ModalScreen):
         if event.button.id == "cancel-btn":
             self.dismiss(None)
             return
-        self.dismiss({
-            "group": self.query_one("#group-select", Select).value,
-            "block_name": self.query_one("#block-name", Input).value.strip(),
-            "param_name": self.query_one("#param-name", Input).value.strip(),
-            "param_type": self.query_one("#param-type", Input).value.strip() or "float",
-            "description": self.query_one("#description", Input).value.strip(),
-            "default_value": self.query_one("#default-value", Input).value.strip() or "{}",
-        })
+        self.dismiss(
+            {
+                "group": self.query_one("#group-select", Select).value,
+                "block_name": self.query_one("#block-name", Input).value.strip(),
+                "param_name": self.query_one("#param-name", Input).value.strip(),
+                "param_type": self.query_one("#param-type", Input).value.strip() or "float",
+                "description": self.query_one("#description", Input).value.strip(),
+                "default_value": self.query_one("#default-value", Input).value.strip() or "{}",
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Move block modal
 # ---------------------------------------------------------------------------
+
 
 class MoveBlockScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -594,7 +626,9 @@ class MoveBlockScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         options = [(g.name, g.name) for g in self._groups]
-        default_group = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
+        default_group = self._default_group or (
+            self._groups[0].name if self._groups else Select.BLANK
+        )
         with Vertical(classes="modal-form modal-form--narrow"):
             yield Label("[bold]Move Block[/bold]")
             yield Label("Source group:")
@@ -613,16 +647,19 @@ class MoveBlockScreen(ModalScreen):
         if event.button.id == "cancel-btn":
             self.dismiss(None)
             return
-        self.dismiss({
-            "src_group": self.query_one("#src-group", Select).value,
-            "block_name": self.query_one("#block-name", Input).value.strip(),
-            "dst_group": self.query_one("#dst-group", Select).value,
-        })
+        self.dismiss(
+            {
+                "src_group": self.query_one("#src-group", Select).value,
+                "block_name": self.query_one("#block-name", Input).value.strip(),
+                "dst_group": self.query_one("#dst-group", Select).value,
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Copy block modal
 # ---------------------------------------------------------------------------
+
 
 class CopyBlockScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -642,7 +679,9 @@ class CopyBlockScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         options = [(g.name, g.name) for g in self._groups]
-        default_group = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
+        default_group = self._default_group or (
+            self._groups[0].name if self._groups else Select.BLANK
+        )
         with Vertical(classes="modal-form modal-form--narrow"):
             yield Label("[bold]Copy Block[/bold]")
             yield Label("Source group:")
@@ -663,18 +702,21 @@ class CopyBlockScreen(ModalScreen):
         if event.button.id == "cancel-btn":
             self.dismiss(None)
             return
-        self.dismiss({
-            "src_group": self.query_one("#src-group", Select).value,
-            "src_name": self.query_one("#src-name", Input).value.strip(),
-            "dst_name": self.query_one("#dst-name", Input).value.strip(),
-            "dst_group": self.query_one("#dst-group", Select).value,
-            "gen_test": False,
-        })
+        self.dismiss(
+            {
+                "src_group": self.query_one("#src-group", Select).value,
+                "src_name": self.query_one("#src-name", Input).value.strip(),
+                "dst_name": self.query_one("#dst-name", Input).value.strip(),
+                "dst_group": self.query_one("#dst-group", Select).value,
+                "gen_test": False,
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Add test modal
 # ---------------------------------------------------------------------------
+
 
 class AddTestScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -694,7 +736,9 @@ class AddTestScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         options = [(g.name, g.name) for g in self._groups]
-        default_group = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
+        default_group = self._default_group or (
+            self._groups[0].name if self._groups else Select.BLANK
+        )
         with Vertical(classes="modal-form modal-form--narrow"):
             yield Label("[bold]Add Test[/bold]")
             yield Label("Group:")
@@ -711,15 +755,18 @@ class AddTestScreen(ModalScreen):
         if event.button.id == "cancel-btn":
             self.dismiss(None)
             return
-        self.dismiss({
-            "group": self.query_one("#group-select", Select).value,
-            "block_name": self.query_one("#block-name", Input).value.strip(),
-        })
+        self.dismiss(
+            {
+                "group": self.query_one("#group-select", Select).value,
+                "block_name": self.query_one("#block-name", Input).value.strip(),
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # New benchmark modal
 # ---------------------------------------------------------------------------
+
 
 class NewBenchScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -739,7 +786,9 @@ class NewBenchScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         options = [(g.name, g.name) for g in self._groups]
-        default_group = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
+        default_group = self._default_group or (
+            self._groups[0].name if self._groups else Select.BLANK
+        )
         with Vertical(classes="modal-form modal-form--narrow"):
             yield Label("[bold]New Benchmark[/bold]")
             yield Label("Group:")
@@ -756,16 +805,19 @@ class NewBenchScreen(ModalScreen):
         if event.button.id == "cancel-btn":
             self.dismiss(None)
             return
-        self.dismiss({
-            "group": self.query_one("#group-select", Select).value,
-            "block_name": self.query_one("#block-name", Input).value.strip(),
-            "wire_build": False,
-        })
+        self.dismiss(
+            {
+                "group": self.query_one("#group-select", Select).value,
+                "block_name": self.query_one("#block-name", Input).value.strip(),
+                "wire_build": False,
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Build modal
 # ---------------------------------------------------------------------------
+
 
 class BuildScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -791,18 +843,21 @@ class BuildScreen(ModalScreen):
             self.dismiss(None)
             return
         jobs_str = self.query_one("#jobs", Input).value.strip()
-        self.dismiss({
-            "build_dir": self.query_one("#build-dir", Input).value.strip() or "build",
-            "clean": self.query_one("#clean", Checkbox).value,
-            "reconfigure": self.query_one("#reconfigure", Checkbox).value,
-            "run_tests": self.query_one("#run-tests", Checkbox).value,
-            "jobs": int(jobs_str) if jobs_str.isdigit() else None,
-        })
+        self.dismiss(
+            {
+                "build_dir": self.query_one("#build-dir", Input).value.strip() or "build",
+                "clean": self.query_one("#clean", Checkbox).value,
+                "reconfigure": self.query_one("#reconfigure", Checkbox).value,
+                "run_tests": self.query_one("#run-tests", Checkbox).value,
+                "jobs": int(jobs_str) if jobs_str.isdigit() else None,
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Run test modal
 # ---------------------------------------------------------------------------
+
 
 class RunTestScreen(ModalScreen):
     BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
@@ -828,15 +883,18 @@ class RunTestScreen(ModalScreen):
         if event.button.id == "cancel-btn":
             self.dismiss(None)
             return
-        self.dismiss({
-            "block_name": self.query_one("#block-name", Input).value.strip(),
-            "build_dir": self.query_one("#build-dir", Input).value.strip() or "build",
-        })
+        self.dismiss(
+            {
+                "block_name": self.query_one("#block-name", Input).value.strip(),
+                "build_dir": self.query_one("#build-dir", Input).value.strip() or "build",
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Main application
 # ---------------------------------------------------------------------------
+
 
 class GR4ModtoolApp(App):
     """GNURadio 4 OOT module management TUI."""
@@ -965,8 +1023,10 @@ class GR4ModtoolApp(App):
             if not name:
                 return
             from gr4_modtool.commands.newgroup import write_group_skeleton
+            from gr4_modtool.project import cmake as cmake_mod
+            from gr4_modtool.project import meson as meson_mod
             from gr4_modtool.project.discovery import save_config
-            from gr4_modtool.project import cmake as cmake_mod, meson as meson_mod
+
             cfg = self._cfg  # type: ignore[assignment]
             if name in cfg.groups:
                 self.notify(f"Group '{name}' already exists.", severity="error")
@@ -996,6 +1056,7 @@ class GR4ModtoolApp(App):
             if answers is None:
                 return
             from gr4_modtool.commands.newblock import write_block_files
+
             try:
                 write_block_files(self._cfg, answers)  # type: ignore[arg-type]
                 self._load_project()
@@ -1016,7 +1077,9 @@ class GR4ModtoolApp(App):
             if answers is None:
                 return
             from gr4_modtool.commands.rename import _rename_in_header
-            from gr4_modtool.project import cmake as cmake_mod, meson as meson_mod
+            from gr4_modtool.project import cmake as cmake_mod
+            from gr4_modtool.project import meson as meson_mod
+
             cfg = self._cfg  # type: ignore[assignment]
             group = answers["group"]
             old_name, new_name = answers["old_name"], answers["new_name"]
@@ -1064,7 +1127,9 @@ class GR4ModtoolApp(App):
         def _handle(confirmed: bool | None) -> None:
             if not confirmed:
                 return
-            from gr4_modtool.project import cmake as cmake_mod, meson as meson_mod
+            from gr4_modtool.project import cmake as cmake_mod
+            from gr4_modtool.project import meson as meson_mod
+
             cfg = self._cfg  # type: ignore[assignment]
             try:
                 for f in [
@@ -1095,12 +1160,16 @@ class GR4ModtoolApp(App):
             if answers is None:
                 return
             from gr4_modtool.commands.newparam import add_param
+
             try:
                 add_param(
                     self._cfg,  # type: ignore[arg-type]
-                    answers["group"], answers["block_name"],
-                    answers["param_name"], answers["param_type"],
-                    answers["description"], answers["default_value"],
+                    answers["group"],
+                    answers["block_name"],
+                    answers["param_name"],
+                    answers["param_type"],
+                    answers["description"],
+                    answers["default_value"],
                 )
                 self.notify(f"Added '{answers['param_name']}' to {answers['block_name']}.")
                 if (
@@ -1108,7 +1177,10 @@ class GR4ModtoolApp(App):
                     and self._selected_group == answers["group"]
                     and self._cfg is not None
                 ):
-                    header = self._cfg.group_include_dir(answers["group"]) / f"{answers['block_name']}.hpp"
+                    header = (
+                        self._cfg.group_include_dir(answers["group"])
+                        / f"{answers['block_name']}.hpp"
+                    )
                     self.query_one(DetailPanel).show_block(answers["block_name"], header)
             except Exception as exc:  # noqa: BLE001
                 self.notify(str(exc), severity="error")
@@ -1131,10 +1203,13 @@ class GR4ModtoolApp(App):
             if answers is None:
                 return
             from gr4_modtool.commands.mv import move_block
+
             try:
                 move_block(
                     self._cfg,  # type: ignore[arg-type]
-                    answers["src_group"], answers["block_name"], answers["dst_group"],
+                    answers["src_group"],
+                    answers["block_name"],
+                    answers["dst_group"],
                 )
                 self._load_project()
                 self.notify(f"Moved '{answers['block_name']}' to {answers['dst_group']}.")
@@ -1156,10 +1231,13 @@ class GR4ModtoolApp(App):
             if answers is None:
                 return
             from gr4_modtool.commands.cp import copy_block
+
             try:
                 copy_block(
                     self._cfg,  # type: ignore[arg-type]
-                    answers["src_group"], answers["src_name"], answers["dst_name"],
+                    answers["src_group"],
+                    answers["src_name"],
+                    answers["dst_name"],
                     dst_group=answers.get("dst_group"),
                     gen_test=answers.get("gen_test", False),
                 )
@@ -1193,9 +1271,12 @@ class GR4ModtoolApp(App):
             if answers is None:
                 return
             from gr4_modtool.commands.add_test import write_test_for_block
+
             try:
                 write_test_for_block(
-                    self._cfg, answers["group"], answers["block_name"]  # type: ignore[arg-type]
+                    self._cfg,
+                    answers["group"],
+                    answers["block_name"],  # type: ignore[arg-type]
                 )
                 self._load_project()
                 self.notify(f"Created test for {answers['block_name']}.")
@@ -1217,10 +1298,12 @@ class GR4ModtoolApp(App):
             if answers is None:
                 return
             from gr4_modtool.commands.newbench import write_bench_file
+
             try:
                 write_bench_file(
                     self._cfg,  # type: ignore[arg-type]
-                    answers["group"], answers["block_name"],
+                    answers["group"],
+                    answers["block_name"],
                     wire_build=answers.get("wire_build", False),
                 )
                 self.notify(f"Created benchmark for {answers['block_name']}.")
@@ -1238,6 +1321,7 @@ class GR4ModtoolApp(App):
         if not self._guard():
             return
         from gr4_modtool.commands.format import format_files
+
         groups = [self._selected_group] if self._selected_group else None
         try:
             rc = format_files(self._cfg, groups=groups)  # type: ignore[arg-type]
@@ -1254,6 +1338,7 @@ class GR4ModtoolApp(App):
             self.notify("No project loaded.", severity="error")
             return
         from gr4_modtool.commands.check import audit_project
+
         issues = audit_project(self._cfg)
         if not issues:
             self.notify("No issues found.")
@@ -1285,6 +1370,7 @@ class GR4ModtoolApp(App):
                 return
             import os
             import shutil
+
             cfg = self._cfg  # type: ignore[assignment]
             root = cfg.root
             bd = root / opts["build_dir"]
@@ -1328,7 +1414,14 @@ class GR4ModtoolApp(App):
                 self.notify(f"Build dir not found: {build_dir}. Run Build first.", severity="error")
                 return
             if (root / "CMakeLists.txt").exists():
-                cmd = ["ctest", "--test-dir", str(build_dir), "-R", f"qa_{block_name}", "--output-on-failure"]
+                cmd = [
+                    "ctest",
+                    "--test-dir",
+                    str(build_dir),
+                    "-R",
+                    f"qa_{block_name}",
+                    "--output-on-failure",
+                ]
             else:
                 cmd = ["meson", "test", "-C", str(build_dir), f"qa_{block_name}"]
             self.push_screen(BuildOutputScreen([cmd], root))

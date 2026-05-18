@@ -9,9 +9,9 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import load_config, discover_groups, ProjectConfig
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project import meson as meson_mod
+from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 
 def move_block(

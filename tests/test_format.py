@@ -1,11 +1,8 @@
 """Tests for format command."""
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from gr4_modtool.commands.format import format_files, _collect_files
+from gr4_modtool.commands.format import format_files
 from gr4_modtool.commands.newblock import write_block_files
 from gr4_modtool.project.discovery import ProjectConfig
 

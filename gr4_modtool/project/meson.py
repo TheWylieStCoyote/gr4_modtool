@@ -9,15 +9,6 @@ from pathlib import Path
 def append_test_entry(meson_path: Path, block_name: str, extra_deps: list[str] | None = None) -> None:
     """Add a test executable entry to a test meson.build."""
     deps_str = ", ".join(["gr4_dep", "ut_dep"] + (extra_deps or []))
-    new_entry = (
-        f"\nexecutable('qa_{block_name}',\n"
-        f"  'qa_{block_name}.cpp',\n"
-        f"  dependencies: [{deps_str}],\n"
-        f")\n"
-        f"test('qa_{block_name}', executable('qa_{block_name}',\n"
-        f"  'qa_{block_name}.cpp', dependencies: [{deps_str}]))\n"
-    )
-    # Simpler: just append a test() call using an executable
     text = meson_path.read_text()
     simple_entry = (
         f"\nqa_{block_name}_exe = executable(\n"

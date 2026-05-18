@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
-from gr4_modtool.project.discovery import ProjectConfig, save_config
 from gr4_modtool.commands.newmod import write_git_init
+from gr4_modtool.project.discovery import ProjectConfig, save_config
 
 
 @pytest.fixture()

@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import click
 
-from gr4_modtool.project.discovery import load_config, ProjectConfig, discover_groups
+from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 from gr4_modtool.templates import render
 
 
@@ -23,7 +22,7 @@ def write_doxyfile(cfg: ProjectConfig) -> list[Path]:
 
 
 def build_catalog(cfg: ProjectConfig) -> str:
-    from gr4_modtool.commands.add_test import parse_header_info, parse_annotated_params
+    from gr4_modtool.commands.add_test import parse_annotated_params, parse_header_info
 
     groups = discover_groups(cfg)
     lines = [

@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from gr4_modtool.project.discovery import ProjectConfig, save_config
 from gr4_modtool.commands.vscode import write_vscode
+from gr4_modtool.project.discovery import ProjectConfig, save_config
 
 
 @pytest.fixture()

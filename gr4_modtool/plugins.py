@@ -17,7 +17,9 @@ def load_extra_commands() -> list[click.BaseCommand]:
             if isinstance(cmd, click.BaseCommand):
                 cmds.append(cmd)
         except Exception as exc:  # noqa: BLE001
-            click.echo(f"[gr4_modtool] Warning: could not load command plugin '{ep.name}': {exc}", err=True)
+            click.echo(
+                f"[gr4_modtool] Warning: could not load command plugin '{ep.name}': {exc}", err=True
+            )
     return cmds
 
 
@@ -31,5 +33,8 @@ def load_extra_template_dirs() -> list[Path]:
             if path.is_dir():
                 dirs.append(path)
         except Exception as exc:  # noqa: BLE001
-            click.echo(f"[gr4_modtool] Warning: could not load template plugin '{ep.name}': {exc}", err=True)
+            click.echo(
+                f"[gr4_modtool] Warning: could not load template plugin '{ep.name}': {exc}",
+                err=True,
+            )
     return dirs

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import click
 
-from gr4_modtool.project.discovery import load_config, discover_groups, ProjectConfig
+from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 
 def _collect_files(cfg: ProjectConfig, group_names: list[str] | None) -> list[Path]:

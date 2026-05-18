@@ -13,7 +13,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from gr4_modtool.project.discovery import ProjectConfig, load_config, discover_groups
+from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 
 @dataclass

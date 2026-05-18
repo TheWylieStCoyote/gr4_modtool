@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from gr4_modtool.project.discovery import load_config, ProjectConfig
+from gr4_modtool.project.discovery import load_config
 
 
 def add_cmake_dep(
@@ -64,10 +64,10 @@ def add_meson_dep(meson_build: Path, var_name: str, pkg_name: str) -> None:
 
 @click.command("add-dep")
 @click.argument("var_name", metavar="VAR_NAME")
-@click.option("--pkg-config", "pkg_name", default=None,
-              help="pkg-config module name (e.g. fftw3).")
-@click.option("--cmake-package", "cmake_pkg", default=None,
-              help="CMake find_package name (e.g. FFTW3).")
+@click.option("--pkg-config", "pkg_name", default=None, help="pkg-config module name (e.g. fftw3).")
+@click.option(
+    "--cmake-package", "cmake_pkg", default=None, help="CMake find_package name (e.g. FFTW3)."
+)
 @click.option("--project-dir", default=None, type=click.Path(exists=True))
 def cmd(
     var_name: str,
@@ -84,9 +84,7 @@ def cmd(
       gr4_modtool add-dep Eigen3 --cmake-package Eigen3
     """
     if not pkg_name and not cmake_pkg:
-        click.echo(
-            "Error: provide --pkg-config <name> or --cmake-package <name>.", err=True
-        )
+        click.echo("Error: provide --pkg-config <name> or --cmake-package <name>.", err=True)
         sys.exit(1)
 
     cfg = load_config(Path(project_dir) if project_dir else None)

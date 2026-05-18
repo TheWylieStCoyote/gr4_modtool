@@ -8,7 +8,7 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import load_config, ProjectConfig
+from gr4_modtool.project.discovery import ProjectConfig, load_config
 from gr4_modtool.templates import render
 
 

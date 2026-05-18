@@ -5,13 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from click.testing import CliRunner
 
-from gr4_modtool.project.discovery import ProjectConfig, save_config
-from gr4_modtool.commands.docs import write_doxyfile, build_catalog
+from gr4_modtool.commands.docs import build_catalog, write_doxyfile
 from gr4_modtool.commands.newblock import write_block_files
 from gr4_modtool.commands.newgroup import write_group_skeleton
-from gr4_modtool.cli import cli
+from gr4_modtool.project.discovery import ProjectConfig, save_config
 
 
 @pytest.fixture()

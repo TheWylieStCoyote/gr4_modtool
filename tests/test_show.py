@@ -2,8 +2,8 @@
 
 import pytest
 
-from gr4_modtool.commands.show import show_block
 from gr4_modtool.commands.newblock import write_block_files
+from gr4_modtool.commands.show import show_block
 from gr4_modtool.project.discovery import ProjectConfig
 
 

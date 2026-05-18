@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from gr4_modtool.project.discovery import ProjectConfig, save_config
 from gr4_modtool.commands.precommit import write_precommit
+from gr4_modtool.project.discovery import ProjectConfig, save_config
 
 
 @pytest.fixture()

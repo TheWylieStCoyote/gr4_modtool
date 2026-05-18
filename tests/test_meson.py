@@ -5,14 +5,14 @@ from pathlib import Path
 import pytest
 
 from gr4_modtool.project.meson import (
-    append_test_entry,
-    remove_test_entry,
-    rename_test_entry,
+    add_bench_subdir,
     add_subdir,
     append_bench_entry,
+    append_test_entry,
     remove_bench_entry,
+    remove_test_entry,
     rename_bench_entry,
-    add_bench_subdir,
+    rename_test_entry,
 )
 
 

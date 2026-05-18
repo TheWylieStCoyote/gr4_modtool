@@ -9,7 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import load_config, discover_groups, ProjectConfig
+from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 
 def add_param(

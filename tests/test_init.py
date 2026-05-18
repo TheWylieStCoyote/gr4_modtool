@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from gr4_modtool.commands.init import scan_project_dir, write_init_config
-from gr4_modtool.project.discovery import load_config, CONFIG_FILE
+from gr4_modtool.project.discovery import CONFIG_FILE, load_config
 
 
 def _make_project_skeleton(tmp_path: Path, name: str = "myproj") -> Path:

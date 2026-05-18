@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from gr4_modtool.commands.sanitizers import write_ci_sanitizers, write_cmake_presets
 from gr4_modtool.project.discovery import ProjectConfig, save_config
-from gr4_modtool.commands.sanitizers import write_cmake_presets, write_ci_sanitizers
 
 
 @pytest.fixture()

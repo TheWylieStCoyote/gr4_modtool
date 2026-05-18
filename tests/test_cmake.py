@@ -5,14 +5,14 @@ from pathlib import Path
 import pytest
 
 from gr4_modtool.project.cmake import (
-    append_test_entry,
-    remove_test_entry,
-    rename_test_entry,
+    add_bench_subdirectory,
     add_subdirectory,
     append_bench_entry,
+    append_test_entry,
     remove_bench_entry,
+    remove_test_entry,
     rename_bench_entry,
-    add_bench_subdirectory,
+    rename_test_entry,
 )
 
 
