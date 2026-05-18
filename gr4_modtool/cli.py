@@ -17,6 +17,10 @@ from gr4_modtool.commands.cp import cmd as cp_cmd
 from gr4_modtool.commands.add_test import cmd as add_test_cmd
 from gr4_modtool.commands.newbench import cmd as newbench_cmd
 from gr4_modtool.commands.build import cmd as build_cmd
+from gr4_modtool.commands.show import cmd as show_cmd
+from gr4_modtool.commands.newparam import cmd as newparam_cmd
+from gr4_modtool.commands.run_test import cmd as test_cmd
+from gr4_modtool.commands.format import cmd as format_cmd
 from gr4_modtool import plugins as _plugins
 
 
@@ -39,6 +43,10 @@ cli.add_command(cp_cmd, name="cp")
 cli.add_command(add_test_cmd, name="add-test")
 cli.add_command(newbench_cmd, name="newbench")
 cli.add_command(build_cmd, name="build")
+cli.add_command(show_cmd, name="show")
+cli.add_command(newparam_cmd, name="newparam")
+cli.add_command(test_cmd, name="test")
+cli.add_command(format_cmd, name="format")
 
 
 @cli.command("tui")

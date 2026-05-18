@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import dataclasses
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -91,11 +93,23 @@ def audit_project(cfg: ProjectConfig, groups: list[str] | None = None) -> list[B
 @click.command("check")
 @click.option("--project-dir", default=None, type=click.Path(exists=True))
 @click.option("--group", default=None, help="Audit only this group.")
-def cmd(project_dir: str | None, group: str | None) -> None:
+@click.option("--json", "output_json", is_flag=True, default=False, help="Output as JSON.")
+def cmd(project_dir: str | None, group: str | None, output_json: bool) -> None:
     """Audit the project for out-of-sync headers, tests, and build entries."""
     cfg = load_config(Path(project_dir) if project_dir else None)
     filter_groups = [group] if group else None
     issues = audit_project(cfg, groups=filter_groups)
+
+    if output_json:
+        data = {
+            "issues": [dataclasses.asdict(i) for i in issues],
+            "error_count": sum(1 for i in issues if i.severity == "error"),
+            "warning_count": sum(1 for i in issues if i.severity == "warning"),
+        }
+        click.echo(json.dumps(data, indent=2))
+        if any(i.severity == "error" for i in issues):
+            sys.exit(1)
+        return
 
     console = Console()
 
