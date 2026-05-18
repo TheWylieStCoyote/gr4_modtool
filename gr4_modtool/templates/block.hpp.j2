@@ -1,0 +1,47 @@
+#pragma once
+
+#include <gnuradio-4.0/Block.hpp>
+#include <gnuradio-4.0/BlockRegistry.hpp>
+{% if uses_complex %}
+#include <complex>
+{% endif %}
+{% if multi_output %}
+#include <tuple>
+{% endif %}
+
+namespace {{ namespace }} {
+using namespace gr;
+
+template<{{ template_decl }}>
+struct {{ block_name }} : Block<{{ block_name }}<{{ template_args }}>> {
+    using Description = Doc<"{{ description }}">;
+
+{% for port in in_ports %}
+    PortIn<{{ port.type }}> {{ port.name }};
+{% endfor %}
+{% for port in out_ports %}
+    PortOut<{{ port.type }}> {{ port.name }};
+{% endfor %}
+
+    GR_MAKE_REFLECTABLE({{ block_name }}, {{ all_port_names | join(', ') }});
+
+{% if processing_style == 'processOne' %}
+    [[nodiscard]] constexpr {{ return_type }} processOne({{ params_str }}) const noexcept {
+        // TODO: implement
+{% if multi_output %}
+        return {};
+{% else %}
+        return {};
+{% endif %}
+    }
+{% else %}
+    gr::work::Status processBulk({{ bulk_params_str }}) noexcept {
+        // TODO: implement
+        return gr::work::Status::OK;
+    }
+{% endif %}
+};
+
+GR_REGISTER_BLOCK("{{ namespace }}::{{ block_name }}", {{ namespace }}::{{ block_name }}, {{ template_param_macro }}, [ {{ type_list }} ])
+
+} // namespace {{ namespace }}

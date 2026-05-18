@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 3.22)
+
+project({{ project_name }} LANGUAGES CXX VERSION {{ version }})
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+include(GNUInstallDirs)
+
+option(ENABLE_TESTING "Enable test targets" ON)
+option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+
+include(cmake/Dependencies.cmake)
+{{ cmake_prefix }}_resolve_dependencies()
+
+if(ENABLE_TESTING)
+  include(CTest)
+  enable_testing()
+endif()
+
+if(WARNINGS_AS_ERRORS)
+  if(MSVC)
+    add_compile_options(/WX)
+  else()
+    add_compile_options(-Werror)
+  endif()
+endif()
+
+add_subdirectory(blocks)
