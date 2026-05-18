@@ -19,7 +19,9 @@ All commands accept `--help` for detailed option descriptions.
 | [`add-test`](testing.md#add-test) | Generate a test for a block that has none |
 | [`cp`](blocks.md#cp) | Copy a block to a new name |
 | [`mv`](blocks.md#mv) | Move a block to a different group |
-| [`rename`](blocks.md#rename) | Rename a block everywhere |
+| [`rename`](blocks.md#rename) | Rename a block everywhere (whole-word) |
+| [`rename-block`](blocks.md#rename-block) | Rename a block within its group |
+| [`rename-group`](blocks.md#rename-group) | Rename a group and update all references |
 | [`rm`](blocks.md#rm) | Remove a block and its files |
 
 ## Project Health
@@ -30,6 +32,7 @@ All commands accept `--help` for detailed option descriptions.
 | [`check`](project.md#check) | Audit for out-of-sync state |
 | [`info`](project.md#info) | List groups and blocks; `--verbose` shows ports/params |
 | [`show`](project.md#show) | Display a block's source with syntax highlighting |
+| [`status`](project.md#status) | Project health dashboard (blocks, tests, CI, tools) |
 
 ## Building
 
@@ -56,12 +59,13 @@ All commands accept `--help` for detailed option descriptions.
 | [`presets`](quality.md#presets) | Write `CMakePresets.json` and sanitizer CI |
 | [`pre-commit`](quality.md#pre-commit) | Write `.pre-commit-config.yaml` |
 
-## Documentation, Dependencies & Migration
+## Documentation, Dependencies, Registry & Migration
 
 | Command | Description |
 |---|---|
 | [`docs`](ecosystem.md#docs) | Write a Doxyfile or print a Markdown block catalog |
 | [`add-dep`](ecosystem.md#add-dep) | Add a library dependency to CMake/Meson build files |
+| [`search`](ecosystem.md#search) | Search GitHub for published GNURadio 4 OOT modules |
 | [`port`](ecosystem.md#port) | Port a GNURadio 3.x Python block to a gr4 header |
 
 ## Interactive

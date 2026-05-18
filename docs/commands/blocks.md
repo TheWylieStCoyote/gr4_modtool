@@ -153,7 +153,7 @@ Updates namespace references in the header, `#include` paths in the test file, a
 
 ## rename
 
-Rename a block everywhere.
+Rename a block everywhere using whole-word substitution.
 
 ```bash
 gr4_modtool rename [OLD_NAME] [NEW_NAME] [OPTIONS]
@@ -165,7 +165,66 @@ gr4_modtool rename [OLD_NAME] [NEW_NAME] [OPTIONS]
 | `--project-dir PATH` | Project root |
 | `--yes / -y` | Skip confirmation |
 
-Renames: the header file, all symbol occurrences inside it, the test file and its include, and CMake/Meson entries.
+Renames: the header file, all symbol occurrences inside it (using `\bOldName\b` regex), the test file and its include, and CMake/Meson entries. Searches across all groups if `--group` is omitted.
+
+---
+
+## rename-block
+
+Rename a block within its group.
+
+```bash
+gr4_modtool rename-block OLD_NAME NEW_NAME [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--group TEXT` | Group containing the block (auto-detected if omitted) |
+| `--project-dir PATH` | Project root |
+| `--yes / -y` | Skip confirmation |
+
+Renames the header file and replaces every occurrence of the old name inside it (`struct`, `Block<>`, `GR_MAKE_REFLECTABLE`, `GR_REGISTER_BLOCK`). Also renames the test file and updates its `#include`, suite variable names, and namespace references, then patches `CMakeLists.txt` and `meson.build`.
+
+If `--group` is omitted and the block exists in exactly one group, that group is used automatically. An error is raised if the block appears in multiple groups.
+
+```bash
+# explicit group
+gr4_modtool rename-block LowPass BandPass --group dsp --yes
+
+# auto-detect group
+gr4_modtool rename-block LowPass BandPass --yes
+```
+
+---
+
+## rename-group
+
+Rename a block group and update all references.
+
+```bash
+gr4_modtool rename-group OLD_NAME NEW_NAME [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--project-dir PATH` | Project root |
+| `--yes / -y` | Skip confirmation |
+
+Performs the full rename cascade:
+
+1. Moves `blocks/<old>/` → `blocks/<new>/`
+2. Renames the include subdirectory (`include/<prefix>/<old>/` → `/<new>/`)
+3. Updates `namespace ::<old>` → `::<new>` and `/<old>/` → `/<new>/` in all `.hpp` headers and `qa_*.cpp` test files
+4. Rewrites CMake target names (`blocks_<old>_headers` → `blocks_<new>_headers`) in the group's own `CMakeLists.txt`
+5. Updates `add_subdirectory(<old>)` → `add_subdirectory(<new>)` in `blocks/CMakeLists.txt`
+6. Updates `subdir('<old>')` → `subdir('<new>')` in `blocks/meson.build`
+7. Updates the group entry in `.gr4modtool.toml`
+
+Group names must be `snake_case`. The new name must not already exist.
+
+```bash
+gr4_modtool rename-group basic dsp --yes
+```
 
 ---
 

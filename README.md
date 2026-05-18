@@ -13,13 +13,13 @@ A command-line tool for creating and managing [GNURadio 4](https://github.com/gn
 | Category | Commands |
 |---|---|
 | Scaffolding | `newmod`, `newgroup` |
-| Block lifecycle | `newblock`, `newparam`, `cp`, `mv`, `rename`, `rm` |
+| Block lifecycle | `newblock`, `newparam`, `cp`, `mv`, `rename`, `rename-block`, `rename-group`, `rm` |
 | Testing & benchmarking | `add-test`, `test`, `newbench` |
-| Project health | `init`, `check`, `info`, `show` |
+| Project health | `init`, `check`, `info`, `show`, `status` |
 | Building | `build`, `format`, `tidy` |
 | Dev environment | `vscode`, `devcontainer`, `completion` |
 | CI / quality | `ci`, `presets`, `pre-commit` |
-| Documentation | `docs`, `add-dep` |
+| Documentation & registry | `docs`, `add-dep`, `search` |
 | Migration | `port` |
 | Interactive | `tui` |
 

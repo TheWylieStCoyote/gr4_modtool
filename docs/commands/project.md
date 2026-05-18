@@ -144,3 +144,49 @@ gr4_modtool show BLOCK_NAME [OPTIONS]
 | `--group TEXT` | Group containing the block |
 | `--test` | Show the test file instead of the header |
 | `--project-dir PATH` | Project root |
+
+---
+
+## status
+
+Print a health summary of the current project.
+
+```bash
+gr4_modtool status [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--project-dir PATH` | Project root |
+
+Scans the project on disk (no compilation) and displays a Rich dashboard covering:
+
+- **Groups & Blocks** — per-group block count and test coverage ratio. Shown green when all blocks have a `qa_*.cpp`; yellow when any are missing.
+- **CI workflows** — lists `.yml` files found under `.github/workflows/`.
+- **Quality tools** — presence of `.clang-format`, `.clang-tidy`, `Doxyfile`, `.pre-commit-config.yaml`.
+- **Warnings** — lists any blocks that have no test file.
+
+Example output:
+
+```
+──────────────────── myfilters  v0.1.0 ─────────────────────
+  /home/user/myfilters
+  2 group(s) · 5 block(s) · cmake + meson
+
+   Group    Blocks    Tests
+   basic         3    3/3
+   dsp           2    1/2
+
+  CI workflows
+    ✓  ci.yml
+    ✓  coverage.yml
+
+  Quality tools
+    ✓  .clang-format
+    ✓  .clang-tidy
+    ✗  Doxyfile
+    ✗  .pre-commit-config.yaml
+
+  ⚠  Warnings
+    •  dsp/LowPassFilter — no test file
+```
