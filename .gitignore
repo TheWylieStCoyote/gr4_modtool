@@ -226,3 +226,5 @@ compile_commands.json
 *.a
 *.o
 *.dylib
+build/
+tmp/

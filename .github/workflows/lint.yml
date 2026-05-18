@@ -2,9 +2,9 @@ name: Lint
 
 on:
   push:
-    branches: [main]
+    branches: [main, master, dev, feat/*, fix/*]
   pull_request:
-    branches: [main]
+    branches: [main, master, dev, feat/*, fix/*]
 
 jobs:
   ruff:
@@ -38,4 +38,4 @@ jobs:
 
       - name: Run mypy
         run: mypy gr4_modtool/
-        continue-on-error: true  # type errors are non-blocking for now
+        continue-on-error: true # type errors are non-blocking for now

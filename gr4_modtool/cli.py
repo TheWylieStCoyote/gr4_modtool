@@ -21,10 +21,15 @@ from gr4_modtool.commands.show import cmd as show_cmd
 from gr4_modtool.commands.newparam import cmd as newparam_cmd
 from gr4_modtool.commands.run_test import cmd as test_cmd
 from gr4_modtool.commands.format import cmd as format_cmd
+from gr4_modtool.commands.devcontainer import cmd as devcontainer_cmd
+from gr4_modtool.commands.tidy import cmd as tidy_cmd
 from gr4_modtool import plugins as _plugins
 
 
-@click.group()
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
+
+@click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option()
 def cli() -> None:
     """GNURadio 4 OOT module management tool."""
@@ -47,6 +52,8 @@ cli.add_command(show_cmd, name="show")
 cli.add_command(newparam_cmd, name="newparam")
 cli.add_command(test_cmd, name="test")
 cli.add_command(format_cmd, name="format")
+cli.add_command(devcontainer_cmd, name="devcontainer")
+cli.add_command(tidy_cmd, name="tidy")
 
 
 @cli.command("tui")
