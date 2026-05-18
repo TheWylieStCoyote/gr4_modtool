@@ -79,6 +79,7 @@ def _build_template_ctx(
     type_list: str,
     processing_style: str,
     gr4_include_prefix: str,
+    simd: bool = False,
 ) -> dict:
     multi_output = len(out_ports) > 1
     uses_complex = any("complex" in p["type"] for p in in_ports + out_ports)
@@ -137,6 +138,7 @@ def _build_template_ctx(
         "first_port_type": first_port_type,
         "first_out_type": first_out_type,
         "needs_graph_test": True,
+        "simd": simd,
     }
 
 
@@ -277,6 +279,8 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
     group_name = answers["group_name"]
     block_name = answers["block_name"]
     gen_test = answers.get("gen_test", True)
+    simd = answers.get("simd", False)
+    processing_style = "processBulk" if simd else answers["processing_style"]
 
     ctx = _build_template_ctx(
         block_name=block_name,
@@ -287,8 +291,9 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
         in_ports=answers["in_ports"],
         out_ports=answers["out_ports"],
         type_list=answers["type_list"],
-        processing_style=answers["processing_style"],
+        processing_style=processing_style,
         gr4_include_prefix=cfg.gr4_include_prefix,
+        simd=simd,
     )
 
     written: list[Path] = []
@@ -339,13 +344,17 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
     default=None,
     help="Block archetype to use (pre-fills ports and processing style).",
 )
-def cmd(project_dir: str | None, group: str | None, template: str | None) -> None:
+@click.option("--simd", is_flag=True, default=False,
+              help="Generate a SIMD-vectorization-friendly processBulk skeleton.")
+def cmd(project_dir: str | None, group: str | None, template: str | None, simd: bool) -> None:
     """Add a new block to an existing group."""
     cfg = load_config(Path(project_dir) if project_dir else None)
     archetype = template if template and template != "custom" else None
     answers = prompt_newblock(cfg, group_name=group, archetype=archetype)
     if answers is None:
         sys.exit(0)
+
+    answers["simd"] = simd
 
     click.echo("\nFiles to be written:")
     header = cfg.group_include_dir(answers["group_name"]) / f"{answers['block_name']}.hpp"

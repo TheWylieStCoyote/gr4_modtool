@@ -12,6 +12,7 @@ gr4_modtool newblock [OPTIONS]
 |---|---|
 | `--group TEXT` | Target group |
 | `--template / -T ARCHETYPE` | Pre-fill ports and style from an archetype |
+| `--simd` | Generate a SIMD-vectorization-friendly `processBulk` skeleton |
 | `--project-dir PATH` | Project root |
 | `--yes / -y` | Skip confirmation |
 
@@ -41,6 +42,35 @@ Without `--template`, you are asked for: block name, description, template param
 - `blocks/<group>/include/gnuradio-4.0/<group>/<Name>.hpp`
 - `blocks/<group>/test/qa_<Name>.cpp` (if `gen_test`)
 - Updated `blocks/<group>/test/CMakeLists.txt` and `meson.build`
+
+### SIMD / vectorization hints
+
+`--simd` forces `processBulk` and generates a loop skeleton that a modern C++ compiler can auto-vectorize:
+
+```bash
+gr4_modtool newblock --group dsp --template filter --simd
+```
+
+The generated body uses `#pragma GCC ivdep` to tell GCC there are no loop-carried dependencies, and names `n` explicitly so the loop bound is invariant:
+
+```cpp
+[[nodiscard]] gr::work::Status processBulk(
+    std::span<const T> in, std::span<T> out) noexcept {
+    // SIMD-vectorizable: loop body has no cross-iteration dependencies.
+    const std::size_t n = in.size();
+#pragma GCC ivdep
+    for (std::size_t i = 0; i != n; ++i) {
+        out[i] = in[i]; // TODO: implement
+    }
+    return gr::work::Status::OK;
+}
+```
+
+Tips for keeping the loop vectorizable:
+- Avoid branches inside the loop body — use `std::clamp` or ternary expressions.
+- Keep the element stride at 1 (sequential access).
+- Do not call virtual functions or non-inline helpers inside the loop.
+- If ports use different template types (e.g. `std::complex<T>`) verify that the compiler supports SIMD for that type.
 
 ---
 

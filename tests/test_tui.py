@@ -1,12 +1,15 @@
 """Tests for the Textual TUI.
 
 Sync tests cover pure-Python helpers.
-Async tests use App.run_test(); pytest-asyncio with asyncio_mode="auto" runs them.
+Async tests use App.run_test() wrapped by the async_test decorator from conftest,
+which drives them via asyncio.run() — no async pytest plugin required.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
+
+from conftest import async_test
 
 from gr4_modtool.tui.app import (
     GR4ModtoolApp,
@@ -48,19 +51,19 @@ def test_parse_ports_whitespace_tolerance() -> None:
 # Async tests — full TUI via Pilot
 # ---------------------------------------------------------------------------
 
+@async_test
 async def test_app_mounts_on_valid_project(project) -> None:
     """App starts without exception and detail panel renders project name."""
     app = GR4ModtoolApp(project_dir=project.root)
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
-        # App should be alive — query root widget
         assert app.query_one("Header") is not None
-        # Detail panel should display project name
         from gr4_modtool.tui.app import DetailPanel
         detail = app.query_one(DetailPanel)
         assert detail is not None
 
 
+@async_test
 async def test_app_no_project_shows_error(tmp_path: Path) -> None:
     """App without a .gr4modtool.toml shows error text in the detail panel."""
     app = GR4ModtoolApp(project_dir=tmp_path)
@@ -68,10 +71,10 @@ async def test_app_no_project_shows_error(tmp_path: Path) -> None:
         await pilot.pause()
         from gr4_modtool.tui.app import DetailPanel
         detail = app.query_one(DetailPanel)
-        # The detail panel should have been populated with an error message
         assert detail is not None
 
 
+@async_test
 async def test_help_screen_opens_on_question_mark(project) -> None:
     """Pressing '?' pushes HelpScreen onto the screen stack."""
     app = GR4ModtoolApp(project_dir=project.root)
@@ -82,6 +85,7 @@ async def test_help_screen_opens_on_question_mark(project) -> None:
         assert isinstance(app.screen, HelpScreen)
 
 
+@async_test
 async def test_help_screen_closes_on_escape(project) -> None:
     """Pressing '?' then 'escape' returns to the main screen."""
     app = GR4ModtoolApp(project_dir=project.root)
@@ -95,6 +99,7 @@ async def test_help_screen_closes_on_escape(project) -> None:
         assert not isinstance(app.screen, HelpScreen)
 
 
+@async_test
 async def test_new_group_screen_opens(project) -> None:
     """Pressing 'g' pushes NewGroupScreen onto the stack."""
     app = GR4ModtoolApp(project_dir=project.root)
@@ -105,6 +110,7 @@ async def test_new_group_screen_opens(project) -> None:
         assert isinstance(app.screen, NewGroupScreen)
 
 
+@async_test
 async def test_new_group_screen_cancel(project) -> None:
     """Clicking Cancel on NewGroupScreen dismisses it without creating a group."""
     app = GR4ModtoolApp(project_dir=project.root)
@@ -118,6 +124,7 @@ async def test_new_group_screen_cancel(project) -> None:
         assert not isinstance(app.screen, NewGroupScreen)
 
 
+@async_test
 async def test_new_block_screen_opens(project) -> None:
     """Pressing 'n' pushes NewBlockScreen onto the stack."""
     app = GR4ModtoolApp(project_dir=project.root)
@@ -128,6 +135,7 @@ async def test_new_block_screen_opens(project) -> None:
         assert isinstance(app.screen, NewBlockScreen)
 
 
+@async_test
 async def test_archetype_select_updates_ports(project) -> None:
     """Selecting 'sink' archetype clears the out-ports input and sets in-ports."""
     from textual.widgets import Input, Select
@@ -147,6 +155,7 @@ async def test_archetype_select_updates_ports(project) -> None:
         assert out_ports == ""
 
 
+@async_test
 async def test_filter_input_does_not_crash(project) -> None:
     """Typing into the filter input repopulates the tree without crashing."""
     from textual.widgets import Input
@@ -157,5 +166,4 @@ async def test_filter_input_does_not_crash(project) -> None:
         filter_input.focus()
         filter_input.value = "xyz"
         await pilot.pause()
-        # No exception — app is still running
         assert app.query_one("Header") is not None

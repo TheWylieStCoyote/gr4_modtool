@@ -30,6 +30,7 @@ from gr4_modtool.commands.rename_group import cmd as rename_group_cmd
 from gr4_modtool.commands.rm import cmd as rm_cmd
 from gr4_modtool.commands.run_test import cmd as test_cmd
 from gr4_modtool.commands.sanitizers import cmd as presets_cmd
+from gr4_modtool.commands.search import cmd as search_cmd
 from gr4_modtool.commands.show import cmd as show_cmd
 from gr4_modtool.commands.tidy import cmd as tidy_cmd
 from gr4_modtool.commands.vscode import cmd as vscode_cmd
@@ -71,6 +72,7 @@ cli.add_command(precommit_cmd, name="pre-commit")
 cli.add_command(docs_cmd, name="docs")
 cli.add_command(add_dep_cmd, name="add-dep")
 cli.add_command(port_cmd, name="port")
+cli.add_command(search_cmd, name="search")
 
 
 @cli.command("tui")

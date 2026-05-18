@@ -2,12 +2,28 @@
 
 from __future__ import annotations
 
+import asyncio
+import functools
+import inspect
 from pathlib import Path
 
 import pytest
 
 from gr4_modtool.commands.newgroup import write_group_skeleton
 from gr4_modtool.project.discovery import ProjectConfig, save_config
+
+
+def async_test(coro_func):
+    """Decorator that runs an async test function via asyncio.run().
+
+    Sets __signature__ explicitly so pytest can still discover fixture parameters.
+    """
+    @functools.wraps(coro_func)
+    def wrapper(*args, **kwargs):
+        asyncio.run(coro_func(*args, **kwargs))
+
+    wrapper.__signature__ = inspect.signature(coro_func)
+    return wrapper
 
 
 @pytest.fixture()

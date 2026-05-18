@@ -1,4 +1,63 @@
-# Documentation, Dependencies & Migration
+# Documentation, Dependencies, Registry & Migration
+
+## search
+
+Search GitHub for published GNURadio 4 OOT modules.
+
+```bash
+gr4_modtool search [QUERY] [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `QUERY` | Optional keyword to narrow results (searches repo name and description) |
+| `--topic TEXT` | GitHub topic tag to filter by (default: `gnuradio4-oot`) |
+| `--limit N` | Maximum results to display (default: 20) |
+| `--verbose / -v` | Include the full repository URL in the output |
+| `--token TEXT` | GitHub personal access token (env: `GR4_MODTOOL_GITHUB_TOKEN`) |
+| `--no-cache` | Bypass the one-hour local result cache |
+
+### Discovery convention
+
+Modules are discovered via GitHub's topic search. To make your module discoverable, add the `gnuradio4-oot` topic to your GitHub repository (Settings → Topics).
+
+### Examples
+
+```bash
+# All published gr4 OOT modules, sorted by stars
+gr4_modtool search
+
+# Narrow to DSP-related modules
+gr4_modtool search dsp
+
+# Show full repository URLs
+gr4_modtool search --verbose
+
+# Authenticated request (higher GitHub rate limit: 30 → 5000 req/hour)
+export GR4_MODTOOL_GITHUB_TOKEN=ghp_...
+gr4_modtool search
+
+# Refresh stale cached results
+gr4_modtool search --no-cache
+```
+
+### Output
+
+```
+Repository                   Stars  Description                         Updated
+alice/gr4-dsp-blocks            42  DSP blocks for GNURadio 4           2024-01-15
+bob/gr4-channel-models           7  Channel simulation blocks           2024-02-01
+```
+
+### Caching
+
+Results are cached in `~/.cache/gr4_modtool/search/` for one hour. Each unique (query, topic) pair has its own cache file. Use `--no-cache` to force a fresh fetch without waiting for expiry.
+
+### Rate limits
+
+Without a token, GitHub's search API allows 10 requests per minute. With a token, the limit is 5 000 per hour. Use `GR4_MODTOOL_GITHUB_TOKEN` for automated workflows or frequent searches.
+
+---
 
 ## docs
 

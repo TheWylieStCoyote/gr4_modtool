@@ -37,8 +37,21 @@ struct {{ block_name }} : Block<{{ block_name }}<{{ template_args }}>> {
 {% endif %}
     }
 {% else %}
-    gr::work::Status processBulk({{ bulk_params_str }}) noexcept {
+    [[nodiscard]] gr::work::Status processBulk({{ bulk_params_str }}) noexcept {
+{% if simd %}
+        // SIMD-vectorizable: loop body has no cross-iteration dependencies.
+        const std::size_t n = {% if in_ports %}{{ in_ports[0].name }}{% else %}{{ out_ports[0].name }}{% endif %}.size();
+#pragma GCC ivdep
+        for (std::size_t i = 0; i != n; ++i) {
+{% if in_ports and out_ports %}
+            {{ out_ports[0].name }}[i] = {{ in_ports[0].name }}[i]; // TODO: implement
+{% else %}
+            // TODO: implement
+{% endif %}
+        }
+{% else %}
         // TODO: implement
+{% endif %}
         return gr::work::Status::OK;
     }
 {% endif %}
