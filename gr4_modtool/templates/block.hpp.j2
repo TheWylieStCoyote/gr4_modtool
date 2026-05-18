@@ -4,9 +4,11 @@
 #include <gnuradio-4.0/BlockRegistry.hpp>
 {% if uses_complex %}
 #include <complex>
+#include <cmath>
 {% endif %}
 {% if multi_output %}
 #include <tuple>
+#include <span>
 {% endif %}
 
 namespace {{ namespace }} {

@@ -9,6 +9,10 @@ from gr4_modtool.project.cmake import (
     remove_test_entry,
     rename_test_entry,
     add_subdirectory,
+    append_bench_entry,
+    remove_bench_entry,
+    rename_bench_entry,
+    add_bench_subdirectory,
 )
 
 
@@ -66,3 +70,56 @@ def test_add_subdirectory_idempotent(tmp_path: Path) -> None:
     f.write_text("add_subdirectory(basic)\n")
     add_subdirectory(f, "basic")
     assert f.read_text().count("add_subdirectory(basic)") == 1
+
+
+@pytest.fixture()
+def bench_cmake(tmp_path: Path) -> Path:
+    f = tmp_path / "CMakeLists.txt"
+    f.write_text("# benchmarks\n")
+    return f
+
+
+def test_append_bench_entry(bench_cmake: Path) -> None:
+    append_bench_entry(bench_cmake, "MyBlock", "gr4_testmod::blocks_basic_headers")
+    text = bench_cmake.read_text()
+    assert "bench_MyBlock" in text
+    assert "add_executable(bench_MyBlock" in text
+    assert "target_link_libraries(bench_MyBlock" in text
+
+
+def test_remove_bench_entry(bench_cmake: Path) -> None:
+    append_bench_entry(bench_cmake, "MyBlock", "gr4_testmod::blocks_basic_headers")
+    found = remove_bench_entry(bench_cmake, "MyBlock")
+    assert found
+    assert "bench_MyBlock" not in bench_cmake.read_text()
+
+
+def test_remove_bench_nonexistent(bench_cmake: Path) -> None:
+    found = remove_bench_entry(bench_cmake, "Ghost")
+    assert not found
+
+
+def test_rename_bench_entry(bench_cmake: Path) -> None:
+    append_bench_entry(bench_cmake, "OldBlock", "gr4_testmod::blocks_basic_headers")
+    changed = rename_bench_entry(bench_cmake, "OldBlock", "NewBlock")
+    assert changed
+    text = bench_cmake.read_text()
+    assert "bench_NewBlock" in text
+    assert "bench_OldBlock" not in text
+
+
+def test_add_bench_subdirectory(tmp_path: Path) -> None:
+    f = tmp_path / "CMakeLists.txt"
+    f.write_text("add_subdirectory(test)\n")
+    add_bench_subdirectory(f)
+    text = f.read_text()
+    assert "ENABLE_BENCHMARKING" in text
+    assert "add_subdirectory(benchmarks)" in text
+
+
+def test_add_bench_subdirectory_idempotent(tmp_path: Path) -> None:
+    f = tmp_path / "CMakeLists.txt"
+    f.write_text("add_subdirectory(test)\n")
+    add_bench_subdirectory(f)
+    add_bench_subdirectory(f)
+    assert f.read_text().count("add_subdirectory(benchmarks)") == 1

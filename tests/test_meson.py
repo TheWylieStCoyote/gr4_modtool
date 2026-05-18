@@ -9,6 +9,10 @@ from gr4_modtool.project.meson import (
     remove_test_entry,
     rename_test_entry,
     add_subdir,
+    append_bench_entry,
+    remove_bench_entry,
+    rename_bench_entry,
+    add_bench_subdir,
 )
 
 
@@ -69,3 +73,55 @@ def test_add_subdir_idempotent(tmp_path: Path) -> None:
     f.write_text("subdir('basic')\n")
     add_subdir(f, "basic")
     assert f.read_text().count("subdir('basic')") == 1
+
+
+@pytest.fixture()
+def bench_meson(tmp_path: Path) -> Path:
+    f = tmp_path / "meson.build"
+    f.write_text("# benchmarks\n")
+    return f
+
+
+def test_append_bench_entry(bench_meson: Path) -> None:
+    append_bench_entry(bench_meson, "MyBlock", extra_deps=["gr4_basic_blocks_dep"])
+    text = bench_meson.read_text()
+    assert "bench_MyBlock" in text
+    assert "benchmark('bench_MyBlock'" in text
+
+
+def test_remove_bench_entry(bench_meson: Path) -> None:
+    append_bench_entry(bench_meson, "MyBlock", extra_deps=["gr4_basic_blocks_dep"])
+    found = remove_bench_entry(bench_meson, "MyBlock")
+    assert found
+    assert "bench_MyBlock" not in bench_meson.read_text()
+
+
+def test_remove_bench_nonexistent(bench_meson: Path) -> None:
+    found = remove_bench_entry(bench_meson, "Ghost")
+    assert not found
+
+
+def test_rename_bench_entry(bench_meson: Path) -> None:
+    append_bench_entry(bench_meson, "OldBlock")
+    changed = rename_bench_entry(bench_meson, "OldBlock", "NewBlock")
+    assert changed
+    text = bench_meson.read_text()
+    assert "bench_NewBlock" in text
+    assert "bench_OldBlock" not in text
+
+
+def test_add_bench_subdir(tmp_path: Path) -> None:
+    f = tmp_path / "meson.build"
+    f.write_text("subdir('test')\n")
+    add_bench_subdir(f)
+    text = f.read_text()
+    assert "enable_benchmarking" in text
+    assert "subdir('benchmarks')" in text
+
+
+def test_add_bench_subdir_idempotent(tmp_path: Path) -> None:
+    f = tmp_path / "meson.build"
+    f.write_text("subdir('test')\n")
+    add_bench_subdir(f)
+    add_bench_subdir(f)
+    assert f.read_text().count("subdir('benchmarks')") == 1

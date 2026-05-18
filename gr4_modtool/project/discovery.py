@@ -51,6 +51,9 @@ class ProjectConfig:
     def group_test_dir(self, group: str) -> Path:
         return self.group_path(group) / "test"
 
+    def group_bench_dir(self, group: str) -> Path:
+        return self.group_path(group) / "benchmarks"
+
 
 def find_project_root(start: Path | None = None) -> Path | None:
     """Walk upward from start (default: cwd) looking for .gr4modtool.toml."""

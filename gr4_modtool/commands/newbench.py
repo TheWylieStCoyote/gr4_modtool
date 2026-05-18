@@ -1,0 +1,180 @@
+"""newbench command — add a benchmark for an existing block."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import click
+import questionary
+
+from gr4_modtool.project.discovery import load_config, discover_groups, ProjectConfig
+from gr4_modtool.project import cmake as cmake_mod
+from gr4_modtool.project import meson as meson_mod
+from gr4_modtool.templates import render
+
+
+def _ensure_meson_option(project_root: Path) -> None:
+    """Ensure meson_options.txt has the enable_benchmarking option."""
+    opts_path = project_root / "meson_options.txt"
+    option_line = "option('enable_benchmarking', type: 'boolean', value: false)"
+    if opts_path.exists():
+        if "enable_benchmarking" not in opts_path.read_text():
+            opts_path.write_text(opts_path.read_text().rstrip() + f"\n{option_line}\n")
+    else:
+        opts_path.write_text(f"{option_line}\n")
+
+
+def _build_bench_ctx(cfg: ProjectConfig, group: str, info: dict) -> dict:
+    """Build template context for bench_block.cpp.j2 from parse_header_info output."""
+    from gr4_modtool.commands.newblock import _build_template_ctx
+
+    full_ctx = _build_template_ctx(
+        block_name=info["block_name"],
+        namespace=info["namespace"],
+        group=group,
+        description=info["description"],
+        template_params=info["template_params"],
+        in_ports=info["in_ports"],
+        out_ports=info["out_ports"],
+        type_list=info["type_list"],
+        processing_style=info["processing_style"],
+        gr4_include_prefix=cfg.gr4_include_prefix,
+    )
+    return full_ctx
+
+
+def write_bench_file(
+    cfg: ProjectConfig,
+    group: str,
+    block_name: str,
+    wire_build: bool = False,
+) -> list[Path]:
+    """Generate bench_<BlockName>.cpp and optionally wire into build system.
+
+    Raises FileNotFoundError if header missing.
+    Raises FileExistsError if bench file already exists.
+    """
+    from gr4_modtool.commands.add_test import parse_header_info
+
+    header = cfg.group_include_dir(group) / f"{block_name}.hpp"
+    if not header.exists():
+        raise FileNotFoundError(f"Header not found: {header}")
+
+    bench_dir = cfg.group_bench_dir(group)
+    bench_file = bench_dir / f"bench_{block_name}.cpp"
+    if bench_file.exists():
+        raise FileExistsError(f"Benchmark already exists: {bench_file}")
+
+    info = parse_header_info(header)
+    ctx = _build_bench_ctx(cfg, group, info)
+
+    bench_dir.mkdir(parents=True, exist_ok=True)
+    bench_file.write_text(render("bench_block.cpp.j2", ctx, cfg.root))
+    written: list[Path] = [bench_file]
+
+    if wire_build:
+        target_libs = f"{cfg.cmake_prefix}::blocks_{group}_headers"
+
+        # CMake
+        if cfg.build_cmake:
+            bench_cmake = bench_dir / "CMakeLists.txt"
+            if not bench_cmake.exists():
+                bench_cmake.write_text(
+                    render("bench_CMakeLists.txt.j2", {"group_name": group}, cfg.root)
+                )
+                written.append(bench_cmake)
+            cmake_mod.append_bench_entry(bench_cmake, block_name, target_libs)
+            if bench_cmake not in written:
+                written.append(bench_cmake)
+
+            group_cmake = cfg.group_path(group) / "CMakeLists.txt"
+            if group_cmake.exists():
+                cmake_mod.add_bench_subdirectory(group_cmake)
+                if group_cmake not in written:
+                    written.append(group_cmake)
+
+        # Meson
+        if cfg.build_meson:
+            bench_meson = bench_dir / "meson.build"
+            dep_var = f"gr4_{group}_blocks_dep"
+            if not bench_meson.exists():
+                bench_meson.write_text("# Benchmarks\n")
+                written.append(bench_meson)
+            meson_mod.append_bench_entry(bench_meson, block_name, extra_deps=[dep_var])
+            if bench_meson not in written:
+                written.append(bench_meson)
+
+            group_meson = cfg.group_path(group) / "meson.build"
+            if group_meson.exists():
+                meson_mod.add_bench_subdir(group_meson)
+                if group_meson not in written:
+                    written.append(group_meson)
+
+            _ensure_meson_option(cfg.root)
+
+    return written
+
+
+@click.command("newbench")
+@click.argument("block_name", required=False)
+@click.option("--group", default=None)
+@click.option("--wire-build", is_flag=True, default=False,
+              help="Wire into CMake/meson build system (adds ENABLE_BENCHMARKING guard).")
+@click.option("--project-dir", default=None, type=click.Path(exists=True))
+@click.option("--yes", "-y", is_flag=True)
+def cmd(
+    block_name: str | None,
+    group: str | None,
+    wire_build: bool,
+    project_dir: str | None,
+    yes: bool,
+) -> None:
+    """Add a throughput benchmark for an existing block."""
+    cfg = load_config(Path(project_dir) if project_dir else None)
+    groups = discover_groups(cfg)
+
+    if not groups:
+        click.echo("No groups found.", err=True)
+        sys.exit(1)
+
+    if group is None:
+        group = questionary.select("Group:", choices=[g.name for g in groups]).ask()
+        if group is None:
+            sys.exit(0)
+
+    group_info = next((g for g in groups if g.name == group), None)
+    if group_info is None:
+        click.echo(f"Group '{group}' not found.", err=True)
+        sys.exit(1)
+
+    if block_name is None:
+        block_names = [b.name for b in group_info.blocks]
+        if not block_names:
+            click.echo(f"No blocks in group '{group}'.", err=True)
+            sys.exit(1)
+        block_name = questionary.select("Block to benchmark:", choices=block_names).ask()
+        if block_name is None:
+            sys.exit(0)
+
+    if not wire_build:
+        wire_build = questionary.confirm(
+            "Wire into build system (cmake/meson)?", default=False
+        ).ask() or False
+
+    if not yes:
+        confirm = questionary.confirm(
+            f"Generate bench_{block_name}.cpp?", default=True
+        ).ask()
+        if not confirm:
+            sys.exit(0)
+
+    try:
+        written = write_bench_file(cfg, group, block_name, wire_build=wire_build)
+    except (FileNotFoundError, FileExistsError, ValueError) as exc:
+        click.echo(f"Error: {exc}", err=True)
+        sys.exit(1)
+
+    click.echo("Created:")
+    for p in written:
+        click.echo(f"  {p}")

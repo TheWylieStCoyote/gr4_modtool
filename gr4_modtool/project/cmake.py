@@ -51,6 +51,51 @@ def add_subdirectory(cmake_path: Path, subdir: str) -> None:
         cmake_path.write_text(text.rstrip() + f"\n{entry}\n")
 
 
+def append_bench_entry(cmake_path: Path, block_name: str, target_libs: str) -> None:
+    """Add an add_executable + target_link_libraries pair for a benchmark."""
+    text = cmake_path.read_text()
+    new_entry = (
+        f"\nadd_executable(bench_{block_name} bench_{block_name}.cpp)\n"
+        f"target_link_libraries(bench_{block_name} PRIVATE {target_libs})\n"
+    )
+    cmake_path.write_text(text.rstrip() + new_entry)
+
+
+def remove_bench_entry(cmake_path: Path, block_name: str) -> bool:
+    """Remove add_executable + target_link_libraries for bench_block_name. Returns True if found."""
+    text = cmake_path.read_text()
+    pattern = (
+        rf"\nadd_executable\(bench_{re.escape(block_name)}[^\n]*\)\n"
+        rf"target_link_libraries\(bench_{re.escape(block_name)}[^\n]*\)\n?"
+    )
+    new_text, count = re.subn(pattern, "\n", text)
+    if count:
+        cmake_path.write_text(new_text)
+    return count > 0
+
+
+def rename_bench_entry(cmake_path: Path, old_name: str, new_name: str) -> bool:
+    """Rename old_name → new_name in bench_ cmake entries."""
+    text = cmake_path.read_text()
+    new_text = re.sub(
+        rf"\bbench_{re.escape(old_name)}\b",
+        f"bench_{new_name}",
+        text,
+    )
+    changed = new_text != text
+    if changed:
+        cmake_path.write_text(new_text)
+    return changed
+
+
+def add_bench_subdirectory(cmake_path: Path) -> None:
+    """Append ENABLE_BENCHMARKING-guarded benchmarks subdir to a group CMakeLists.txt."""
+    text = cmake_path.read_text()
+    if "add_subdirectory(benchmarks)" not in text:
+        block = "\nif(ENABLE_BENCHMARKING)\n  add_subdirectory(benchmarks)\nendif()\n"
+        cmake_path.write_text(text.rstrip() + block)
+
+
 def add_group_to_blocks_cmake(blocks_cmake: Path, group_name: str, cmake_prefix: str) -> None:
     """Wire a new group into blocks/CMakeLists.txt:
     - add_subdirectory(group_name)

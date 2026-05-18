@@ -146,6 +146,149 @@ class NewBlockScreen(ModalScreen):
 
 
 # --------------------------------------------------------------------------- #
+# Additional modal screens
+# --------------------------------------------------------------------------- #
+
+class MoveBlockScreen(ModalScreen):
+    """Modal for mv command."""
+    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+
+    def __init__(self, cfg: ProjectConfig, groups: list[GroupInfo]) -> None:
+        super().__init__()
+        self._cfg = cfg
+        self._groups = groups
+
+    def compose(self) -> ComposeResult:
+        options = [(g.name, g.name) for g in self._groups]
+        with Vertical(id="newblock-form"):
+            yield Label("[bold]Move Block[/bold]")
+            yield Label("Source group:")
+            yield Select(options=options, id="src-group")
+            yield Label("Block name:")
+            yield Input(placeholder="BlockName", id="block-name")
+            yield Label("Destination group:")
+            yield Select(options=options, id="dst-group")
+            yield Horizontal(
+                Button("Move", variant="primary", id="ok-btn"),
+                Button("Cancel", variant="default", id="cancel-btn"),
+            )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "cancel-btn":
+            self.dismiss(None)
+            return
+        self.dismiss({
+            "src_group": self.query_one("#src-group", Select).value,
+            "block_name": self.query_one("#block-name", Input).value.strip(),
+            "dst_group": self.query_one("#dst-group", Select).value,
+        })
+
+
+class CopyBlockScreen(ModalScreen):
+    """Modal for cp command."""
+    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+
+    def __init__(self, cfg: ProjectConfig, groups: list[GroupInfo]) -> None:
+        super().__init__()
+        self._cfg = cfg
+        self._groups = groups
+
+    def compose(self) -> ComposeResult:
+        options = [(g.name, g.name) for g in self._groups]
+        with Vertical(id="newblock-form"):
+            yield Label("[bold]Copy Block[/bold]")
+            yield Label("Source group:")
+            yield Select(options=options, id="src-group")
+            yield Label("Source block name:")
+            yield Input(placeholder="OldName", id="src-name")
+            yield Label("New block name:")
+            yield Input(placeholder="NewName", id="dst-name")
+            yield Label("Destination group:")
+            yield Select(options=options, id="dst-group")
+            yield Horizontal(
+                Button("Copy", variant="primary", id="ok-btn"),
+                Button("Cancel", variant="default", id="cancel-btn"),
+            )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "cancel-btn":
+            self.dismiss(None)
+            return
+        self.dismiss({
+            "src_group": self.query_one("#src-group", Select).value,
+            "src_name": self.query_one("#src-name", Input).value.strip(),
+            "dst_name": self.query_one("#dst-name", Input).value.strip(),
+            "dst_group": self.query_one("#dst-group", Select).value,
+            "gen_test": False,
+        })
+
+
+class AddTestScreen(ModalScreen):
+    """Modal for add-test command."""
+    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+
+    def __init__(self, cfg: ProjectConfig, groups: list[GroupInfo]) -> None:
+        super().__init__()
+        self._cfg = cfg
+        self._groups = groups
+
+    def compose(self) -> ComposeResult:
+        options = [(g.name, g.name) for g in self._groups]
+        with Vertical(id="newblock-form"):
+            yield Label("[bold]Add Test[/bold]")
+            yield Label("Group:")
+            yield Select(options=options, id="group-select")
+            yield Label("Block name:")
+            yield Input(placeholder="BlockName", id="block-name")
+            yield Horizontal(
+                Button("Generate", variant="primary", id="ok-btn"),
+                Button("Cancel", variant="default", id="cancel-btn"),
+            )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "cancel-btn":
+            self.dismiss(None)
+            return
+        self.dismiss({
+            "group": self.query_one("#group-select", Select).value,
+            "block_name": self.query_one("#block-name", Input).value.strip(),
+        })
+
+
+class NewBenchScreen(ModalScreen):
+    """Modal for newbench command."""
+    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+
+    def __init__(self, cfg: ProjectConfig, groups: list[GroupInfo]) -> None:
+        super().__init__()
+        self._cfg = cfg
+        self._groups = groups
+
+    def compose(self) -> ComposeResult:
+        options = [(g.name, g.name) for g in self._groups]
+        with Vertical(id="newblock-form"):
+            yield Label("[bold]New Benchmark[/bold]")
+            yield Label("Group:")
+            yield Select(options=options, id="group-select")
+            yield Label("Block name:")
+            yield Input(placeholder="BlockName", id="block-name")
+            yield Horizontal(
+                Button("Generate", variant="primary", id="ok-btn"),
+                Button("Cancel", variant="default", id="cancel-btn"),
+            )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "cancel-btn":
+            self.dismiss(None)
+            return
+        self.dismiss({
+            "group": self.query_one("#group-select", Select).value,
+            "block_name": self.query_one("#block-name", Input).value.strip(),
+            "wire_build": False,
+        })
+
+
+# --------------------------------------------------------------------------- #
 # Main app
 # --------------------------------------------------------------------------- #
 
@@ -181,6 +324,11 @@ class GR4ModtoolApp(App):
         Binding("q", "quit", "Quit"),
         Binding("ctrl+p", "command_palette", "Commands"),
         Binding("n", "new_block", "New Block"),
+        Binding("m", "move_block", "Move Block"),
+        Binding("c", "copy_block", "Copy Block"),
+        Binding("t", "add_test", "Add Test"),
+        Binding("b", "new_bench", "New Bench"),
+        Binding("k", "check", "Check"),
         Binding("r", "refresh", "Refresh"),
     ]
 
@@ -239,6 +387,115 @@ class GR4ModtoolApp(App):
                 self.query_one(DetailPanel).show_message(f"[red]Error: {exc}[/red]")
 
         self.push_screen(NewBlockScreen(self._cfg, self._groups), _handle_result)
+
+    def action_move_block(self) -> None:
+        if self._cfg is None or len(self._groups) < 2:
+            self.query_one(DetailPanel).show_message(
+                "[red]Need at least two groups to move a block.[/red]"
+            )
+            return
+
+        def _handle(answers: dict | None) -> None:
+            if answers is None:
+                return
+            from gr4_modtool.commands.mv import move_block
+            try:
+                written = move_block(
+                    self._cfg,  # type: ignore[arg-type]
+                    answers["src_group"], answers["block_name"], answers["dst_group"]
+                )
+                self._load_project()
+                self.query_one(DetailPanel).show_message(
+                    "[green]Moved:[/green]\n" + "\n".join(str(p) for p in written)
+                )
+            except Exception as exc:  # noqa: BLE001
+                self.query_one(DetailPanel).show_message(f"[red]Error: {exc}[/red]")
+
+        self.push_screen(MoveBlockScreen(self._cfg, self._groups), _handle)  # type: ignore[arg-type]
+
+    def action_copy_block(self) -> None:
+        if self._cfg is None or not self._groups:
+            self.query_one(DetailPanel).show_message("[red]No project loaded.[/red]")
+            return
+
+        def _handle(answers: dict | None) -> None:
+            if answers is None:
+                return
+            from gr4_modtool.commands.cp import copy_block
+            try:
+                written = copy_block(
+                    self._cfg,  # type: ignore[arg-type]
+                    answers["src_group"], answers["src_name"], answers["dst_name"],
+                    dst_group=answers.get("dst_group"),
+                    gen_test=answers.get("gen_test", False),
+                )
+                self._load_project()
+                self.query_one(DetailPanel).show_message(
+                    "[green]Copied:[/green]\n" + "\n".join(str(p) for p in written)
+                )
+            except Exception as exc:  # noqa: BLE001
+                self.query_one(DetailPanel).show_message(f"[red]Error: {exc}[/red]")
+
+        self.push_screen(CopyBlockScreen(self._cfg, self._groups), _handle)  # type: ignore[arg-type]
+
+    def action_add_test(self) -> None:
+        if self._cfg is None or not self._groups:
+            self.query_one(DetailPanel).show_message("[red]No project loaded.[/red]")
+            return
+
+        def _handle(answers: dict | None) -> None:
+            if answers is None:
+                return
+            from gr4_modtool.commands.add_test import write_test_for_block
+            try:
+                written = write_test_for_block(
+                    self._cfg, answers["group"], answers["block_name"]  # type: ignore[arg-type]
+                )
+                self._load_project()
+                self.query_one(DetailPanel).show_message(
+                    "[green]Created:[/green]\n" + "\n".join(str(p) for p in written)
+                )
+            except Exception as exc:  # noqa: BLE001
+                self.query_one(DetailPanel).show_message(f"[red]Error: {exc}[/red]")
+
+        self.push_screen(AddTestScreen(self._cfg, self._groups), _handle)  # type: ignore[arg-type]
+
+    def action_new_bench(self) -> None:
+        if self._cfg is None or not self._groups:
+            self.query_one(DetailPanel).show_message("[red]No project loaded.[/red]")
+            return
+
+        def _handle(answers: dict | None) -> None:
+            if answers is None:
+                return
+            from gr4_modtool.commands.newbench import write_bench_file
+            try:
+                written = write_bench_file(
+                    self._cfg, answers["group"], answers["block_name"],  # type: ignore[arg-type]
+                    wire_build=answers.get("wire_build", False),
+                )
+                self.query_one(DetailPanel).show_message(
+                    "[green]Created:[/green]\n" + "\n".join(str(p) for p in written)
+                )
+            except Exception as exc:  # noqa: BLE001
+                self.query_one(DetailPanel).show_message(f"[red]Error: {exc}[/red]")
+
+        self.push_screen(NewBenchScreen(self._cfg, self._groups), _handle)  # type: ignore[arg-type]
+
+    def action_check(self) -> None:
+        if self._cfg is None:
+            self.query_one(DetailPanel).show_message("[red]No project loaded.[/red]")
+            return
+        from gr4_modtool.commands.check import audit_project
+        issues = audit_project(self._cfg)
+        if not issues:
+            self.query_one(DetailPanel).show_message("[green]No issues found.[/green]")
+        else:
+            lines = ["[bold]Issues:[/bold]"]
+            for issue in issues:
+                color = "red" if issue.severity == "error" else "yellow"
+                lines.append(f"  [{color}]{issue.severity}[/{color}] {issue.group}/{issue.block}: {issue.issue}")
+            self.query_one(DetailPanel).show_message("\n".join(lines))
 
     def action_refresh(self) -> None:
         self._load_project()
