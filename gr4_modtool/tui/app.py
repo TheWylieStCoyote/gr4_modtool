@@ -357,8 +357,10 @@ class NewBlockScreen(ModalScreen):
         self._default_group = default_group
 
     def compose(self) -> ComposeResult:
+        from gr4_modtool.commands.newblock import ARCHETYPES
         options = [(g.name, g.name) for g in self._groups]
         default = self._default_group or (self._groups[0].name if self._groups else Select.BLANK)
+        archetype_opts = [("custom", "custom")] + [(k, k) for k in ARCHETYPES]
         with Vertical(classes="modal-form"):
             yield Label("[bold]New Block[/bold]")
             yield Label("Group:")
@@ -367,6 +369,8 @@ class NewBlockScreen(ModalScreen):
             yield Input(placeholder="MyFilter", id="block-name")
             yield Label("Description:")
             yield Input(placeholder="One-line description", id="description")
+            yield Label("Archetype [dim](pre-fills ports/style)[/dim]:")
+            yield Select(options=archetype_opts, value="custom", id="archetype-select")
             yield Label("Template params [dim](comma-sep, e.g. T or TIN,TOUT)[/dim]:")
             yield Input(value="T", placeholder="T", id="template-params")
             yield Label("Input ports [dim](name:type separated by ;)[/dim]:")
@@ -386,6 +390,20 @@ class NewBlockScreen(ModalScreen):
                 Button("Cancel", variant="default", id="cancel-btn"),
                 classes="button-row",
             )
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        if event.select.id != "archetype-select":
+            return
+        from gr4_modtool.commands.newblock import ARCHETYPES
+        arch = str(event.value)
+        if arch == "custom" or arch not in ARCHETYPES:
+            return
+        a = ARCHETYPES[arch]
+        in_str = "; ".join(f"{p['name']}:{p['type']}" for p in a["in_ports"]) if a["in_ports"] else ""
+        out_str = "; ".join(f"{p['name']}:{p['type']}" for p in a["out_ports"]) if a["out_ports"] else ""
+        self.query_one("#in-ports", Input).value = in_str
+        self.query_one("#out-ports", Input).value = out_str
+        self.query_one("#style-select", Select).value = a["processing_style"]
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "cancel-btn":

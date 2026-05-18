@@ -23,6 +23,9 @@ from gr4_modtool.commands.run_test import cmd as test_cmd
 from gr4_modtool.commands.format import cmd as format_cmd
 from gr4_modtool.commands.devcontainer import cmd as devcontainer_cmd
 from gr4_modtool.commands.tidy import cmd as tidy_cmd
+from gr4_modtool.commands.sanitizers import cmd as presets_cmd
+from gr4_modtool.commands.vscode import cmd as vscode_cmd
+from gr4_modtool.commands.ci import cmd as ci_cmd
 from gr4_modtool import plugins as _plugins
 
 
@@ -54,6 +57,9 @@ cli.add_command(test_cmd, name="test")
 cli.add_command(format_cmd, name="format")
 cli.add_command(devcontainer_cmd, name="devcontainer")
 cli.add_command(tidy_cmd, name="tidy")
+cli.add_command(presets_cmd, name="presets")
+cli.add_command(vscode_cmd, name="vscode")
+cli.add_command(ci_cmd, name="ci")
 
 
 @cli.command("tui")

@@ -16,6 +16,40 @@ from gr4_modtool.templates import render
 
 
 # --------------------------------------------------------------------------- #
+# Archetypes
+# --------------------------------------------------------------------------- #
+
+ARCHETYPES: dict[str, dict] = {
+    "source": {
+        "in_ports": [],
+        "out_ports": [{"name": "out", "type": "T"}],
+        "processing_style": "processBulk",
+    },
+    "sink": {
+        "in_ports": [{"name": "in", "type": "T"}],
+        "out_ports": [],
+        "processing_style": "processBulk",
+    },
+    "filter": {
+        "in_ports": [{"name": "in", "type": "T"}],
+        "out_ports": [{"name": "out", "type": "T"}],
+        "processing_style": "processOne",
+    },
+    "decimator": {
+        "in_ports": [{"name": "in", "type": "T"}],
+        "out_ports": [{"name": "out", "type": "T"}],
+        "processing_style": "processBulk",
+    },
+    "interpolator": {
+        "in_ports": [{"name": "in", "type": "T"}],
+        "out_ports": [{"name": "out", "type": "T"}],
+        "processing_style": "processBulk",
+    },
+}
+
+_ARCHETYPE_NAMES = list(ARCHETYPES.keys())
+
+# --------------------------------------------------------------------------- #
 # Validation helpers
 # --------------------------------------------------------------------------- #
 
@@ -111,7 +145,11 @@ def _build_template_ctx(
 # Prompt flow (shared between CLI and TUI)
 # --------------------------------------------------------------------------- #
 
-def prompt_newblock(cfg, group_name: str | None = None) -> dict | None:
+def prompt_newblock(
+    cfg,
+    group_name: str | None = None,
+    archetype: str | None = None,
+) -> dict | None:
     """Run the interactive prompt flow. Returns context dict or None if aborted."""
     groups = discover_groups(cfg)
     group_names = [g.name for g in groups]
@@ -146,58 +184,65 @@ def prompt_newblock(cfg, group_name: str | None = None) -> dict | None:
     else:
         template_params = ["T"]
 
-    # Input ports
-    n_in = questionary.text(
-        "Number of input ports:",
-        default="1",
-        validate=lambda v: v.isdigit() or "Enter a number",
-    ).ask()
-    if n_in is None:
-        return None
-
-    type_choices = [p for p in template_params] + [f"std::complex<{template_params[0]}>", "custom"]
-    in_ports: list[dict] = []
-    for i in range(int(n_in)):
-        pname = questionary.text(f"  Input port {i+1} name:", default=f"in{i+1}" if int(n_in) > 1 else "in").ask()
-        if pname is None:
+    # If archetype given, skip port/style prompts
+    if archetype and archetype in ARCHETYPES:
+        arch = ARCHETYPES[archetype]
+        in_ports = arch["in_ports"]
+        out_ports = arch["out_ports"]
+        style = arch["processing_style"]
+    else:
+        # Input ports
+        n_in = questionary.text(
+            "Number of input ports:",
+            default="1",
+            validate=lambda v: v.isdigit() or "Enter a number",
+        ).ask()
+        if n_in is None:
             return None
-        ptype_raw = questionary.select(f"  Input port {i+1} data type:", choices=type_choices).ask()
-        if ptype_raw is None:
-            return None
-        if ptype_raw == "custom":
-            ptype_raw = questionary.text("    Custom type:").ask() or "T"
-        ptype = _resolve_port_type(ptype_raw, template_params)
-        in_ports.append({"name": pname, "type": ptype})
 
-    # Output ports
-    n_out = questionary.text(
-        "Number of output ports:",
-        default="1",
-        validate=lambda v: v.isdigit() or "Enter a number",
-    ).ask()
-    if n_out is None:
-        return None
+        type_choices = [p for p in template_params] + [f"std::complex<{template_params[0]}>", "custom"]
+        in_ports = []
+        for i in range(int(n_in)):
+            pname = questionary.text(f"  Input port {i+1} name:", default=f"in{i+1}" if int(n_in) > 1 else "in").ask()
+            if pname is None:
+                return None
+            ptype_raw = questionary.select(f"  Input port {i+1} data type:", choices=type_choices).ask()
+            if ptype_raw is None:
+                return None
+            if ptype_raw == "custom":
+                ptype_raw = questionary.text("    Custom type:").ask() or "T"
+            ptype = _resolve_port_type(ptype_raw, template_params)
+            in_ports.append({"name": pname, "type": ptype})
 
-    out_ports: list[dict] = []
-    for i in range(int(n_out)):
-        pname = questionary.text(f"  Output port {i+1} name:", default=f"out{i+1}" if int(n_out) > 1 else "out").ask()
-        if pname is None:
+        # Output ports
+        n_out = questionary.text(
+            "Number of output ports:",
+            default="1",
+            validate=lambda v: v.isdigit() or "Enter a number",
+        ).ask()
+        if n_out is None:
             return None
-        ptype_raw = questionary.select(f"  Output port {i+1} data type:", choices=type_choices).ask()
-        if ptype_raw is None:
-            return None
-        if ptype_raw == "custom":
-            ptype_raw = questionary.text("    Custom type:").ask() or "T"
-        ptype = _resolve_port_type(ptype_raw, template_params)
-        out_ports.append({"name": pname, "type": ptype})
 
-    # Processing style
-    style = questionary.select(
-        "Processing style:",
-        choices=["processOne", "processBulk"],
-    ).ask()
-    if style is None:
-        return None
+        out_ports = []
+        for i in range(int(n_out)):
+            pname = questionary.text(f"  Output port {i+1} name:", default=f"out{i+1}" if int(n_out) > 1 else "out").ask()
+            if pname is None:
+                return None
+            ptype_raw = questionary.select(f"  Output port {i+1} data type:", choices=type_choices).ask()
+            if ptype_raw is None:
+                return None
+            if ptype_raw == "custom":
+                ptype_raw = questionary.text("    Custom type:").ask() or "T"
+            ptype = _resolve_port_type(ptype_raw, template_params)
+            out_ports.append({"name": pname, "type": ptype})
+
+        # Processing style
+        style = questionary.select(
+            "Processing style:",
+            choices=["processOne", "processBulk"],
+        ).ask()
+        if style is None:
+            return None
 
     # Type list
     uses_complex = any("complex" in p["type"] for p in in_ports + out_ports)
@@ -289,10 +334,17 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
 @click.command("newblock")
 @click.option("--project-dir", default=None, type=click.Path(exists=True))
 @click.option("--group", default=None, help="Target group name.")
-def cmd(project_dir: str | None, group: str | None) -> None:
+@click.option(
+    "--template", "-T",
+    type=click.Choice(_ARCHETYPE_NAMES + ["custom"]),
+    default=None,
+    help="Block archetype to use (pre-fills ports and processing style).",
+)
+def cmd(project_dir: str | None, group: str | None, template: str | None) -> None:
     """Add a new block to an existing group."""
     cfg = load_config(Path(project_dir) if project_dir else None)
-    answers = prompt_newblock(cfg, group_name=group)
+    archetype = template if template and template != "custom" else None
+    answers = prompt_newblock(cfg, group_name=group, archetype=archetype)
     if answers is None:
         sys.exit(0)
 

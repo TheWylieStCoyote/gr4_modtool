@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -10,6 +12,22 @@ import questionary
 
 from gr4_modtool.project.discovery import ProjectConfig, save_config
 from gr4_modtool.templates import render
+
+
+def write_git_init(cfg: ProjectConfig) -> list[Path]:
+    """Run git init and write .gitignore. Returns list of created paths."""
+    gitignore = cfg.root / ".gitignore"
+    gitignore.write_text(render("gitignore.j2", {"project_name": cfg.name}, cfg.root))
+    written = [gitignore]
+
+    if shutil.which("git"):
+        subprocess.run(
+            ["git", "init", str(cfg.root)],
+            check=False,
+            capture_output=True,
+        )
+
+    return written
 
 
 def _slug(name: str) -> str:
@@ -103,9 +121,15 @@ def cmd(project_dir: str | None, name: str | None) -> None:
 
     build_cmake = questionary.confirm("Generate CMake build files?", default=True).ask()
     build_meson = questionary.confirm("Generate Meson build files?", default=True).ask()
+    gen_git = questionary.confirm("Initialize git repository?", default=True).ask()
     gen_devcontainer = questionary.confirm("Generate devcontainer?", default=False).ask()
     gen_clang = questionary.confirm("Generate .clang-format and .clang-tidy config?", default=True).ask()
     gen_ci_clang = questionary.confirm("Generate GitHub Actions CI for clang checks?", default=False).ask()
+    gen_presets = questionary.confirm("Generate CMakePresets.json (asan/ubsan/tsan)?", default=False).ask()
+    gen_ci_sanitizers = questionary.confirm("Generate GitHub Actions CI for sanitizers?", default=False).ask()
+    gen_vscode = questionary.confirm("Generate VS Code settings (.vscode/)?", default=True).ask()
+    gen_ci_coverage = questionary.confirm("Generate CI coverage workflow?", default=False).ask()
+    gen_ci_release = questionary.confirm("Generate CI release workflow?", default=False).ask()
 
     first_group = questionary.text(
         "Name of first block group (leave blank to skip):", default="basic"
@@ -135,9 +159,15 @@ def cmd(project_dir: str | None, name: str | None) -> None:
 
     _write_project(
         cfg, first_group,
+        gen_git=gen_git or False,
         gen_devcontainer=gen_devcontainer or False,
         gen_clang=gen_clang or False,
         gen_ci_clang=gen_ci_clang or False,
+        gen_presets=gen_presets or False,
+        gen_ci_sanitizers=gen_ci_sanitizers or False,
+        gen_vscode=gen_vscode or False,
+        gen_ci_coverage=gen_ci_coverage or False,
+        gen_ci_release=gen_ci_release or False,
     )
     click.echo(f"\nCreated project '{name}' at {project_root}")
     click.echo(f"  cd {project_root}")
@@ -151,9 +181,15 @@ def _write_project(
     cfg: ProjectConfig,
     first_group: str,
     *,
+    gen_git: bool = False,
     gen_devcontainer: bool = False,
     gen_clang: bool = False,
     gen_ci_clang: bool = False,
+    gen_presets: bool = False,
+    gen_ci_sanitizers: bool = False,
+    gen_vscode: bool = False,
+    gen_ci_coverage: bool = False,
+    gen_ci_release: bool = False,
 ) -> None:
     root = cfg.root
     root.mkdir(parents=True, exist_ok=True)
@@ -192,6 +228,10 @@ def _write_project(
     if first_group:
         _create_group_skeleton(cfg, first_group)
 
+    # Git init (done last so all files are present for initial state)
+    if gen_git:
+        write_git_init(cfg)
+
     # Devcontainer
     if gen_devcontainer:
         from gr4_modtool.commands.devcontainer import write_devcontainer
@@ -206,6 +246,30 @@ def _write_project(
     if gen_ci_clang:
         from gr4_modtool.commands.tidy import write_ci_clang
         write_ci_clang(cfg)
+
+    # CMakePresets.json
+    if gen_presets:
+        from gr4_modtool.commands.sanitizers import write_cmake_presets
+        write_cmake_presets(cfg)
+
+    # CI workflow for sanitizers
+    if gen_ci_sanitizers:
+        from gr4_modtool.commands.sanitizers import write_ci_sanitizers
+        write_ci_sanitizers(cfg)
+
+    # VS Code settings
+    if gen_vscode:
+        from gr4_modtool.commands.vscode import write_vscode
+        write_vscode(cfg)
+
+    # CI quality workflows
+    if gen_ci_coverage:
+        from gr4_modtool.commands.ci import write_ci_coverage
+        write_ci_coverage(cfg)
+
+    if gen_ci_release:
+        from gr4_modtool.commands.ci import write_ci_release
+        write_ci_release(cfg)
 
 
 def _create_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:

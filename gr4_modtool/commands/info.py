@@ -7,20 +7,42 @@ from pathlib import Path
 
 import click
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 
 from gr4_modtool.project.discovery import load_config, discover_groups
 
 
+def _block_detail(block_path: Path) -> dict:
+    """Return ports and params for a block header; empty lists on parse failure."""
+    try:
+        from gr4_modtool.commands.add_test import parse_header_info, parse_annotated_params
+        text = block_path.read_text()
+        info = parse_header_info(block_path)
+        params = parse_annotated_params(text)
+        return {"ports": {"in": info["in_ports"], "out": info["out_ports"]}, "params": params}
+    except Exception:
+        return {"ports": {"in": [], "out": []}, "params": []}
+
+
 @click.command("info")
 @click.option("--project-dir", default=None, type=click.Path(exists=True), help="Project root directory.")
 @click.option("--json", "output_json", is_flag=True, default=False, help="Output as JSON.")
-def cmd(project_dir: str | None, output_json: bool) -> None:
+@click.option("--verbose", "-v", is_flag=True, default=False, help="Show ports and parameters per block.")
+def cmd(project_dir: str | None, output_json: bool, verbose: bool) -> None:
     """Show all groups and blocks in the project."""
     cfg = load_config(Path(project_dir) if project_dir else None)
     groups = discover_groups(cfg)
 
     if output_json:
+        def _block_entry(b):
+            entry: dict = {"name": b.name}
+            if verbose:
+                detail = _block_detail(b.path)
+                entry["ports"] = detail["ports"]
+                entry["params"] = detail["params"]
+            return entry
+
         data = {
             "name": cfg.name,
             "version": cfg.version,
@@ -30,7 +52,7 @@ def cmd(project_dir: str | None, output_json: bool) -> None:
             "groups": [
                 {
                     "name": g.name,
-                    "blocks": [{"name": b.name} for b in g.blocks],
+                    "blocks": [_block_entry(b) for b in g.blocks],
                 }
                 for g in groups
             ],
@@ -42,6 +64,23 @@ def cmd(project_dir: str | None, output_json: bool) -> None:
     console.print(f"\n[bold]Project:[/bold] {cfg.name}  v{cfg.version}")
     console.print(f"[bold]Namespace:[/bold] {cfg.cpp_namespace}")
     console.print(f"[bold]Build:[/bold] cmake={cfg.build_cmake}  meson={cfg.build_meson}\n")
+
+    if verbose:
+        for group in groups:
+            console.print(f"[bold green]{group.name}[/bold green]")
+            for block in group.blocks:
+                detail = _block_detail(block.path)
+                lines = [f"[bold]{block.name}[/bold]"]
+                in_p = detail["ports"]["in"]
+                out_p = detail["ports"]["out"]
+                if in_p:
+                    lines.append("  in:  " + ", ".join(f"{p['name']}:{p['type']}" for p in in_p))
+                if out_p:
+                    lines.append("  out: " + ", ".join(f"{p['name']}:{p['type']}" for p in out_p))
+                for param in detail["params"]:
+                    lines.append(f"  param {param['name']} : {param['type']} — {param['description']}")
+                console.print(Panel("\n".join(lines), expand=False))
+        return
 
     table = Table(title="Groups & Blocks", show_header=True, header_style="bold cyan")
     table.add_column("Group", style="green")

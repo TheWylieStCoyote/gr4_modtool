@@ -73,6 +73,15 @@ def parse_header_info(header_path: Path) -> dict:
     }
 
 
+def parse_annotated_params(text: str) -> list[dict]:
+    """Extract Annotated<> member declarations from a block header."""
+    pattern = r'Annotated<([^,>]+),\s*Doc<"([^"]*)">>\s+(\w+)'
+    return [
+        {"type": m.group(1).strip(), "description": m.group(2), "name": m.group(3)}
+        for m in re.finditer(pattern, text)
+    ]
+
+
 def write_test_for_block(cfg, group: str, block_name: str) -> list[Path]:
     """Generate qa_<BlockName>.cpp and update build files.
 
