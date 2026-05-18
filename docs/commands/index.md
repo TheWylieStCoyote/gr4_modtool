@@ -2,23 +2,70 @@
 
 All commands accept `--help` for detailed option descriptions.
 
-| Command | Category | Description |
-|---|---|---|
-| [`newmod`](scaffolding.md#newmod) | Scaffolding | Scaffold a new OOT project |
-| [`newgroup`](scaffolding.md#newgroup) | Scaffolding | Add a block group directory |
-| [`newblock`](blocks.md#newblock) | Block lifecycle | Generate a block header, test, and build entries |
-| [`newparam`](blocks.md#newparam) | Block lifecycle | Add an `Annotated<>` parameter to a block |
-| [`cp`](blocks.md#cp) | Block lifecycle | Copy a block to a new name |
-| [`mv`](blocks.md#mv) | Block lifecycle | Move a block to a different group |
-| [`rename`](blocks.md#rename) | Block lifecycle | Rename a block everywhere |
-| [`rm`](blocks.md#rm) | Block lifecycle | Remove a block and its files |
-| [`add-test`](testing.md#add-test) | Testing | Generate a test for a block that has none |
-| [`newbench`](testing.md#newbench) | Benchmarking | Generate a throughput benchmark |
-| [`test`](testing.md#test) | Testing | Run one block's test without rebuilding |
-| [`init`](project.md#init) | Project health | Adopt an existing project |
-| [`check`](project.md#check) | Project health | Audit for out-of-sync state |
-| [`info`](project.md#info) | Project health | List groups and blocks |
-| [`show`](project.md#show) | Project health | Display a block's source |
-| [`build`](building.md#build) | Building | Configure and build |
-| [`format`](building.md#format) | Building | Run clang-format |
-| [`tui`](tui.md) | Interactive | Terminal UI |
+## Scaffolding
+
+| Command | Description |
+|---|---|
+| [`newmod`](scaffolding.md#newmod) | Scaffold a new OOT project |
+| [`newgroup`](scaffolding.md#newgroup) | Add a block group directory |
+
+## Block Lifecycle
+
+| Command | Description |
+|---|---|
+| [`newblock`](blocks.md#newblock) | Generate a block header, test, and build entries |
+| [`newparam`](blocks.md#newparam) | Add an `Annotated<>` parameter to a block |
+| [`newbench`](blocks.md#newbench) | Generate a throughput benchmark |
+| [`add-test`](testing.md#add-test) | Generate a test for a block that has none |
+| [`cp`](blocks.md#cp) | Copy a block to a new name |
+| [`mv`](blocks.md#mv) | Move a block to a different group |
+| [`rename`](blocks.md#rename) | Rename a block everywhere |
+| [`rm`](blocks.md#rm) | Remove a block and its files |
+
+## Project Health
+
+| Command | Description |
+|---|---|
+| [`init`](project.md#init) | Adopt an existing project (scans groups and blocks) |
+| [`check`](project.md#check) | Audit for out-of-sync state |
+| [`info`](project.md#info) | List groups and blocks; `--verbose` shows ports/params |
+| [`show`](project.md#show) | Display a block's source with syntax highlighting |
+
+## Building
+
+| Command | Description |
+|---|---|
+| [`build`](building.md#build) | Configure and build (CMake or Meson) |
+| [`test`](testing.md#test) | Run one block's test without rebuilding |
+| [`format`](building.md#format) | Run clang-format over headers and test sources |
+| [`tidy`](building.md#tidy) | Run clang-tidy on block headers |
+
+## Developer Environment
+
+| Command | Description |
+|---|---|
+| [`vscode`](devenv.md#vscode) | Write `.vscode/settings.json` and `launch.json` |
+| [`devcontainer`](devenv.md#devcontainer) | Write `.devcontainer/` with Docker setup |
+| [`completion`](devenv.md#completion) | Print shell completion setup line |
+
+## CI / Code Quality
+
+| Command | Description |
+|---|---|
+| [`ci`](quality.md#ci) | Write GitHub Actions workflows (coverage, release, matrix) |
+| [`presets`](quality.md#presets) | Write `CMakePresets.json` and sanitizer CI |
+| [`pre-commit`](quality.md#pre-commit) | Write `.pre-commit-config.yaml` |
+
+## Documentation, Dependencies & Migration
+
+| Command | Description |
+|---|---|
+| [`docs`](ecosystem.md#docs) | Write a Doxyfile or print a Markdown block catalog |
+| [`add-dep`](ecosystem.md#add-dep) | Add a library dependency to CMake/Meson build files |
+| [`port`](ecosystem.md#port) | Port a GNURadio 3.x Python block to a gr4 header |
+
+## Interactive
+
+| Command | Description |
+|---|---|
+| [`tui`](tui.md) | Launch the interactive Textual terminal UI |

@@ -12,15 +12,54 @@ gr4_modtool init [OPTIONS]
 |---|---|
 | `--project-dir PATH` | Project root (default: current directory) |
 | `--yes / -y` | Accept all auto-detected values without prompting |
+| `--dry-run` | Print detected structure without writing any files |
+| `--force` | Overwrite an existing `.gr4modtool.toml` |
 
 Auto-detects from the directory tree:
 
-- **Project name** from `CMakeLists.txt` `project(...)` call
-- **Groups** from `blocks/*/include/` subdirectories
+- **Project name** and **version** from `CMakeLists.txt` `project(NAME VERSION x.y.z)` call
+- **Groups** and **block names** from subdirectory structure
 - **GR4 include prefix** (e.g. `gnuradio-4.0`) from the include directory layout
 - **Build systems** (CMake / Meson) from file presence
 
-Raises an error if `.gr4modtool.toml` already exists.
+Three directory layouts are recognised automatically:
+
+| Layout | Pattern |
+|---|---|
+| Standard | `blocks/<group>/include/<prefix>/<group>/*.hpp` |
+| `src/blocks` | `src/blocks/<group>/include/<prefix>/<group>/*.hpp` |
+| Flat include | `include/<prefix>/<group>/*.hpp` (no `blocks/` subdirectory) |
+
+**Example output:**
+
+```
+Detected project at: /path/to/mymod
+  Name:    mymod  (from CMakeLists.txt)
+  Version: 0.1.0
+  Prefix:  gnuradio-4.0
+  Build:   cmake, meson
+
+  Groups and blocks found:
+    basic        (14 blocks): AGC, Converters, Copy, DCBlocker, …
+    channel       (3 blocks): FlatFadingChannel, RayleighFadingChannel, …
+
+Created .gr4modtool.toml
+  2 group(s) registered: basic, channel
+  17 block(s) found total
+  Run 'gr4_modtool info' to verify.
+```
+
+Use `--dry-run` to preview detection without writing anything:
+
+```bash
+gr4_modtool init --dry-run
+```
+
+Use `--force` to update an existing config (e.g. after adding groups manually):
+
+```bash
+gr4_modtool init --force --yes
+```
 
 ---
 
@@ -73,25 +112,21 @@ gr4_modtool info [OPTIONS]
 
 | Option | Description |
 |---|---|
+| `--verbose / -v` | Show port and parameter details per block |
+| `--catalog` | Print a Markdown block catalog table |
 | `--json` | Output as JSON |
 | `--project-dir PATH` | Project root |
 
-Example JSON output:
+With `--verbose`, each block is shown in a Rich panel with its input/output ports, processing style, and `Annotated<>` parameters.
 
-```json
-{
-  "name": "myfilters",
-  "version": "0.1.0",
-  "cpp_namespace": "gr::myfilters",
-  "build_cmake": true,
-  "build_meson": false,
-  "groups": [
-    {
-      "name": "dsp",
-      "blocks": [{"name": "LowPassFilter"}, {"name": "HighPassFilter"}]
-    }
-  ]
-}
+With `--catalog`, outputs a Markdown table suitable for pasting into a README:
+
+```markdown
+# Block Catalog — myfilters
+
+| Group | Block | Ports In | Ports Out | Style | Parameters |
+|---|---|---|---|---|---|
+| dsp | LowPassFilter | in:T | out:T | processOne | cutoff_freq:float |
 ```
 
 ---

@@ -11,10 +11,30 @@ gr4_modtool newblock [OPTIONS]
 | Option | Description |
 |---|---|
 | `--group TEXT` | Target group |
+| `--template / -T ARCHETYPE` | Pre-fill ports and style from an archetype |
 | `--project-dir PATH` | Project root |
 | `--yes / -y` | Skip confirmation |
 
-Interactive prompts collect: block name, description, template parameters, input/output ports, processing style (`processOne` or `processBulk`), type list, and whether to generate a test.
+### Archetypes
+
+Use `--template` to skip the port/style prompts with a sensible default:
+
+| Archetype | Ports | Style |
+|---|---|---|
+| `source` | — → `out:T` | `processBulk` |
+| `sink` | `in:T` → — | `processBulk` |
+| `filter` | `in:T` → `out:T` | `processOne` |
+| `decimator` | `in:T` → `out:T` | `processBulk` |
+| `interpolator` | `in:T` → `out:T` | `processBulk` |
+| `custom` | interactive | interactive |
+
+```bash
+gr4_modtool newblock --group dsp --template filter
+```
+
+### Interactive prompts
+
+Without `--template`, you are asked for: block name, description, template parameters, input/output ports, processing style (`processOne` or `processBulk`), type list, and whether to generate a test.
 
 **Generated files:**
 

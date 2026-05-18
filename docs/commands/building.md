@@ -61,3 +61,23 @@ If `clang-format` is not installed, the command prints a warning and exits 0 (so
 - name: Check C++ formatting
   run: gr4_modtool format --check --style file
 ```
+
+---
+
+## tidy
+
+Run `clang-tidy` on block headers.
+
+```bash
+gr4_modtool tidy [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--group TEXT` | Run only on this group |
+| `--build-dir PATH` | Build directory containing `compile_commands.json` |
+| `--project-dir PATH` | Project root |
+
+Requires a build directory with `compile_commands.json` (use `cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON` or the `asan` preset from `gr4_modtool presets`).
+
+If `clang-tidy` is not installed, the command prints a warning and exits 0.

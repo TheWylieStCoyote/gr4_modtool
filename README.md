@@ -14,10 +14,13 @@ A command-line tool for creating and managing [GNURadio 4](https://github.com/gn
 |---|---|
 | Scaffolding | `newmod`, `newgroup` |
 | Block lifecycle | `newblock`, `newparam`, `cp`, `mv`, `rename`, `rm` |
-| Testing | `add-test`, `test` |
-| Benchmarking | `newbench` |
+| Testing & benchmarking | `add-test`, `test`, `newbench` |
 | Project health | `init`, `check`, `info`, `show` |
-| Building | `build`, `format` |
+| Building | `build`, `format`, `tidy` |
+| Dev environment | `vscode`, `devcontainer`, `completion` |
+| CI / quality | `ci`, `presets`, `pre-commit` |
+| Documentation | `docs`, `add-dep` |
+| Migration | `port` |
 | Interactive | `tui` |
 
 - **CMake and Meson** build systems supported side-by-side
@@ -56,7 +59,7 @@ cd myfilters
 
 ```bash
 gr4_modtool newgroup --name dsp
-gr4_modtool newblock --group dsp
+gr4_modtool newblock --group dsp --template filter
 # Interactive prompts: block name, ports, template params, …
 ```
 
@@ -90,7 +93,7 @@ gr4_modtool mv MyFilter --from dsp --to channel
 ### Generate a benchmark
 
 ```bash
-gr4_modtool newbench MyFilter --group dsp --wire-build
+gr4_modtool newbench MyFilter --group dsp --wire-build --plot
 ```
 
 ### Build the project
@@ -99,14 +102,34 @@ gr4_modtool newbench MyFilter --group dsp --wire-build
 gr4_modtool build --test          # configure, build, run tests
 gr4_modtool test MyFilter         # re-run one block's test only
 gr4_modtool format --check        # lint C++ formatting (CI mode)
+gr4_modtool tidy                  # run clang-tidy
 ```
 
 ### Adopt an existing project
 
 ```bash
 cd /path/to/existing/gr4-oot-project
-gr4_modtool init --yes            # auto-detect groups and write .gr4modtool.toml
+gr4_modtool init --yes            # auto-detect groups/blocks, write .gr4modtool.toml
+gr4_modtool init --dry-run        # preview what would be detected without writing
+gr4_modtool info --verbose        # show ports and parameters per block
 gr4_modtool info --json           # list all blocks as JSON
+```
+
+### Port a GNURadio 3 block
+
+```bash
+gr4_modtool port old_module/python/my_filter.py --group dsp
+```
+
+### Set up developer tooling
+
+```bash
+gr4_modtool vscode               # write .vscode/settings.json and launch.json
+gr4_modtool devcontainer         # write .devcontainer/ with Dockerfile
+gr4_modtool presets --init       # write CMakePresets.json + sanitizer CI
+gr4_modtool ci --coverage        # write GitHub Actions coverage workflow
+gr4_modtool pre-commit --yes     # write .pre-commit-config.yaml
+gr4_modtool completion --shell bash   # print shell completion setup
 ```
 
 ### Interactive TUI
@@ -121,10 +144,17 @@ gr4_modtool tui
 
 See the [full documentation](https://thewyliestcoyote.github.io/gr4_modtool) for detailed options.
 
+### Scaffolding
+
 | Command | Description |
 |---|---|
 | `newmod` | Scaffold a new GNURadio 4 OOT project |
 | `newgroup` | Add a new block group directory |
+
+### Block lifecycle
+
+| Command | Description |
+|---|---|
 | `newblock` | Add a new block (header + test + build entries) |
 | `newparam` | Insert an `Annotated<>` parameter into an existing block |
 | `newbench` | Generate a throughput benchmark for a block |
@@ -133,13 +163,58 @@ See the [full documentation](https://thewyliestcoyote.github.io/gr4_modtool) for
 | `mv` | Move a block from one group to another |
 | `rename` | Rename a block everywhere (header, test, build files) |
 | `rm` | Remove a block and all its associated files |
-| `init` | Bootstrap `.gr4modtool.toml` for an existing project |
+
+### Project health
+
+| Command | Description |
+|---|---|
+| `init` | Bootstrap `.gr4modtool.toml` for an existing project (scans groups and blocks) |
 | `check` | Audit the project for out-of-sync headers, tests, and build entries |
-| `info` | List all groups and blocks |
+| `info` | List all groups and blocks; `--verbose` shows ports and parameters |
 | `show` | Display a block's header or test file with syntax highlighting |
+
+### Building
+
+| Command | Description |
+|---|---|
 | `build` | Configure and build using CMake or Meson |
 | `test` | Run a single block's test binary without rebuilding |
 | `format` | Run clang-format over headers and test sources |
+| `tidy` | Run clang-tidy on block headers |
+
+### Dev environment
+
+| Command | Description |
+|---|---|
+| `vscode` | Write `.vscode/settings.json` and `launch.json` |
+| `devcontainer` | Write `.devcontainer/` with Docker setup |
+| `completion` | Print shell completion setup line (bash / zsh / fish) |
+
+### CI / quality
+
+| Command | Description |
+|---|---|
+| `ci` | Write GitHub Actions workflows (coverage, release, matrix) |
+| `presets` | Write `CMakePresets.json` and optional sanitizer CI workflow |
+| `pre-commit` | Write `.pre-commit-config.yaml` (clang-format + tidy hooks) |
+
+### Documentation & dependencies
+
+| Command | Description |
+|---|---|
+| `docs` | Write a `Doxyfile` or print a Markdown block catalog |
+| `add-dep` | Add a library dependency to CMake/Meson build files |
+
+### Migration
+
+| Command | Description |
+|---|---|
+| `port` | Parse a GNURadio 3.x Python block and scaffold a gr4 header + test |
+
+### Interactive
+
+| Command | Description |
+|---|---|
 | `tui` | Launch the interactive Textual TUI |
 
 ---

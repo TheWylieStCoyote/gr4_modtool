@@ -30,6 +30,7 @@ gr4_modtool newbench [BLOCK_NAME] [OPTIONS]
 |---|---|
 | `--group TEXT` | Group containing the block |
 | `--wire-build` | Add CMake/Meson entries for the benchmark |
+| `--plot` | Also generate a `plot_<Block>.py` matplotlib script |
 | `--project-dir PATH` | Project root |
 | `--yes / -y` | Skip confirmation |
 
@@ -40,6 +41,13 @@ When `--wire-build` is set:
 - Adds the executable entry
 - Wraps the `add_subdirectory(benchmarks)` call in an `if(ENABLE_BENCHMARKING)` guard in the group CMakeLists.txt
 - Does the equivalent for Meson (`enable_benchmarking` option in `meson_options.txt`)
+
+When `--plot` is set, a Python script is written that runs the benchmark binary and renders a throughput bar chart:
+
+```bash
+python blocks/<group>/benchmarks/plot_<Name>.py ./build/blocks/<group>/benchmarks/bench_<Name>
+# Saves bench_<Name>.png
+```
 
 ---
 
