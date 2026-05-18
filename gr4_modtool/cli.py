@@ -26,6 +26,7 @@ from gr4_modtool.commands.newparam import cmd as newparam_cmd
 from gr4_modtool.commands.port import cmd as port_cmd
 from gr4_modtool.commands.precommit import cmd as precommit_cmd
 from gr4_modtool.commands.rename import cmd as rename_cmd
+from gr4_modtool.commands.rename_group import cmd as rename_group_cmd
 from gr4_modtool.commands.rm import cmd as rm_cmd
 from gr4_modtool.commands.run_test import cmd as test_cmd
 from gr4_modtool.commands.sanitizers import cmd as presets_cmd
@@ -47,6 +48,7 @@ cli.add_command(newgroup_cmd, name="newgroup")
 cli.add_command(newblock_cmd, name="newblock")
 cli.add_command(rm_cmd, name="rm")
 cli.add_command(rename_cmd, name="rename")
+cli.add_command(rename_group_cmd, name="rename-group")
 cli.add_command(info_cmd, name="info")
 cli.add_command(init_cmd, name="init")
 cli.add_command(check_cmd, name="check")
