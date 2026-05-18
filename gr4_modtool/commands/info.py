@@ -29,10 +29,16 @@ def _block_detail(block_path: Path) -> dict:
 @click.option("--project-dir", default=None, type=click.Path(exists=True), help="Project root directory.")
 @click.option("--json", "output_json", is_flag=True, default=False, help="Output as JSON.")
 @click.option("--verbose", "-v", is_flag=True, default=False, help="Show ports and parameters per block.")
-def cmd(project_dir: str | None, output_json: bool, verbose: bool) -> None:
+@click.option("--catalog", is_flag=True, default=False, help="Print a Markdown block catalog.")
+def cmd(project_dir: str | None, output_json: bool, verbose: bool, catalog: bool) -> None:
     """Show all groups and blocks in the project."""
     cfg = load_config(Path(project_dir) if project_dir else None)
     groups = discover_groups(cfg)
+
+    if catalog:
+        from gr4_modtool.commands.docs import build_catalog
+        click.echo(build_catalog(cfg), nl=False)
+        return
 
     if output_json:
         def _block_entry(b):

@@ -26,6 +26,11 @@ from gr4_modtool.commands.tidy import cmd as tidy_cmd
 from gr4_modtool.commands.sanitizers import cmd as presets_cmd
 from gr4_modtool.commands.vscode import cmd as vscode_cmd
 from gr4_modtool.commands.ci import cmd as ci_cmd
+from gr4_modtool.commands.completion import cmd as completion_cmd
+from gr4_modtool.commands.precommit import cmd as precommit_cmd
+from gr4_modtool.commands.docs import cmd as docs_cmd
+from gr4_modtool.commands.add_dep import cmd as add_dep_cmd
+from gr4_modtool.commands.port import cmd as port_cmd
 from gr4_modtool import plugins as _plugins
 
 
@@ -60,6 +65,11 @@ cli.add_command(tidy_cmd, name="tidy")
 cli.add_command(presets_cmd, name="presets")
 cli.add_command(vscode_cmd, name="vscode")
 cli.add_command(ci_cmd, name="ci")
+cli.add_command(completion_cmd, name="completion")
+cli.add_command(precommit_cmd, name="pre-commit")
+cli.add_command(docs_cmd, name="docs")
+cli.add_command(add_dep_cmd, name="add-dep")
+cli.add_command(port_cmd, name="port")
 
 
 @cli.command("tui")

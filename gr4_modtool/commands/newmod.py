@@ -127,9 +127,12 @@ def cmd(project_dir: str | None, name: str | None) -> None:
     gen_ci_clang = questionary.confirm("Generate GitHub Actions CI for clang checks?", default=False).ask()
     gen_presets = questionary.confirm("Generate CMakePresets.json (asan/ubsan/tsan)?", default=False).ask()
     gen_ci_sanitizers = questionary.confirm("Generate GitHub Actions CI for sanitizers?", default=False).ask()
+    gen_ci_matrix = questionary.confirm("Generate CI build matrix workflow (gcc×clang)?", default=False).ask()
     gen_vscode = questionary.confirm("Generate VS Code settings (.vscode/)?", default=True).ask()
     gen_ci_coverage = questionary.confirm("Generate CI coverage workflow?", default=False).ask()
     gen_ci_release = questionary.confirm("Generate CI release workflow?", default=False).ask()
+    gen_precommit = questionary.confirm("Generate .pre-commit-config.yaml?", default=False).ask()
+    gen_doxyfile = questionary.confirm("Generate Doxyfile for Doxygen?", default=False).ask()
 
     first_group = questionary.text(
         "Name of first block group (leave blank to skip):", default="basic"
@@ -165,9 +168,12 @@ def cmd(project_dir: str | None, name: str | None) -> None:
         gen_ci_clang=gen_ci_clang or False,
         gen_presets=gen_presets or False,
         gen_ci_sanitizers=gen_ci_sanitizers or False,
+        gen_ci_matrix=gen_ci_matrix or False,
         gen_vscode=gen_vscode or False,
         gen_ci_coverage=gen_ci_coverage or False,
         gen_ci_release=gen_ci_release or False,
+        gen_precommit=gen_precommit or False,
+        gen_doxyfile=gen_doxyfile or False,
     )
     click.echo(f"\nCreated project '{name}' at {project_root}")
     click.echo(f"  cd {project_root}")
@@ -187,9 +193,12 @@ def _write_project(
     gen_ci_clang: bool = False,
     gen_presets: bool = False,
     gen_ci_sanitizers: bool = False,
+    gen_ci_matrix: bool = False,
     gen_vscode: bool = False,
     gen_ci_coverage: bool = False,
     gen_ci_release: bool = False,
+    gen_precommit: bool = False,
+    gen_doxyfile: bool = False,
 ) -> None:
     root = cfg.root
     root.mkdir(parents=True, exist_ok=True)
@@ -270,6 +279,18 @@ def _write_project(
     if gen_ci_release:
         from gr4_modtool.commands.ci import write_ci_release
         write_ci_release(cfg)
+
+    if gen_ci_matrix:
+        from gr4_modtool.commands.ci import write_ci_matrix
+        write_ci_matrix(cfg)
+
+    if gen_precommit:
+        from gr4_modtool.commands.precommit import write_precommit
+        write_precommit(cfg)
+
+    if gen_doxyfile:
+        from gr4_modtool.commands.docs import write_doxyfile
+        write_doxyfile(cfg)
 
 
 def _create_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:

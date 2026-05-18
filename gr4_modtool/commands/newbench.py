@@ -44,11 +44,22 @@ def _build_bench_ctx(cfg: ProjectConfig, group: str, info: dict) -> dict:
     return full_ctx
 
 
+def write_plot_script(cfg: ProjectConfig, group: str, block_name: str) -> list[Path]:
+    """Generate plot_<BlockName>.py in the benchmarks directory."""
+    bench_dir = cfg.group_bench_dir(group)
+    bench_dir.mkdir(parents=True, exist_ok=True)
+    ctx = {"block_name": block_name}
+    path = bench_dir / f"plot_{block_name}.py"
+    path.write_text(render("plot_bench.py.j2", ctx, cfg.root))
+    return [path]
+
+
 def write_bench_file(
     cfg: ProjectConfig,
     group: str,
     block_name: str,
     wire_build: bool = False,
+    write_plot: bool = False,
 ) -> list[Path]:
     """Generate bench_<BlockName>.cpp and optionally wire into build system.
 
@@ -113,6 +124,9 @@ def write_bench_file(
 
             _ensure_meson_option(cfg.root)
 
+    if write_plot:
+        written.extend(write_plot_script(cfg, group, block_name))
+
     return written
 
 
@@ -121,12 +135,15 @@ def write_bench_file(
 @click.option("--group", default=None)
 @click.option("--wire-build", is_flag=True, default=False,
               help="Wire into CMake/meson build system (adds ENABLE_BENCHMARKING guard).")
+@click.option("--plot", "gen_plot", is_flag=True, default=False,
+              help="Generate a Python matplotlib plotting companion script.")
 @click.option("--project-dir", default=None, type=click.Path(exists=True))
 @click.option("--yes", "-y", is_flag=True)
 def cmd(
     block_name: str | None,
     group: str | None,
     wire_build: bool,
+    gen_plot: bool,
     project_dir: str | None,
     yes: bool,
 ) -> None:
@@ -170,7 +187,7 @@ def cmd(
             sys.exit(0)
 
     try:
-        written = write_bench_file(cfg, group, block_name, wire_build=wire_build)
+        written = write_bench_file(cfg, group, block_name, wire_build=wire_build, write_plot=gen_plot)
     except (FileNotFoundError, FileExistsError, ValueError) as exc:
         click.echo(f"Error: {exc}", err=True)
         sys.exit(1)
