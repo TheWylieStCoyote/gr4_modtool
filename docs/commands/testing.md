@@ -98,6 +98,28 @@ Rapid saves are debounced (1-second cooldown) to avoid double-fires from editor 
 
 At the start of each rebuild cycle, `lint-headers` runs automatically against the block's header and prints any issues (errors and warnings) before attempting to compile. This gives immediate feedback on macro and port consistency without waiting for a build.
 
+### Coverage in watch mode
+
+```bash
+gr4_modtool test MyFilter --watch --coverage
+```
+
+When `--coverage` is set, watch mode uses a pre-configured coverage build directory instead of the regular build directory. After each passing test run the HTML coverage report is regenerated automatically so the browser view stays up to date as you edit.
+
+Run `gr4_modtool coverage` once first to create and configure the coverage build:
+
+```bash
+gr4_modtool coverage --build-dir build-coverage   # one-time setup
+gr4_modtool test MyFilter --watch --coverage       # then iterate
+```
+
+| Option | Description |
+|---|---|
+| `--coverage` | Enable coverage regeneration on each passing run (requires `--watch`) |
+| `--coverage-dir PATH` | Coverage build directory to use (default: `build-coverage`) |
+| `--coverage-output PATH` | Directory for the HTML report (default: `coverage`) |
+| `--coverage-tool CHOICE` | `auto`, `gcovr`, or `llvm-cov` (default: `auto`) |
+
 ---
 
 ## coverage

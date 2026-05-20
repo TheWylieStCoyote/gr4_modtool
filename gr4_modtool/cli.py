@@ -11,9 +11,11 @@ from gr4_modtool.commands.build import cmd as build_cmd
 from gr4_modtool.commands.check import cmd as check_cmd
 from gr4_modtool.commands.ci import cmd as ci_cmd
 from gr4_modtool.commands.completion import cmd as completion_cmd
+from gr4_modtool.commands.coverage import cmd as coverage_cmd
 from gr4_modtool.commands.cp import cmd as cp_cmd
 from gr4_modtool.commands.devcontainer import cmd as devcontainer_cmd
 from gr4_modtool.commands.docs import cmd as docs_cmd
+from gr4_modtool.commands.doctor import cmd as doctor_cmd
 from gr4_modtool.commands.export_spec import cmd as export_spec_cmd
 from gr4_modtool.commands.format import cmd as format_cmd
 from gr4_modtool.commands.info import cmd as info_cmd
@@ -36,7 +38,10 @@ from gr4_modtool.commands.sanitizers import cmd as presets_cmd
 from gr4_modtool.commands.search import cmd as search_cmd
 from gr4_modtool.commands.show import cmd as show_cmd
 from gr4_modtool.commands.status import cmd as status_cmd
+from gr4_modtool.commands.sync import cmd as sync_cmd
+from gr4_modtool.commands.templates import cmd as templates_cmd
 from gr4_modtool.commands.tidy import cmd as tidy_cmd
+from gr4_modtool.commands.version_bump import cmd as version_bump_cmd
 from gr4_modtool.commands.vscode import cmd as vscode_cmd
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
@@ -81,6 +86,11 @@ cli.add_command(port_cmd, name="port")
 cli.add_command(search_cmd, name="search")
 cli.add_command(export_spec_cmd, name="export-spec")
 cli.add_command(lint_headers_cmd, name="lint-headers")
+cli.add_command(coverage_cmd, name="coverage")
+cli.add_command(doctor_cmd, name="doctor")
+cli.add_command(sync_cmd, name="sync")
+cli.add_command(templates_cmd, name="templates")
+cli.add_command(version_bump_cmd, name="version-bump")
 
 
 @cli.command("tui")

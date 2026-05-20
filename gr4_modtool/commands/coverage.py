@@ -25,6 +25,11 @@ def _detect_tool(preferred: str) -> str | None:
     return preferred if shutil.which(preferred) else None
 
 
+def detect_coverage_tool(preferred: str = "auto") -> str | None:
+    """Public wrapper around _detect_tool for use by other commands."""
+    return _detect_tool(preferred)
+
+
 def _coverage_flags(tool: str, output_dir: Path) -> tuple[list[str], dict[str, str]]:
     """Return (cmake_args, test_env) for the given coverage tool."""
     base = ["-DCMAKE_BUILD_TYPE=Debug", "-DENABLE_TESTING=ON"]
@@ -42,6 +47,17 @@ def _coverage_flags(tool: str, output_dir: Path) -> tuple[list[str], dict[str, s
         ],
         {"LLVM_PROFILE_FILE": str(output_dir / "default-%p.profraw")},
     )
+
+
+def coverage_test_env(tool: str, output_dir: Path) -> dict[str, str]:
+    """Return extra env vars to pass when running tests for coverage collection.
+
+    For llvm-cov: sets LLVM_PROFILE_FILE so profraw data lands in output_dir.
+    For gcovr: returns {} since gcno/gcda files are written automatically.
+    """
+    if tool == "llvm-cov":
+        return {"LLVM_PROFILE_FILE": str(output_dir / "default-%p.profraw")}
+    return {}
 
 
 def _run_tests(project_root: Path, build_dir: Path, env: dict[str, str] | None = None) -> int:
@@ -110,6 +126,30 @@ def _run_llvm_cov(project_root: Path, build_dir: Path, output_dir: Path) -> int:
             f"-output-dir={output_dir}",
         ]
     )
+
+
+def regenerate_coverage_report(
+    project_root: Path,
+    build_dir: Path,
+    tool: str,
+    output_dir: Path,
+) -> int:
+    """Re-generate the HTML report from existing build artefacts.
+
+    Does not reconfigure, rebuild, or run tests — only runs the report tool.
+    Intended for the watch loop where tests have just been run.
+    """
+    actual_tool = _detect_tool(tool)
+    if actual_tool is None:
+        click.echo(
+            "No coverage tool found. Install gcovr (pip install gcovr) or llvm-cov.",
+            err=True,
+        )
+        return 1
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if actual_tool == "gcovr":
+        return _run_gcovr(project_root, build_dir, output_dir)
+    return _run_llvm_cov(project_root, build_dir, output_dir)
 
 
 def run_coverage(
