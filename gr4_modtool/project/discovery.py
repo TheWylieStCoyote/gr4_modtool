@@ -34,19 +34,32 @@ class ProjectConfig:
     build_cmake: bool
     build_meson: bool
     groups: dict[str, str]  # name -> relative path string
+    flat: bool = False  # True → no groups; blocks live directly under blocks/
 
     @property
     def blocks_dir(self) -> Path:
         return self.root / "blocks"
+
+    def block_include_dir(self) -> Path:
+        """Flat-mode include dir: blocks/include/<gr4_prefix>/"""
+        return self.blocks_dir / "include" / self.gr4_include_prefix
+
+    def block_test_dir(self) -> Path:
+        """Flat-mode test dir: blocks/test/"""
+        return self.blocks_dir / "test"
 
     def group_path(self, group: str) -> Path:
         rel = self.groups.get(group, f"blocks/{group}")
         return self.root / rel
 
     def group_include_dir(self, group: str) -> Path:
+        if self.flat and not group:
+            return self.block_include_dir()
         return self.group_path(group) / "include" / self.gr4_include_prefix / group
 
     def group_test_dir(self, group: str) -> Path:
+        if self.flat and not group:
+            return self.block_test_dir()
         return self.group_path(group) / "test"
 
     def group_bench_dir(self, group: str) -> Path:
@@ -94,6 +107,7 @@ def load_config(project_dir: Path | None = None) -> ProjectConfig:
         build_cmake=build.get("cmake", True),
         build_meson=build.get("meson", True),
         groups=groups,
+        flat=proj.get("flat", False),
     )
 
 
@@ -107,6 +121,10 @@ def save_config(cfg: ProjectConfig) -> None:
         f'cpp_namespace = "{cfg.cpp_namespace}"',
         f'cmake_prefix = "{cfg.cmake_prefix}"',
         f'gr4_include_prefix = "{cfg.gr4_include_prefix}"',
+    ]
+    if cfg.flat:
+        lines.append("flat = true")
+    lines += [
         "",
         "[build]",
         f"cmake = {'true' if cfg.build_cmake else 'false'}",
@@ -122,7 +140,19 @@ def save_config(cfg: ProjectConfig) -> None:
 
 
 def discover_groups(cfg: ProjectConfig) -> list[GroupInfo]:
-    """Return all known groups with their block lists."""
+    """Return all known groups with their block lists.
+
+    In flat mode returns a single synthetic GroupInfo(name="") whose blocks are
+    scanned from block_include_dir(). All iteration-based commands work unchanged.
+    """
+    if cfg.flat:
+        include_dir = cfg.block_include_dir()
+        blocks = []
+        if include_dir.exists():
+            for hpp in sorted(include_dir.glob("*.hpp")):
+                blocks.append(BlockInfo(name=hpp.stem, path=hpp))
+        return [GroupInfo(name="", path=cfg.blocks_dir, blocks=blocks)]
+
     groups = []
     for name, rel in cfg.groups.items():
         group_path = cfg.root / rel

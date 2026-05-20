@@ -80,7 +80,8 @@ def cmd(project_dir: str | None, output_json: bool, verbose: bool, catalog: bool
 
     if verbose:
         for group in groups:
-            console.print(f"[bold green]{group.name}[/bold green]")
+            heading = group.name or "(flat)"
+            console.print(f"[bold green]{heading}[/bold green]")
             for block in group.blocks:
                 detail = _block_detail(block.path)
                 lines = [f"[bold]{block.name}[/bold]"]
@@ -97,16 +98,25 @@ def cmd(project_dir: str | None, output_json: bool, verbose: bool, catalog: bool
                 console.print(Panel("\n".join(lines), expand=False))
         return
 
-    table = Table(title="Groups & Blocks", show_header=True, header_style="bold cyan")
-    table.add_column("Group", style="green")
+    flat = cfg.flat
+    title = "Blocks" if flat else "Groups & Blocks"
+    table = Table(title=title, show_header=True, header_style="bold cyan")
+    if not flat:
+        table.add_column("Group", style="green")
     table.add_column("Block", style="white")
     table.add_column("Header", style="dim")
 
     for group in groups:
         if not group.blocks:
-            table.add_row(group.name, "(no blocks)", "")
+            if flat:
+                table.add_row("(no blocks)", "")
+            else:
+                table.add_row(group.name, "(no blocks)", "")
         else:
             for i, block in enumerate(group.blocks):
-                table.add_row(group.name if i == 0 else "", block.name, str(block.path.name))
+                if flat:
+                    table.add_row(block.name, str(block.path.name))
+                else:
+                    table.add_row(group.name if i == 0 else "", block.name, str(block.path.name))
 
     console.print(table)

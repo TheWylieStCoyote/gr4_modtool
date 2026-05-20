@@ -1,0 +1,15 @@
+add_library({{ cmake_prefix }}_blocks_headers INTERFACE)
+add_library({{ cmake_prefix }}::blocks_headers ALIAS {{ cmake_prefix }}_blocks_headers)
+
+target_include_directories({{ cmake_prefix }}_blocks_headers INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries({{ cmake_prefix }}_blocks_headers INTERFACE ${GR4_OOT_GNURADIO4_TARGET})
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/{{ gr4_include_prefix }}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+if(ENABLE_TESTING)
+  add_subdirectory(test)
+endif()

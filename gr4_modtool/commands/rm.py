@@ -28,7 +28,9 @@ def cmd(block_name: str | None, project_dir: str | None, group: str | None, yes:
         sys.exit(1)
 
     # Select group
-    if group is None:
+    if cfg.flat:
+        group = ""
+    elif group is None:
         group = questionary.select("Group:", choices=[g.name for g in groups]).ask()
         if group is None:
             sys.exit(0)
@@ -76,4 +78,5 @@ def cmd(block_name: str | None, project_dir: str | None, group: str | None, yes:
     if cfg.build_meson and build_meson.exists():
         meson_mod.remove_test_entry(build_meson, block_name)
 
-    click.echo(f"Removed block '{block_name}' from group '{group}'.")
+    location = f"from group '{group}'" if group else "(flat layout)"
+    click.echo(f"Removed block '{block_name}' {location}.")

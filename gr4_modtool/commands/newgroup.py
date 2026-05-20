@@ -21,6 +21,10 @@ def cmd(project_dir: str | None, name: str | None) -> None:
     """Add a new block group directory to the project."""
     cfg = load_config(Path(project_dir) if project_dir else None)
 
+    if cfg.flat:
+        click.echo("Flat projects do not support groups.", err=True)
+        sys.exit(1)
+
     if name is None:
         name = questionary.text(
             "Group name (e.g. filter):",

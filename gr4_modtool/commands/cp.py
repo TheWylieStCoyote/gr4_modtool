@@ -83,13 +83,17 @@ def copy_block(
 
         cmake_test = test_dir / "CMakeLists.txt"
         if cfg.build_cmake and cmake_test.exists():
-            target_libs = f"{cfg.cmake_prefix}::blocks_{dst_group}_headers"
+            target_libs = (
+                f"{cfg.cmake_prefix}::blocks_headers"
+                if not dst_group
+                else f"{cfg.cmake_prefix}::blocks_{dst_group}_headers"
+            )
             cmake_mod.append_test_entry(cmake_test, dst_name, target_libs)
             written.append(cmake_test)
 
         meson_test = test_dir / "meson.build"
         if cfg.build_meson and meson_test.exists():
-            dep_var = f"gr4_{dst_group}_blocks_dep"
+            dep_var = "gr4_blocks_dep" if not dst_group else f"gr4_{dst_group}_blocks_dep"
             meson_mod.append_test_entry(meson_test, dst_name, extra_deps=[dep_var])
             written.append(meson_test)
 
@@ -122,7 +126,9 @@ def cmd(
         click.echo("No groups found.", err=True)
         sys.exit(1)
 
-    if from_group is None:
+    if cfg.flat:
+        from_group = ""
+    elif from_group is None:
         from_group = questionary.select("Source group:", choices=group_names).ask()
         if from_group is None:
             sys.exit(0)
@@ -149,14 +155,17 @@ def cmd(
         if dst_name is None:
             sys.exit(0)
 
-    if to_group is None:
+    if cfg.flat:
+        to_group = ""
+    elif to_group is None:
         to_group = questionary.select(
             "Destination group:", choices=group_names, default=from_group
         ).ask()
         if to_group is None:
             sys.exit(0)
 
-    click.echo(f"\nCopy '{src_name}' → '{dst_name}' (group: {to_group})")
+    location = f"(group: {to_group})" if to_group else "(flat layout)"
+    click.echo(f"\nCopy '{src_name}' → '{dst_name}' {location}")
     if not yes:
         confirm = questionary.confirm("Proceed?", default=True).ask()
         if not confirm:

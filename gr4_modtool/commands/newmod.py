@@ -171,6 +171,7 @@ def cmd(project_dir: str | None, name: str | None) -> None:
 
     # Build config
     groups: dict[str, str] = {}
+    flat = not bool(first_group)
     if first_group:
         groups[first_group] = f"blocks/{first_group}"
 
@@ -184,6 +185,7 @@ def cmd(project_dir: str | None, name: str | None) -> None:
         build_cmake=build_cmake,
         build_meson=build_meson,
         groups=groups,
+        flat=flat,
     )
 
     _write_project(
@@ -255,14 +257,25 @@ def _write_project(
     blocks_dir = root / "blocks"
     blocks_dir.mkdir(exist_ok=True)
 
-    if cfg.build_cmake:
-        (blocks_dir / "CMakeLists.txt").write_text(_blocks_cmake(cfg))
-    if cfg.build_meson:
-        (blocks_dir / "meson.build").write_text(_blocks_meson(cfg))
-
-    # First group
-    if first_group:
-        _create_group_skeleton(cfg, first_group)
+    if cfg.flat:
+        if cfg.build_cmake:
+            (blocks_dir / "CMakeLists.txt").write_text(_flat_blocks_cmake(cfg))
+        if cfg.build_meson:
+            (blocks_dir / "meson.build").write_text(_flat_blocks_meson(cfg))
+        cfg.block_include_dir().mkdir(parents=True, exist_ok=True)
+        test_dir = cfg.block_test_dir()
+        test_dir.mkdir(parents=True, exist_ok=True)
+        if cfg.build_cmake:
+            (test_dir / "CMakeLists.txt").write_text(f"# Tests for {cfg.name} blocks\n")
+        if cfg.build_meson:
+            (test_dir / "meson.build").write_text(render("test_meson.build.j2", {}, cfg.root))
+    else:
+        if cfg.build_cmake:
+            (blocks_dir / "CMakeLists.txt").write_text(_blocks_cmake(cfg))
+        if cfg.build_meson:
+            (blocks_dir / "meson.build").write_text(_blocks_meson(cfg))
+        if first_group:
+            _create_group_skeleton(cfg, first_group)
 
     # Git init (done last so all files are present for initial state)
     if gen_git:
@@ -329,6 +342,18 @@ def _write_project(
         from gr4_modtool.commands.docs import write_doxyfile
 
         write_doxyfile(cfg)
+
+
+def _flat_blocks_cmake(cfg: ProjectConfig) -> str:
+    return render(
+        "flat_blocks_CMakeLists.txt.j2",
+        {"cmake_prefix": cfg.cmake_prefix, "gr4_include_prefix": cfg.gr4_include_prefix},
+        cfg.root,
+    )
+
+
+def _flat_blocks_meson(cfg: ProjectConfig) -> str:
+    return render("flat_blocks_meson.build.j2", {}, cfg.root)
 
 
 def _create_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:

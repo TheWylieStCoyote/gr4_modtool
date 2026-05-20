@@ -169,17 +169,20 @@ def prompt_newblock(
     archetype: str | None = None,
 ) -> dict | None:
     """Run the interactive prompt flow. Returns context dict or None if aborted."""
-    groups = discover_groups(cfg)
-    group_names = [g.name for g in groups]
+    if cfg.flat:
+        group_name = ""
+    else:
+        groups = discover_groups(cfg)
+        group_names = [g.name for g in groups]
 
-    if not group_names:
-        click.echo("No groups found. Run 'gr4_modtool newgroup' first.", err=True)
-        return None
-
-    if group_name is None:
-        group_name = questionary.select("Group to add block to:", choices=group_names).ask()
-        if group_name is None:
+        if not group_names:
+            click.echo("No groups found. Run 'gr4_modtool newgroup' first.", err=True)
             return None
+
+        if group_name is None:
+            group_name = questionary.select("Group to add block to:", choices=group_names).ask()
+            if group_name is None:
+                return None
 
     block_name = questionary.text(
         "Block name (CamelCase, e.g. MyFilter):",
@@ -307,14 +310,14 @@ def prompt_newblock(
 # --------------------------------------------------------------------------- #
 
 
-def validate_spec_entry(entry: dict) -> None:
+def validate_spec_entry(entry: dict, *, flat: bool = False) -> None:
     """Raise ValueError if a normalised spec entry is invalid."""
     name = entry.get("block_name", "")
     if not name:
         raise ValueError("block_name is required in every spec entry")
     if not _NAME_RE.match(str(name)):
         raise ValueError(f"block_name {name!r} must be CamelCase (e.g. MyFilter)")
-    if not entry.get("group_name"):
+    if not flat and not entry.get("group_name"):
         raise ValueError(
             f"group is required for block {name!r} — set it in the spec or pass --group"
         )
@@ -381,15 +384,29 @@ def load_spec(path: Path, group_override: str | None = None) -> list[dict]:
 
 def write_block_files(cfg, answers: dict) -> list[Path]:
     """Write all files for a new block. Returns list of created/modified paths."""
-    group_name = answers["group_name"]
     block_name = answers["block_name"]
     gen_test = answers.get("gen_test", True)
     simd = answers.get("simd", False)
     processing_style = "processBulk" if simd else answers["processing_style"]
 
+    if cfg.flat:
+        group_name = ""
+        namespace = cfg.cpp_namespace
+        header_dir = cfg.block_include_dir()
+        test_dir = cfg.block_test_dir()
+        target_libs = f"{cfg.cmake_prefix}::blocks_headers"
+        dep_var = "gr4_blocks_dep"
+    else:
+        group_name = answers["group_name"]
+        namespace = cfg.cpp_namespace + f"::{group_name}"
+        header_dir = cfg.group_include_dir(group_name)
+        test_dir = cfg.group_test_dir(group_name)
+        target_libs = f"{cfg.cmake_prefix}::blocks_{group_name}_headers"
+        dep_var = f"gr4_{group_name}_blocks_dep"
+
     ctx = _build_template_ctx(
         block_name=block_name,
-        namespace=cfg.cpp_namespace + f"::{group_name}",
+        namespace=namespace,
         group=group_name,
         description=answers["description"],
         template_params=answers["template_params"],
@@ -404,14 +421,12 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
     written: list[Path] = []
 
     # Block header
-    header_dir = cfg.group_include_dir(group_name)
     header_dir.mkdir(parents=True, exist_ok=True)
     header_path = header_dir / f"{block_name}.hpp"
     header_path.write_text(render("block.hpp.j2", ctx, cfg.root))
     written.append(header_path)
 
     if gen_test:
-        test_dir = cfg.group_test_dir(group_name)
         test_dir.mkdir(parents=True, exist_ok=True)
 
         # Test source
@@ -422,14 +437,12 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
         # Update CMakeLists.txt
         cmake_test = test_dir / "CMakeLists.txt"
         if cfg.build_cmake and cmake_test.exists():
-            target_libs = f"{cfg.cmake_prefix}::blocks_{group_name}_headers"
             cmake_mod.append_test_entry(cmake_test, block_name, target_libs)
             written.append(cmake_test)
 
         # Update meson.build
         meson_test = test_dir / "meson.build"
         if cfg.build_meson and meson_test.exists():
-            dep_var = f"gr4_{group_name}_blocks_dep"
             meson_mod.append_test_entry(meson_test, block_name, extra_deps=[dep_var])
             written.append(meson_test)
 
@@ -478,7 +491,7 @@ def cmd(
         try:
             entries = load_spec(Path(spec_file), group_override=group)
             for entry in entries:
-                validate_spec_entry(entry)
+                validate_spec_entry(entry, flat=cfg.flat)
         except (ValueError, RuntimeError) as exc:
             click.echo(f"Error: {exc}", err=True)
             sys.exit(1)

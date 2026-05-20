@@ -1,0 +1,5 @@
+inc_dirs = include_directories('include')
+gr4_blocks_dep = declare_dependency(include_directories: inc_dirs)
+if get_option('enable_testing')
+  subdir('test')
+endif

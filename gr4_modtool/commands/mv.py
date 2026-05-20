@@ -104,6 +104,11 @@ def cmd(
 ) -> None:
     """Move a block (header, test, build entries) from one group to another."""
     cfg = load_config(Path(project_dir) if project_dir else None)
+
+    if cfg.flat:
+        click.echo("Flat projects do not support groups.", err=True)
+        sys.exit(1)
+
     groups = discover_groups(cfg)
     group_names = [g.name for g in groups]
 

@@ -54,7 +54,9 @@ def cmd(block_name: str, group: str | None, show_test: bool, project_dir: str | 
         click.echo("No groups found.", err=True)
         sys.exit(1)
 
-    if group is None:
+    if cfg.flat:
+        group = ""
+    elif group is None:
         group = questionary.select("Group:", choices=[g.name for g in groups]).ask()
         if group is None:
             sys.exit(0)

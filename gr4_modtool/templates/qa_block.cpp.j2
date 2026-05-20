@@ -1,6 +1,8 @@
 // qa_{{ block_name }}.cpp — per-block functional tests
 #include <boost/ut.hpp>
-#include <{{ gr4_include_prefix }}/{{ group }}/{{ block_name }}.hpp>
+{% if group %}#include <{{ gr4_include_prefix }}/{{ group }}/{{ block_name }}.hpp>
+{% else %}#include <{{ gr4_include_prefix }}/{{ block_name }}.hpp>
+{% endif %}
 {% if needs_graph_test %}
 #include <{{ gr4_include_prefix }}/basic/VectorSink.hpp>
 #include <{{ gr4_include_prefix }}/basic/VectorSource.hpp>

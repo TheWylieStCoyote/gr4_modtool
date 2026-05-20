@@ -58,6 +58,42 @@ def project(tmp_path: Path) -> ProjectConfig:
 
 
 @pytest.fixture()
+def project_flat(tmp_path: Path) -> ProjectConfig:
+    """Minimal flat project — no groups."""
+    cfg = ProjectConfig(
+        root=tmp_path,
+        name="testmod",
+        version="0.1.0",
+        cpp_namespace="gr::testmod",
+        cmake_prefix="gr4_testmod",
+        gr4_include_prefix="gnuradio-4.0",
+        build_cmake=True,
+        build_meson=True,
+        groups={},
+        flat=True,
+    )
+    save_config(cfg)
+    blocks = tmp_path / "blocks"
+    blocks.mkdir()
+    cfg.block_include_dir().mkdir(parents=True)
+    cfg.block_test_dir().mkdir(parents=True)
+    (cfg.block_test_dir() / "CMakeLists.txt").write_text("# Tests for testmod blocks\n")
+    (cfg.block_test_dir() / "meson.build").write_text("common_deps = [gr4_dep, ut_dep]\n")
+    (blocks / "CMakeLists.txt").write_text(
+        "add_library(gr4_testmod_blocks_headers INTERFACE)\n"
+        "add_library(gr4_testmod::blocks_headers ALIAS gr4_testmod_blocks_headers)\n"
+        "target_link_libraries(gr4_testmod_blocks_headers INTERFACE)\n"
+        "if(ENABLE_TESTING)\n  add_subdirectory(test)\nendif()\n"
+    )
+    (blocks / "meson.build").write_text(
+        "inc_dirs = include_directories('include')\n"
+        "gr4_blocks_dep = declare_dependency(include_directories: inc_dirs)\n"
+        "if get_option('enable_testing')\n  subdir('test')\nendif()\n"
+    )
+    return cfg
+
+
+@pytest.fixture()
 def project_two_groups(tmp_path: Path) -> ProjectConfig:
     """Minimal project with two groups: 'basic' and 'filter'."""
     cfg = ProjectConfig(

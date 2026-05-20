@@ -43,7 +43,9 @@ def cmd(
         click.echo("No groups found.", err=True)
         sys.exit(1)
 
-    if group is None:
+    if cfg.flat:
+        group = ""
+    elif group is None:
         group = questionary.select("Group:", choices=[g.name for g in groups]).ask()
         if group is None:
             sys.exit(0)
@@ -107,4 +109,5 @@ def cmd(
     if cfg.build_meson and meson_test.exists():
         meson_mod.rename_test_entry(meson_test, old_name, new_name)
 
-    click.echo(f"Renamed '{old_name}' → '{new_name}' in group '{group}'.")
+    location = f"in group '{group}'" if group else "(flat layout)"
+    click.echo(f"Renamed '{old_name}' → '{new_name}' {location}.")

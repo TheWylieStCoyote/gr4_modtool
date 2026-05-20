@@ -113,13 +113,17 @@ def write_test_for_block(cfg, group: str, block_name: str) -> list[Path]:
 
     cmake_test = cfg.group_test_dir(group) / "CMakeLists.txt"
     if cfg.build_cmake and cmake_test.exists():
-        target_libs = f"{cfg.cmake_prefix}::blocks_{group}_headers"
+        target_libs = (
+            f"{cfg.cmake_prefix}::blocks_headers"
+            if not group
+            else f"{cfg.cmake_prefix}::blocks_{group}_headers"
+        )
         cmake_mod.append_test_entry(cmake_test, block_name, target_libs)
         written.append(cmake_test)
 
     meson_test = cfg.group_test_dir(group) / "meson.build"
     if cfg.build_meson and meson_test.exists():
-        dep_var = f"gr4_{group}_blocks_dep"
+        dep_var = "gr4_blocks_dep" if not group else f"gr4_{group}_blocks_dep"
         meson_mod.append_test_entry(meson_test, block_name, extra_deps=[dep_var])
         written.append(meson_test)
 
@@ -140,7 +144,9 @@ def cmd(block_name: str | None, group: str | None, project_dir: str | None, yes:
         click.echo("No groups found.", err=True)
         sys.exit(1)
 
-    if group is None:
+    if cfg.flat:
+        group = ""
+    elif group is None:
         group = questionary.select("Group:", choices=[g.name for g in groups]).ask()
         if group is None:
             sys.exit(0)

@@ -27,6 +27,7 @@ class ProjectStatus:
     version: str
     root: Path
     groups: list[GroupSummary]
+    flat: bool
     build_cmake: bool
     build_meson: bool
     ci_workflows: list[str]
@@ -63,6 +64,7 @@ def gather_status(cfg) -> ProjectStatus:
         version=cfg.version,
         root=cfg.root,
         groups=group_summaries,
+        flat=cfg.flat,
         build_cmake=cfg.build_cmake,
         build_meson=cfg.build_meson,
         ci_workflows=ci_workflows,
@@ -97,12 +99,16 @@ def render_status(status: ProjectStatus) -> None:
     console.print()
     console.rule(f"[bold]{status.name}[/bold]  [dim]v{status.version}[/dim]")
     console.print(f"  [dim]{status.root}[/dim]")
-    console.print(f"  {len(status.groups)} group(s) · {total_blocks} block(s) · {build_str}")
+    if status.flat:
+        console.print(f"  flat layout · {total_blocks} block(s) · {build_str}")
+    else:
+        console.print(f"  {len(status.groups)} group(s) · {total_blocks} block(s) · {build_str}")
     console.print()
 
     # Groups / test coverage
     table = Table(box=box.SIMPLE, show_header=True, header_style="bold", padding=(0, 2))
-    table.add_column("Group")
+    if not status.flat:
+        table.add_column("Group")
     table.add_column("Blocks", justify="right")
     table.add_column("Tests", justify="right")
     for g in status.groups:
@@ -112,7 +118,10 @@ def render_status(status: ProjectStatus) -> None:
             test_str = f"[yellow]{g.tested_count}/{g.block_count}[/yellow]"
         else:
             test_str = f"[green]{g.tested_count}/{g.block_count}[/green]"
-        table.add_row(g.name, str(g.block_count), test_str)
+        if status.flat:
+            table.add_row(str(g.block_count), test_str)
+        else:
+            table.add_row(g.name, str(g.block_count), test_str)
     console.print(table)
 
     # CI workflows
@@ -137,7 +146,8 @@ def render_status(status: ProjectStatus) -> None:
     if all_missing:
         console.print("  [bold yellow]⚠  Warnings[/bold yellow]")
         for grp, blk in all_missing:
-            console.print(f"    [yellow]•[/yellow]  {grp}/{blk} — no test file")
+            label = blk if not grp else f"{grp}/{blk}"
+            console.print(f"    [yellow]•[/yellow]  {label} — no test file")
         console.print()
     else:
         console.print("  [green]✓  All blocks have test files[/green]")
