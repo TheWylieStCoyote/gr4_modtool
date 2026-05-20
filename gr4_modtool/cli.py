@@ -14,6 +14,7 @@ from gr4_modtool.commands.completion import cmd as completion_cmd
 from gr4_modtool.commands.cp import cmd as cp_cmd
 from gr4_modtool.commands.devcontainer import cmd as devcontainer_cmd
 from gr4_modtool.commands.docs import cmd as docs_cmd
+from gr4_modtool.commands.export_spec import cmd as export_spec_cmd
 from gr4_modtool.commands.format import cmd as format_cmd
 from gr4_modtool.commands.info import cmd as info_cmd
 from gr4_modtool.commands.init import cmd as init_cmd
@@ -77,6 +78,7 @@ cli.add_command(docs_cmd, name="docs")
 cli.add_command(add_dep_cmd, name="add-dep")
 cli.add_command(port_cmd, name="port")
 cli.add_command(search_cmd, name="search")
+cli.add_command(export_spec_cmd, name="export-spec")
 
 
 @cli.command("tui")

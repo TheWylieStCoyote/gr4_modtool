@@ -95,3 +95,40 @@ Watching blocks/dsp/include/gnuradio-4.0/dsp for .hpp changes (Ctrl+C to stop)
 ```
 
 Rapid saves are debounced (1-second cooldown) to avoid double-fires from editor temp-file patterns. Requires the `watchdog` package (`pip install watchdog`).
+
+---
+
+## coverage
+
+Build the project with coverage instrumentation, run all tests, and generate an HTML coverage report.
+
+```bash
+gr4_modtool coverage [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--build-dir PATH` | Coverage build directory (default: `build-coverage`) |
+| `--output-dir PATH` | HTML report output directory (default: `coverage`) |
+| `--tool CHOICE` | `auto`, `gcovr`, or `llvm-cov` (default: `auto`) |
+| `--open / --no-open` | Open the report in the default browser after generation (default: open) |
+| `-j INT` | Parallel build jobs |
+| `--project-dir PATH` | Project root |
+
+Creates a dedicated build directory configured with coverage flags, builds the full project, runs all tests, then generates an HTML report:
+
+```bash
+gr4_modtool coverage                         # auto-detect gcovr or llvm-cov
+gr4_modtool coverage --tool gcovr            # force gcovr
+gr4_modtool coverage --output-dir html_cov   # custom report location
+gr4_modtool coverage --no-open               # skip browser launch
+```
+
+**Tool selection** — `auto` tries `gcovr` first, then falls back to `llvm-cov`. Install one with:
+
+```bash
+pip install gcovr
+# or install llvm via your package manager (provides llvm-cov)
+```
+
+The report is written to `<output-dir>/index.html`. Exit code mirrors the test suite: non-zero if any tests fail.

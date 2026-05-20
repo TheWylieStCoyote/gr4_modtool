@@ -34,12 +34,13 @@ All commands accept `--help` for detailed option descriptions.
 | [`show`](project.md#show) | Display a block's source with syntax highlighting |
 | [`status`](project.md#status) | Project health dashboard (blocks, tests, CI, tools) |
 
-## Building
+## Building & Testing
 
 | Command | Description |
 |---|---|
 | [`build`](building.md#build) | Configure and build (CMake or Meson) |
 | [`test`](testing.md#test) | Run one block's test without rebuilding |
+| [`coverage`](testing.md#coverage) | Build with coverage flags, run tests, generate HTML report |
 | [`format`](building.md#format) | Run clang-format over headers and test sources |
 | [`tidy`](building.md#tidy) | Run clang-tidy on block headers |
 

@@ -8,26 +8,26 @@ Generate a block header, test file, and build entries.
 gr4_modtool newblock [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--group TEXT` | Target group |
-| `--template / -T ARCHETYPE` | Pre-fill ports and style from an archetype |
-| `--simd` | Generate a SIMD-vectorization-friendly `processBulk` skeleton |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option                      | Description                                                   |
+| --------------------------- | ------------------------------------------------------------- |
+| `--group TEXT`              | Target group                                                  |
+| `--template / -T ARCHETYPE` | Pre-fill ports and style from an archetype                    |
+| `--simd`                    | Generate a SIMD-vectorization-friendly `processBulk` skeleton |
+| `--project-dir PATH`        | Project root                                                  |
+| `--yes / -y`                | Skip confirmation                                             |
 
 ### Archetypes
 
 Use `--template` to skip the port/style prompts with a sensible default:
 
-| Archetype | Ports | Style |
-|---|---|---|
-| `source` | — → `out:T` | `processBulk` |
-| `sink` | `in:T` → — | `processBulk` |
-| `filter` | `in:T` → `out:T` | `processOne` |
-| `decimator` | `in:T` → `out:T` | `processBulk` |
+| Archetype      | Ports            | Style         |
+| -------------- | ---------------- | ------------- |
+| `source`       | — → `out:T`      | `processBulk` |
+| `sink`         | `in:T` → —       | `processBulk` |
+| `filter`       | `in:T` → `out:T` | `processOne`  |
+| `decimator`    | `in:T` → `out:T` | `processBulk` |
 | `interpolator` | `in:T` → `out:T` | `processBulk` |
-| `custom` | interactive | interactive |
+| `custom`       | interactive      | interactive   |
 
 ```bash
 gr4_modtool newblock --group dsp --template filter
@@ -67,6 +67,7 @@ The generated body uses `#pragma GCC ivdep` to tell GCC there are no loop-carrie
 ```
 
 Tips for keeping the loop vectorizable:
+
 - Avoid branches inside the loop body — use `std::clamp` or ternary expressions.
 - Keep the element stride at 1 (sequential access).
 - Do not call virtual functions or non-inline helpers inside the loop.
@@ -90,9 +91,9 @@ block_name: MyFilter
 description: "A bandpass filter"
 template_params: [T]
 in_ports:
-  - {name: in,  type: T}
+  - { name: in, type: T }
 out_ports:
-  - {name: out, type: T}
+  - { name: out, type: T }
 processing_style: processOne
 type_list: "float, double"
 gen_test: true
@@ -103,7 +104,7 @@ gen_test: true
 ```yaml
 - group: basic
   block_name: MyFilter
-  archetype: filter        # shorthand: fills in_ports/out_ports/processing_style
+  archetype: filter # shorthand: fills in_ports/out_ports/processing_style
   type_list: "float, double"
 
 - group: dsp
@@ -115,18 +116,18 @@ gen_test: true
 
 **`archetype` shorthand** pre-fills `in_ports`, `out_ports`, and `processing_style` from the same archetypes as `--template`. Explicit keys in the YAML override the archetype values.
 
-| Field | Required | Default |
-|---|---|---|
-| `block_name` | yes | — |
-| `group` | yes (or `--group`) | — |
-| `type_list` | yes | — |
-| `archetype` | no | — |
-| `description` | no | `""` |
-| `template_params` | no | `[T]` |
-| `in_ports` / `out_ports` | no (if archetype set) | — |
-| `processing_style` | no (if archetype set) | — |
-| `gen_test` | no | `true` |
-| `simd` | no | `false` |
+| Field                    | Required              | Default |
+| ------------------------ | --------------------- | ------- |
+| `block_name`             | yes                   | —       |
+| `group`                  | yes (or `--group`)    | —       |
+| `type_list`              | yes                   | —       |
+| `archetype`              | no                    | —       |
+| `description`            | no                    | `""`    |
+| `template_params`        | no                    | `[T]`   |
+| `in_ports` / `out_ports` | no (if archetype set) | —       |
+| `processing_style`       | no (if archetype set) | —       |
+| `gen_test`               | no                    | `true`  |
+| `simd`                   | no                    | `false` |
 
 Requires `PyYAML` (`pip install PyYAML`).
 
@@ -140,14 +141,14 @@ Insert an `Annotated<>` parameter into an existing block header.
 gr4_modtool newparam [BLOCK_NAME] [PARAM_NAME] [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--group TEXT` | Group containing the block |
-| `--type TEXT` | C++ type (e.g. `float`, `int32_t`) |
-| `--description TEXT` | Description for `Doc<"...">` |
-| `--default TEXT` | C++ default value (e.g. `1.0f`) |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description                        |
+| -------------------- | ---------------------------------- |
+| `--group TEXT`       | Group containing the block         |
+| `--type TEXT`        | C++ type (e.g. `float`, `int32_t`) |
+| `--description TEXT` | Description for `Doc<"...">`       |
+| `--default TEXT`     | C++ default value (e.g. `1.0f`)    |
+| `--project-dir PATH` | Project root                       |
+| `--yes / -y`         | Skip confirmation                  |
 
 **Example:**
 
@@ -178,13 +179,13 @@ Copy a block to a new name, optionally into a different group.
 gr4_modtool cp SRC_NAME DST_NAME [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--from-group TEXT` | Source group (default: prompted) |
-| `--to-group TEXT` | Destination group (default: same as source) |
-| `--gen-test` | Also generate a test for the copy |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description                                 |
+| -------------------- | ------------------------------------------- |
+| `--from-group TEXT`  | Source group (default: prompted)            |
+| `--to-group TEXT`    | Destination group (default: same as source) |
+| `--gen-test`         | Also generate a test for the copy           |
+| `--project-dir PATH` | Project root                                |
+| `--yes / -y`         | Skip confirmation                           |
 
 All occurrences of `SrcName` in the header are replaced with `DstName` using whole-word substitution. Cross-group copies update the namespace.
 
@@ -198,12 +199,12 @@ Move a block (header, test, build entries) from one group to another.
 gr4_modtool mv [BLOCK_NAME] [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--from TEXT` | Source group |
-| `--to TEXT` | Destination group |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description       |
+| -------------------- | ----------------- |
+| `--from TEXT`        | Source group      |
+| `--to TEXT`          | Destination group |
+| `--project-dir PATH` | Project root      |
+| `--yes / -y`         | Skip confirmation |
 
 Updates namespace references in the header, `#include` paths in the test file, and removes/adds CMake and Meson entries in both groups.
 
@@ -217,11 +218,11 @@ Rename a block everywhere using whole-word substitution.
 gr4_modtool rename [OLD_NAME] [NEW_NAME] [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--group TEXT` | Group containing the block |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description                |
+| -------------------- | -------------------------- |
+| `--group TEXT`       | Group containing the block |
+| `--project-dir PATH` | Project root               |
+| `--yes / -y`         | Skip confirmation          |
 
 Renames: the header file, all symbol occurrences inside it (using `\bOldName\b` regex), the test file and its include, and CMake/Meson entries. Searches across all groups if `--group` is omitted.
 
@@ -235,11 +236,11 @@ Rename a block within its group.
 gr4_modtool rename-block OLD_NAME NEW_NAME [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--group TEXT` | Group containing the block (auto-detected if omitted) |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `--group TEXT`       | Group containing the block (auto-detected if omitted) |
+| `--project-dir PATH` | Project root                                          |
+| `--yes / -y`         | Skip confirmation                                     |
 
 Renames the header file and replaces every occurrence of the old name inside it (`struct`, `Block<>`, `GR_MAKE_REFLECTABLE`, `GR_REGISTER_BLOCK`). Also renames the test file and updates its `#include`, suite variable names, and namespace references, then patches `CMakeLists.txt` and `meson.build`.
 
@@ -263,10 +264,10 @@ Rename a block group and update all references.
 gr4_modtool rename-group OLD_NAME NEW_NAME [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description       |
+| -------------------- | ----------------- |
+| `--project-dir PATH` | Project root      |
+| `--yes / -y`         | Skip confirmation |
 
 Performs the full rename cascade:
 
@@ -294,10 +295,61 @@ Remove a block and all its associated files.
 gr4_modtool rm [BLOCK_NAME] [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--group TEXT` | Group containing the block |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description                |
+| -------------------- | -------------------------- |
+| `--group TEXT`       | Group containing the block |
+| `--project-dir PATH` | Project root               |
+| `--yes / -y`         | Skip confirmation          |
 
 Deletes the header, test source (if present), and removes CMake/Meson entries.
+
+---
+
+## export-spec
+
+Scan an existing project's block headers and emit YAML spec files compatible with `newblock --spec`.
+
+```bash
+gr4_modtool export-spec [OPTIONS]
+```
+
+| Option                                     | Description                                        |
+| ------------------------------------------ | -------------------------------------------------- |
+| `--group TEXT`                             | Export only blocks from this group                 |
+| `--output [per-block\|per-group\|project]` | Granularity of output files (default: `per-group`) |
+| `--out-dir PATH`                           | Directory to write spec files (default: `specs/`)  |
+| `--project-dir PATH`                       | Project root                                       |
+
+### Output modes
+
+| Mode        | Files written                                                |
+| ----------- | ------------------------------------------------------------ |
+| `per-group` | One `<group>_blocks.yaml` per group                          |
+| `per-block` | One `<BlockName>.yaml` per block, under `<out-dir>/<group>/` |
+| `project`   | Single `blocks.yaml` containing all blocks as a flat list    |
+
+When the ports and processing style of a block exactly match a known archetype (`filter`, `source`, `sink`, `decimator`, `interpolator`), the YAML entry uses the `archetype:` shorthand instead of listing ports explicitly.
+
+Headers that cannot be parsed as GNURadio 4 blocks are skipped with a warning.
+
+### Example workflow
+
+```bash
+# Default: one YAML per group written to specs/
+gr4_modtool export-spec
+
+# Export only the dsp group
+gr4_modtool export-spec --group dsp
+
+# One file per block
+gr4_modtool export-spec --output per-block --out-dir docs/specs
+
+# Single file covering the whole project
+gr4_modtool export-spec --output project --out-dir .
+
+# Roundtrip: export then regenerate into a new module
+gr4_modtool export-spec --output project
+gr4_modtool newblock --spec specs/blocks.yaml --project-dir ../new_module
+```
+
+Requires `PyYAML` (`pip install PyYAML`).
