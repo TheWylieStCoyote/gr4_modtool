@@ -18,6 +18,7 @@ from gr4_modtool.commands.export_spec import cmd as export_spec_cmd
 from gr4_modtool.commands.format import cmd as format_cmd
 from gr4_modtool.commands.info import cmd as info_cmd
 from gr4_modtool.commands.init import cmd as init_cmd
+from gr4_modtool.commands.lint_headers import cmd as lint_headers_cmd
 from gr4_modtool.commands.mv import cmd as mv_cmd
 from gr4_modtool.commands.newbench import cmd as newbench_cmd
 from gr4_modtool.commands.newblock import cmd as newblock_cmd
@@ -79,6 +80,7 @@ cli.add_command(add_dep_cmd, name="add-dep")
 cli.add_command(port_cmd, name="port")
 cli.add_command(search_cmd, name="search")
 cli.add_command(export_spec_cmd, name="export-spec")
+cli.add_command(lint_headers_cmd, name="lint-headers")
 
 
 @cli.command("tui")

@@ -107,3 +107,51 @@ After activation, both hooks run automatically on `git commit`. Run manually wit
 ```bash
 pre-commit run --all-files
 ```
+
+---
+
+## lint-headers
+
+Check block headers for common content issues.
+
+```bash
+gr4_modtool lint-headers [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--group TEXT` | Check only this group |
+| `--strict` | Treat warnings as errors (exit 1 if any warnings) |
+| `--json` | Output results as JSON |
+| `--project-dir PATH` | Project root |
+
+**Checks performed:**
+
+| Severity | Condition |
+|---|---|
+| error | Header is missing `GR_REGISTER_BLOCK` macro |
+| error | Header is missing `GR_MAKE_REFLECTABLE` macro |
+| error | A port declared in the struct is absent from `GR_MAKE_REFLECTABLE` |
+| warning | `GR_REGISTER_BLOCK` has an empty type list |
+| warning | Block description (`Doc<"...">`) is empty |
+| warning | An `Annotated<>` parameter has no `Doc<>` description |
+| warning | A name listed in `GR_MAKE_REFLECTABLE` is not declared as a port or parameter |
+
+Exit code 1 if any errors are found. With `--strict`, warnings also cause exit 1.
+
+**Example JSON output:**
+
+```json
+{
+  "issues": [
+    {
+      "group": "dsp",
+      "block": "LowPassFilter",
+      "issue": "port 'in' is declared but absent from GR_MAKE_REFLECTABLE",
+      "severity": "error"
+    }
+  ],
+  "error_count": 1,
+  "warning_count": 0
+}
+```

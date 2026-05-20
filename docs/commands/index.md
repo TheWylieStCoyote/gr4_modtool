@@ -59,6 +59,7 @@ All commands accept `--help` for detailed option descriptions.
 | [`ci`](quality.md#ci) | Write GitHub Actions workflows (coverage, release, matrix) |
 | [`presets`](quality.md#presets) | Write `CMakePresets.json` and sanitizer CI |
 | [`pre-commit`](quality.md#pre-commit) | Write `.pre-commit-config.yaml` |
+| [`lint-headers`](quality.md#lint-headers) | Check block headers for missing macros and port mismatches |
 
 ## Documentation, Dependencies, Registry & Migration
 
