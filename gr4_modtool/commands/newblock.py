@@ -14,6 +14,14 @@ from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 from gr4_modtool.templates import render
 
+try:
+    import yaml as _yaml
+
+    _YAML_AVAILABLE = True
+except ImportError:
+    _YAML_AVAILABLE = False
+    _yaml = None  # type: ignore[assignment]
+
 # --------------------------------------------------------------------------- #
 # Archetypes
 # --------------------------------------------------------------------------- #
@@ -52,9 +60,12 @@ _ARCHETYPE_NAMES = list(ARCHETYPES.keys())
 # Validation helpers
 # --------------------------------------------------------------------------- #
 
+_NAME_RE = re.compile(r"^[A-Z][A-Za-z0-9]*$")
+_VALID_STYLES = {"processOne", "processBulk"}
+
 
 def _is_camel(name: str) -> bool:
-    return bool(re.match(r"^[A-Z][A-Za-z0-9]*$", name))
+    return bool(_NAME_RE.match(name))
 
 
 def _resolve_port_type(raw: str, template_params: list[str]) -> str:
@@ -292,6 +303,78 @@ def prompt_newblock(
 
 
 # --------------------------------------------------------------------------- #
+# Spec file loading and validation
+# --------------------------------------------------------------------------- #
+
+
+def validate_spec_entry(entry: dict) -> None:
+    """Raise ValueError if a normalised spec entry is invalid."""
+    name = entry.get("block_name", "")
+    if not name:
+        raise ValueError("block_name is required in every spec entry")
+    if not _NAME_RE.match(str(name)):
+        raise ValueError(f"block_name {name!r} must be CamelCase (e.g. MyFilter)")
+    if not entry.get("group_name"):
+        raise ValueError(
+            f"group is required for block {name!r} — set it in the spec or pass --group"
+        )
+    style = entry.get("processing_style")
+    if style and style not in _VALID_STYLES:
+        raise ValueError(f"processing_style {style!r} must be one of {sorted(_VALID_STYLES)}")
+    for port in entry.get("in_ports", []) + entry.get("out_ports", []):
+        if "name" not in port or "type" not in port:
+            raise ValueError(f"Each port must have 'name' and 'type'. Got: {port}")
+
+
+def load_spec(path: Path, group_override: str | None = None) -> list[dict]:
+    """Parse a YAML block spec file and return a list of normalised answers dicts.
+
+    The YAML may be a single block mapping or a list of mappings. Each entry
+    is normalised to the shape expected by write_block_files().
+    ``group_override`` replaces the ``group`` field in every entry when provided.
+    """
+    if not _YAML_AVAILABLE:
+        raise RuntimeError("PyYAML is required for --spec: pip install PyYAML")
+    raw = _yaml.safe_load(path.read_text())
+    if raw is None:
+        raise ValueError(f"Spec file {path} is empty")
+    entries: list[dict] = raw if isinstance(raw, list) else [raw]
+
+    result = []
+    for raw_entry in entries:
+        e = dict(raw_entry)
+
+        # Expand archetype shorthand before applying explicit overrides
+        arch_name = e.pop("archetype", None)
+        if arch_name is not None:
+            if arch_name not in ARCHETYPES:
+                raise ValueError(f"Unknown archetype {arch_name!r}. Valid: {list(ARCHETYPES)}")
+            arch = dict(ARCHETYPES[arch_name])
+            # Explicit port/style keys in the YAML override the archetype
+            for key in ("in_ports", "out_ports", "processing_style"):
+                if key in e:
+                    arch[key] = e.pop(key)
+            e = {**e, **arch}
+
+        # Rename 'group' → 'group_name' for write_block_files()
+        if "group" in e and "group_name" not in e:
+            e["group_name"] = e.pop("group")
+
+        # CLI group override wins
+        if group_override:
+            e["group_name"] = group_override
+
+        # Apply defaults
+        e.setdefault("template_params", ["T"])
+        e.setdefault("gen_test", True)
+        e.setdefault("simd", False)
+        e.setdefault("description", "")
+
+        result.append(e)
+    return result
+
+
+# --------------------------------------------------------------------------- #
 # File writing (shared between CLI and TUI)
 # --------------------------------------------------------------------------- #
 
@@ -374,9 +457,44 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
     default=False,
     help="Generate a SIMD-vectorization-friendly processBulk skeleton.",
 )
-def cmd(project_dir: str | None, group: str | None, template: str | None, simd: bool) -> None:
+@click.option(
+    "--spec",
+    "spec_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False),
+    help="YAML spec file defining one or more blocks (skips interactive prompts).",
+)
+def cmd(
+    project_dir: str | None,
+    group: str | None,
+    template: str | None,
+    simd: bool,
+    spec_file: str | None,
+) -> None:
     """Add a new block to an existing group."""
     cfg = load_config(Path(project_dir) if project_dir else None)
+
+    if spec_file:
+        try:
+            entries = load_spec(Path(spec_file), group_override=group)
+            for entry in entries:
+                validate_spec_entry(entry)
+        except (ValueError, RuntimeError) as exc:
+            click.echo(f"Error: {exc}", err=True)
+            sys.exit(1)
+
+        if simd:
+            for entry in entries:
+                entry["simd"] = True
+
+        names = []
+        for entry in entries:
+            write_block_files(cfg, entry)
+            names.append(entry["block_name"])
+        click.echo(f"Generated {len(names)} block(s): {', '.join(names)}")
+        return
+
+    # Interactive flow
     archetype = template if template and template != "custom" else None
     answers = prompt_newblock(cfg, group_name=group, archetype=archetype)
     if answers is None:

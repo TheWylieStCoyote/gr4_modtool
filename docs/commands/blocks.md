@@ -72,6 +72,64 @@ Tips for keeping the loop vectorizable:
 - Do not call virtual functions or non-inline helpers inside the loop.
 - If ports use different template types (e.g. `std::complex<T>`) verify that the compiler supports SIMD for that type.
 
+### Spec file
+
+`--spec <file.yaml>` skips all interactive prompts and reads block definitions from a YAML file. The file may define a single block (mapping) or multiple blocks (list of mappings).
+
+```bash
+gr4_modtool newblock --spec blocks.yaml
+gr4_modtool newblock --spec shared/filter.yaml --group channel   # --group overrides spec
+gr4_modtool newblock --spec module_seed.yaml --simd              # apply --simd to all entries
+```
+
+**Single-block spec:**
+
+```yaml
+group: basic
+block_name: MyFilter
+description: "A bandpass filter"
+template_params: [T]
+in_ports:
+  - {name: in,  type: T}
+out_ports:
+  - {name: out, type: T}
+processing_style: processOne
+type_list: "float, double"
+gen_test: true
+```
+
+**Multi-block spec:**
+
+```yaml
+- group: basic
+  block_name: MyFilter
+  archetype: filter        # shorthand: fills in_ports/out_ports/processing_style
+  type_list: "float, double"
+
+- group: dsp
+  block_name: MySource
+  archetype: source
+  type_list: "float, std::complex<float>"
+  gen_test: false
+```
+
+**`archetype` shorthand** pre-fills `in_ports`, `out_ports`, and `processing_style` from the same archetypes as `--template`. Explicit keys in the YAML override the archetype values.
+
+| Field | Required | Default |
+|---|---|---|
+| `block_name` | yes | — |
+| `group` | yes (or `--group`) | — |
+| `type_list` | yes | — |
+| `archetype` | no | — |
+| `description` | no | `""` |
+| `template_params` | no | `[T]` |
+| `in_ports` / `out_ports` | no (if archetype set) | — |
+| `processing_style` | no (if archetype set) | — |
+| `gen_test` | no | `true` |
+| `simd` | no | `false` |
+
+Requires `PyYAML` (`pip install PyYAML`).
+
 ---
 
 ## newparam
