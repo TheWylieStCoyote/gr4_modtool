@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from click.testing import CliRunner
 
@@ -19,18 +21,18 @@ def runner() -> CliRunner:
 # ---------------------------------------------------------------------------
 
 
-def test_list_no_overrides(runner: CliRunner, project) -> None:
+def test_list_no_overrides(runner: CliRunner, project: object) -> None:
     """All built-ins listed; none shown as overridden."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     result = runner.invoke(cmd, ["list", "--project-dir", str(root)])
     assert result.exit_code == 0
     assert "block.hpp.j2" in result.output
     assert "overridden" not in result.output
 
 
-def test_list_with_override(runner: CliRunner, project) -> None:
+def test_list_with_override(runner: CliRunner, project: object) -> None:
     """A file placed in .gr4modtool/templates/ is shown as overridden."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     (override_dir / "block.hpp.j2").write_text("// custom")
@@ -40,7 +42,7 @@ def test_list_with_override(runner: CliRunner, project) -> None:
     assert "overridden" in result.output
 
 
-def test_list_outside_project(runner: CliRunner, tmp_path) -> None:
+def test_list_outside_project(runner: CliRunner, tmp_path: Path) -> None:
     """Works without a project config — lists built-ins only."""
     result = runner.invoke(cmd, ["list", "--project-dir", str(tmp_path)])
     assert result.exit_code == 0
@@ -52,9 +54,9 @@ def test_list_outside_project(runner: CliRunner, tmp_path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_init_copies_template(runner: CliRunner, project) -> None:
+def test_init_copies_template(runner: CliRunner, project: object) -> None:
     """Copied file content matches the built-in."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     result = runner.invoke(cmd, ["init", "block.hpp.j2", "--project-dir", str(root)])
     assert result.exit_code == 0
     dest = root / ".gr4modtool" / "templates" / "block.hpp.j2"
@@ -62,44 +64,45 @@ def test_init_copies_template(runner: CliRunner, project) -> None:
     assert dest.read_text() == builtin.read_text()
 
 
-def test_init_creates_dir(runner: CliRunner, project) -> None:
+def test_init_creates_dir(runner: CliRunner, project: object) -> None:
     """.gr4modtool/templates/ is created when absent."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     assert not override_dir.exists()
     runner.invoke(cmd, ["init", "block.hpp.j2", "--project-dir", str(root)])
     assert override_dir.is_dir()
 
 
-def test_init_prints_context_vars(runner: CliRunner, project) -> None:
+def test_init_prints_context_vars(runner: CliRunner, project: object) -> None:
     """Output includes block_name and namespace for block.hpp.j2."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     result = runner.invoke(cmd, ["init", "block.hpp.j2", "--project-dir", str(root)])
     assert result.exit_code == 0
     assert "block_name" in result.output
     assert "namespace" in result.output
 
 
-def test_init_context_free_template(runner: CliRunner, project) -> None:
+def test_init_context_free_template(runner: CliRunner, project: object) -> None:
     """A context-free template prints the 'no context variables' message."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
+    # Pick the first context-free template deterministically
     template_name = sorted(CONTEXT_FREE_TEMPLATES)[0]
     result = runner.invoke(cmd, ["init", template_name, "--project-dir", str(root)])
     assert result.exit_code == 0
     assert "No context variables" in result.output
 
 
-def test_init_unknown_template_exits(runner: CliRunner, project) -> None:
+def test_init_unknown_template_exits(runner: CliRunner, project: object) -> None:
     """Exits non-zero with a helpful message for unknown template names."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     result = runner.invoke(cmd, ["init", "nonexistent.j2", "--project-dir", str(root)])
     assert result.exit_code != 0
     assert "Unknown template" in result.output
 
 
-def test_init_no_overwrite_without_force(runner: CliRunner, project) -> None:
+def test_init_no_overwrite_without_force(runner: CliRunner, project: object) -> None:
     """Exits non-zero; existing override file is unchanged."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     dest = override_dir / "block.hpp.j2"
@@ -110,9 +113,9 @@ def test_init_no_overwrite_without_force(runner: CliRunner, project) -> None:
     assert dest.read_text() == "// sentinel"
 
 
-def test_init_force_overwrites(runner: CliRunner, project) -> None:
+def test_init_force_overwrites(runner: CliRunner, project: object) -> None:
     """--force replaces the existing override with built-in content."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     dest = override_dir / "block.hpp.j2"
@@ -129,17 +132,17 @@ def test_init_force_overwrites(runner: CliRunner, project) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_check_no_overrides(runner: CliRunner, project) -> None:
+def test_check_no_overrides(runner: CliRunner, project: object) -> None:
     """Prints 'No override templates found', exits 0."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     result = runner.invoke(cmd, ["check", "--project-dir", str(root)])
     assert result.exit_code == 0
     assert "No override templates found" in result.output
 
 
-def test_check_valid_override(runner: CliRunner, project) -> None:
+def test_check_valid_override(runner: CliRunner, project: object) -> None:
     """Built-in copied as override renders OK, exits 0."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     builtin = builtin_templates_dir() / "gitignore.j2"
@@ -151,9 +154,9 @@ def test_check_valid_override(runner: CliRunner, project) -> None:
     assert "ERROR" not in result.output
 
 
-def test_check_invalid_undefined_var(runner: CliRunner, project) -> None:
+def test_check_invalid_undefined_var(runner: CliRunner, project: object) -> None:
     """Template using an unknown variable → ERROR in output, exits non-zero."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     (override_dir / "gitignore.j2").write_text("{{ totally_undefined_var }}\n")
@@ -163,9 +166,9 @@ def test_check_invalid_undefined_var(runner: CliRunner, project) -> None:
     assert "ERROR" in result.output
 
 
-def test_check_invalid_syntax(runner: CliRunner, project) -> None:
+def test_check_invalid_syntax(runner: CliRunner, project: object) -> None:
     """Bad Jinja2 syntax → exits non-zero."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     (override_dir / "gitignore.j2").write_text("{% if %}\n")
@@ -175,9 +178,9 @@ def test_check_invalid_syntax(runner: CliRunner, project) -> None:
     assert "ERROR" in result.output
 
 
-def test_check_multiple_some_fail(runner: CliRunner, project) -> None:
+def test_check_multiple_some_fail(runner: CliRunner, project: object) -> None:
     """Two overrides, one invalid → only the invalid one reported as ERROR."""
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     builtin = builtin_templates_dir() / "gitignore.j2"
@@ -196,11 +199,11 @@ def test_check_multiple_some_fail(runner: CliRunner, project) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_override_used_by_write_block_files(project) -> None:
+def test_override_used_by_write_block_files(project: object) -> None:
     """Custom block.hpp.j2 with a sentinel comment is picked up by write_block_files."""
     from gr4_modtool.commands.newblock import write_block_files
 
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     builtin = (builtin_templates_dir() / "block.hpp.j2").read_text()
@@ -220,18 +223,19 @@ def test_override_used_by_write_block_files(project) -> None:
     }
     write_block_files(project, answers)
 
-    header = project.group_include_dir("basic") / "Foo.hpp"
+    header = project.group_include_dir("basic") / "Foo.hpp"  # type: ignore[attr-defined]
     assert header.exists()
     assert "CUSTOM_SENTINEL" in header.read_text()
 
 
-def test_override_used_by_add_test(project) -> None:
+def test_override_used_by_add_test(project: object) -> None:
     """Custom qa_block.cpp.j2 with a sentinel is picked up by write_test_for_block."""
     from gr4_modtool.commands.add_test import write_test_for_block
     from gr4_modtool.commands.newblock import write_block_files
 
-    root = project.root
+    root = project.root  # type: ignore[attr-defined]
 
+    # Write the block header first (needed by write_test_for_block)
     answers = {
         "block_name": "Bar",
         "group_name": "basic",
@@ -246,6 +250,7 @@ def test_override_used_by_add_test(project) -> None:
     }
     write_block_files(project, answers)
 
+    # Install custom qa template
     override_dir = root / ".gr4modtool" / "templates"
     override_dir.mkdir(parents=True)
     builtin = (builtin_templates_dir() / "qa_block.cpp.j2").read_text()
@@ -253,7 +258,7 @@ def test_override_used_by_add_test(project) -> None:
 
     write_test_for_block(project, "basic", "Bar")
 
-    test_file = project.group_test_dir("basic") / "qa_Bar.cpp"
+    test_file = project.group_test_dir("basic") / "qa_Bar.cpp"  # type: ignore[attr-defined]
     assert test_file.exists()
     assert "QA_SENTINEL" in test_file.read_text()
 
