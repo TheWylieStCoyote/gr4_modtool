@@ -10,6 +10,7 @@ from pathlib import Path
 import click
 from rich.console import Console
 
+from gr4_modtool.commands.lint_headers import lint_header as _lint_header
 from gr4_modtool.project.discovery import find_project_root
 
 try:
@@ -66,6 +67,21 @@ def _incremental_build(project_root: Path, build_dir: Path, block_name: str) -> 
     return proc.wait()
 
 
+def _find_block_info(project_root: Path, block_name: str) -> tuple[Path, str] | None:
+    """Return (hpp_path, group_name) for block_name, or None if not found in config."""
+    try:
+        from gr4_modtool.project.discovery import discover_groups, load_config
+
+        cfg = load_config(project_root)
+        for group in discover_groups(cfg):
+            for block in group.blocks:
+                if block.name == block_name:
+                    return block.path, group.name
+    except Exception:
+        pass
+    return None
+
+
 def _find_watch_dir(project_root: Path, block_name: str) -> Path:
     """Return the include directory containing block_name.hpp, or blocks/ as fallback."""
     try:
@@ -96,6 +112,7 @@ def watch_block_test(
 
     console = Console()
     last_trigger = -float("inf")
+    _block_info = _find_block_info(project_root, block_name)
 
     def _run_once() -> None:
         nonlocal last_trigger
@@ -104,6 +121,17 @@ def watch_block_test(
             return
         last_trigger = now
         console.rule(f"[dim]{time.strftime('%H:%M:%S')} — rebuilding[/dim]")
+
+        if _block_info is not None:
+            hpp_path, group_name = _block_info
+            issues = _lint_header(hpp_path, group_name)
+            if issues:
+                for issue in issues:
+                    sev_style = "red" if issue.severity == "error" else "yellow"
+                    console.print(
+                        f"  lint [{sev_style}]{issue.severity}[/{sev_style}]  {issue.issue}"
+                    )
+
         rc = _incremental_build(project_root, build_dir, block_name)
         if rc == 0:
             run_block_test(project_root, build_dir, block_name, verbose=verbose)

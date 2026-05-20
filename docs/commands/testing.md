@@ -96,6 +96,8 @@ Watching blocks/dsp/include/gnuradio-4.0/dsp for .hpp changes (Ctrl+C to stop)
 
 Rapid saves are debounced (1-second cooldown) to avoid double-fires from editor temp-file patterns. Requires the `watchdog` package (`pip install watchdog`).
 
+At the start of each rebuild cycle, `lint-headers` runs automatically against the block's header and prints any issues (errors and warnings) before attempting to compile. This gives immediate feedback on macro and port consistency without waiting for a build.
+
 ---
 
 ## coverage
