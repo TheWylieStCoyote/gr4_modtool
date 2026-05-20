@@ -357,3 +357,60 @@ def test_add_dep_duplicate_errors(project: ProjectConfig, tmp_path: Path) -> Non
     # Second add prints an error message (add_dep exits 0 but reports via stderr)
     result = invoke(project.root, "add-dep", "FFTW3", "--pkg-config", "fftw3")
     assert "already declared" in result.output or "No files modified" in result.output
+
+
+def test_add_dep_updates_meson_build(project: ProjectConfig) -> None:
+    """add-dep appends a dependency() call to meson.build when it exists."""
+    _create_deps_cmake(project)
+    (project.root / "meson.build").write_text("# top-level meson\n")
+
+    invoke(project.root, "add-dep", "FFTW3", "--pkg-config", "fftw3")
+
+    meson = (project.root / "meson.build").read_text()
+    assert "fftw3" in meson
+
+
+# ---------------------------------------------------------------------------
+# newblock --simd
+# ---------------------------------------------------------------------------
+
+
+def test_newblock_simd_header_uses_process_bulk(project: ProjectConfig, tmp_path: Path) -> None:
+    """newblock with simd: true generates a processBulk skeleton."""
+    spec = tmp_path / "spec.yaml"
+    spec.write_text(
+        "block_name: VectorGain\n"
+        "group: basic\n"
+        "archetype: filter\n"
+        'type_list: "float"\n'
+        "gen_test: false\n"
+        "simd: true\n"
+    )
+    invoke(project.root, "newblock", "--spec", str(spec))
+
+    header = (project.group_include_dir("basic") / "VectorGain.hpp").read_text()
+    assert "processBulk" in header
+    assert "std::span" in header
+
+
+# ---------------------------------------------------------------------------
+# newblock gen_test: false
+# ---------------------------------------------------------------------------
+
+
+def test_newblock_gen_test_false_no_test_file(project: ProjectConfig, tmp_path: Path) -> None:
+    """newblock with gen_test: false creates the header but no qa_*.cpp."""
+    spec = write_spec(tmp_path / "spec.yaml", "NoTestBlock", group="basic", gen_test=False)
+    invoke(project.root, "newblock", "--spec", str(spec))
+
+    assert (project.group_include_dir("basic") / "NoTestBlock.hpp").exists()
+    assert not (project.group_test_dir("basic") / "qa_NoTestBlock.cpp").exists()
+
+
+def test_newblock_gen_test_false_no_cmake_entry(project: ProjectConfig, tmp_path: Path) -> None:
+    """newblock with gen_test: false adds no entry to test CMakeLists.txt."""
+    spec = write_spec(tmp_path / "spec.yaml", "NoTestBlock", group="basic", gen_test=False)
+    invoke(project.root, "newblock", "--spec", str(spec))
+
+    cmake = (project.group_test_dir("basic") / "CMakeLists.txt").read_text()
+    assert "NoTestBlock" not in cmake

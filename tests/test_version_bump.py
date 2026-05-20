@@ -216,3 +216,21 @@ def test_cli_dry_run_shows_files(runner, project) -> None:
     assert result.exit_code == 0
     assert "CMakeLists.txt" in result.output
     assert cmake.read_text() == f"project(testmod LANGUAGES CXX VERSION {project.version})\n"
+
+
+def test_cli_patch_updates_doxyfile(runner, project) -> None:
+    doxy = project.root / "Doxyfile"
+    doxy.write_text(f'PROJECT_NUMBER         = "{project.version}"\n')
+    result = runner.invoke(cmd, ["--patch", "--yes", "--project-dir", str(project.root)])
+    assert result.exit_code == 0
+    assert '"0.1.1"' in doxy.read_text()
+
+
+def test_cli_dry_run_shows_doxyfile(runner, project) -> None:
+    doxy = project.root / "Doxyfile"
+    original = f'PROJECT_NUMBER         = "{project.version}"\n'
+    doxy.write_text(original)
+    result = runner.invoke(cmd, ["--patch", "--dry-run", "--project-dir", str(project.root)])
+    assert result.exit_code == 0
+    assert "Doxyfile" in result.output
+    assert doxy.read_text() == original

@@ -333,6 +333,63 @@ def test_rename_group_nonexistent_group_errors(
     assert result.exit_code != 0
 
 
+# ---------------------------------------------------------------------------
+# cp — cross-group
+# ---------------------------------------------------------------------------
+
+
+def test_cp_cross_group_header_in_dest(project_two_groups: ProjectConfig, tmp_path: Path) -> None:
+    """cp --to-group places the copied header in the destination group."""
+    cfg = project_two_groups
+    spec = write_spec(tmp_path / "spec.yaml", "MyFilter", group="basic")
+    invoke(cfg.root, "newblock", "--spec", str(spec))
+
+    invoke(
+        cfg.root,
+        "cp",
+        "--from-group",
+        "basic",
+        "--to-group",
+        "filter",
+        "MyFilter",
+        "MyFilter",
+        "-y",
+    )
+
+    assert (cfg.group_include_dir("filter") / "MyFilter.hpp").exists()
+    assert (cfg.group_include_dir("basic") / "MyFilter.hpp").exists()
+
+
+def test_cp_cross_group_check_clean(project_two_groups: ProjectConfig, tmp_path: Path) -> None:
+    """check is clean after cross-group cp (both copies fully registered)."""
+    cfg = project_two_groups
+    spec = write_spec(tmp_path / "spec.yaml", "MyFilter", group="basic")
+    invoke(cfg.root, "newblock", "--spec", str(spec))
+
+    invoke(
+        cfg.root,
+        "cp",
+        "--from-group",
+        "basic",
+        "--to-group",
+        "filter",
+        "MyFilter",
+        "MyFilter",
+        "--gen-test",
+        "-y",
+    )
+
+    result = invoke(cfg.root, "check", "--json")
+    import json
+
+    assert json.loads(result.output)["error_count"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Chained mutation
+# ---------------------------------------------------------------------------
+
+
 def test_full_mutation_chain_check_clean(project: ProjectConfig, tmp_path: Path) -> None:
     """A create → rename → copy → remove sequence leaves the project clean."""
     _add_block(project, tmp_path, "Alpha")

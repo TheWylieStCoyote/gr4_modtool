@@ -7,6 +7,7 @@ from pathlib import Path
 from click.testing import CliRunner
 
 from gr4_modtool.commands.sync import SyncAction, apply_sync, cmd, plan_sync
+from gr4_modtool.project import meson as meson_mod
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -204,6 +205,46 @@ def test_apply_adds_cmake_entry(project) -> None:
 
     cmake_text = (project.group_test_dir("basic") / "CMakeLists.txt").read_text()
     assert "qa_Foo" in cmake_text
+
+
+# ---------------------------------------------------------------------------
+# apply_sync — add meson entry
+# ---------------------------------------------------------------------------
+
+
+def test_apply_adds_meson_entry(project) -> None:
+    """apply_sync with add_meson_entry appends the test entry to meson.build."""
+    _write_header(project, "basic", "Foo")
+    _write_test_src(project, "basic", "Foo")
+
+    actions = [a for a in plan_sync(project) if a.action == "add_meson_entry"]
+    assert actions
+
+    apply_sync(project, actions)
+
+    meson_text = (project.group_test_dir("basic") / "meson.build").read_text()
+    assert "qa_Foo" in meson_text
+
+
+# ---------------------------------------------------------------------------
+# apply_sync — prune stale meson entry
+# ---------------------------------------------------------------------------
+
+
+def test_apply_prune_removes_stale_meson(project) -> None:
+    """apply_sync remove_meson_entry deletes the stale entry from meson.build."""
+    # Use append_test_entry so the entry is in the canonical format that
+    # remove_test_entry expects (qa_Gone_exe = executable(...) + test(...)).
+    meson_mod.append_test_entry(project.group_test_dir("basic") / "meson.build", "Gone")
+
+    actions = plan_sync(project, prune=True)
+    remove_actions = [a for a in actions if a.action == "remove_meson_entry"]
+    assert remove_actions
+
+    apply_sync(project, remove_actions)
+
+    meson_text = (project.group_test_dir("basic") / "meson.build").read_text()
+    assert "qa_Gone" not in meson_text
 
 
 # ---------------------------------------------------------------------------
