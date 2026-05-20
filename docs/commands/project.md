@@ -220,3 +220,42 @@ gr4_modtool sync --prune --yes  # apply and remove stale entries
 ```
 
 Sync is the automated counterpart to `check`: where `check` audits and reports, `sync` fixes.
+
+---
+
+## version-bump
+
+Bump or set the project version across all version-bearing files.
+
+```bash
+gr4_modtool version-bump [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--major` | Bump major version (`X+1.0.0`) |
+| `--minor` | Bump minor version (`X.Y+1.0`) |
+| `--patch` | Bump patch version (`X.Y.Z+1`) |
+| `--set VERSION` | Set to an exact `X.Y.Z` value |
+| `--yes / -y` | Apply without confirmation |
+| `--dry-run / -n` | Show what would change without writing any files |
+| `--project-dir PATH` | Project root |
+
+Updates every version-bearing file that exists in the project root:
+
+| File | Pattern updated |
+|---|---|
+| `.gr4modtool.toml` | `version = "X.Y.Z"` |
+| `CMakeLists.txt` | `project(... VERSION X.Y.Z ...)` |
+| `meson.build` | `version : 'X.Y.Z'` |
+| `Doxyfile` | `PROJECT_NUMBER = "X.Y.Z"` |
+
+Files that don't exist are silently skipped. Only actually-changed files are reported.
+
+```bash
+gr4_modtool version-bump --patch --yes      # 1.2.3 → 1.2.4
+gr4_modtool version-bump --minor --dry-run  # preview: 1.2.3 → 1.3.0
+gr4_modtool version-bump --set 2.0.0 --yes  # set exactly
+```
+
+Without a flag, an interactive prompt asks which part to bump (`patch`, `minor`, or `major`).

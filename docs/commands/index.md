@@ -35,6 +35,7 @@ All commands accept `--help` for detailed option descriptions.
 | [`show`](project.md#show) | Display a block's source with syntax highlighting |
 | [`status`](project.md#status) | Project health dashboard (blocks, tests, CI, tools) |
 | [`doctor`](quality.md#doctor) | Check that the environment has all required tools |
+| [`version-bump`](project.md#version-bump) | Bump or set the project version across all build files |
 
 ## Building & Testing
 
