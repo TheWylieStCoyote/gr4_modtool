@@ -1,0 +1,11 @@
+project('{{ project_name }}', 'cpp',
+  version : '{{ version }}',
+  default_options : ['warning_level=3',
+                     'cpp_std=c++23'])
+
+gr4_dep = dependency('gnuradio4')
+
+boost_ut_proj = subproject('boost-ut')
+ut_dep = boost_ut_proj.get_variable('boostut_dep')
+
+subdir('blocks')
