@@ -30,9 +30,11 @@ All commands accept `--help` for detailed option descriptions.
 |---|---|
 | [`init`](project.md#init) | Adopt an existing project (scans groups and blocks) |
 | [`check`](project.md#check) | Audit for out-of-sync state |
+| [`sync`](project.md#sync) | Fix out-of-sync state (generates stubs, updates build entries) |
 | [`info`](project.md#info) | List groups and blocks; `--verbose` shows ports/params |
 | [`show`](project.md#show) | Display a block's source with syntax highlighting |
 | [`status`](project.md#status) | Project health dashboard (blocks, tests, CI, tools) |
+| [`doctor`](quality.md#doctor) | Check that the environment has all required tools |
 
 ## Building & Testing
 
@@ -51,6 +53,7 @@ All commands accept `--help` for detailed option descriptions.
 | [`vscode`](devenv.md#vscode) | Write `.vscode/settings.json` and `launch.json` |
 | [`devcontainer`](devenv.md#devcontainer) | Write `.devcontainer/` with Docker setup |
 | [`completion`](devenv.md#completion) | Print shell completion setup line |
+| [`templates`](devenv.md#templates) | Manage project-local Jinja2 template overrides |
 
 ## CI / Code Quality
 

@@ -41,6 +41,10 @@ def make_env(project_root: Path | None = None, extra_dirs: list[Path] | None = N
     )
 
 
+def builtin_templates_dir() -> Path:
+    return _BUILTIN_TEMPLATES
+
+
 def render(
     template_name: str,
     context: dict,

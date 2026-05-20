@@ -155,3 +155,44 @@ Exit code 1 if any errors are found. With `--strict`, warnings also cause exit 1
   "warning_count": 0
 }
 ```
+
+---
+
+## doctor
+
+Check that the environment has everything `gr4_modtool` needs.
+
+```bash
+gr4_modtool doctor [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--json` | Output results as JSON |
+| `--project-dir PATH` | Project root (scopes build-system checks to configured tools) |
+
+Probes the system for required and optional tools, reporting each as pass, warn, or fail.
+
+**Required checks:**
+
+| Check | Minimum version |
+|---|---|
+| Python | 3.11 |
+| CMake | 3.20 (only if project uses CMake) |
+| Meson | 0.63 (only if project uses Meson) |
+| ninja | any |
+| pkg-config | any |
+| C++ compiler | g++ or clang++ |
+| gnuradio4 headers | detected via pkg-config |
+
+**Optional checks** (warn if absent, do not affect exit code):
+
+| Tool | Used for |
+|---|---|
+| `gcovr` | HTML coverage reports |
+| `llvm-cov` | LLVM-based coverage reports |
+| `clang-tidy` | Static analysis (`tidy` command) |
+| `clang-format` | C++ formatting (`format` command) |
+| `watchdog` | `test --watch` mode |
+
+Exit code 0 when all required checks pass.

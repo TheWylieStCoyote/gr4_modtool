@@ -83,3 +83,66 @@ To install the script to a file (e.g. for system-wide completions):
 ```bash
 gr4_modtool completion --shell bash --print-script > /etc/bash_completion.d/gr4_modtool
 ```
+
+---
+
+## templates
+
+Manage project-local Jinja2 template overrides.
+
+```bash
+gr4_modtool templates SUBCOMMAND
+```
+
+Override any built-in template by copying it into `.gr4modtool/templates/` and editing it. Commands that generate files (e.g. `newblock`, `add-test`) will use your override automatically.
+
+### templates list
+
+```bash
+gr4_modtool templates list [--project-dir PATH]
+```
+
+List all built-in templates and show which ones have project-local overrides.
+
+```
+Template                         Status
+block.hpp.j2                     built-in
+qa_block.cpp.j2                  overridden
+test_cmake.build.j2              built-in
+```
+
+### templates init
+
+```bash
+gr4_modtool templates init TEMPLATE_NAME [--force] [--project-dir PATH]
+```
+
+Copy a built-in template into `.gr4modtool/templates/` for editing. Prints the Jinja2 context variables available in that template after copying.
+
+```bash
+gr4_modtool templates init block.hpp.j2
+# Copied block.hpp.j2 → .gr4modtool/templates/block.hpp.j2
+#
+# Context variables:
+#   block_name        str    Block class name (CamelCase)
+#   description       str    Doc<"..."> string
+#   ...
+```
+
+Use `--force` to overwrite an existing override.
+
+### templates check
+
+```bash
+gr4_modtool templates check [--project-dir PATH]
+```
+
+Render all override templates with dummy context to catch Jinja2 syntax errors before they surface during block generation.
+
+```
+Checking 2 override template(s)...
+  block.hpp.j2                             OK
+  qa_block.cpp.j2                          ERROR: 'block_name' is undefined
+```
+
+Exit code 1 if any template fails to render.

@@ -190,3 +190,33 @@ Example output:
   ⚠  Warnings
     •  dsp/LowPassFilter — no test file
 ```
+
+---
+
+## sync
+
+Reconcile headers, test sources, and build entries across all groups.
+
+```bash
+gr4_modtool sync [OPTIONS]
+```
+
+| Option | Description |
+|---|---|
+| `--group TEXT` | Limit sync to this group (repeatable) |
+| `--prune` | Also remove stale build entries for deleted test sources |
+| `--yes / -y` | Apply without interactive confirmation |
+| `--dry-run / -n` | Show what would change without writing any files |
+| `--project-dir PATH` | Project root |
+
+By default, sync generates missing `qa_*.cpp` test stubs and adds missing CMake/Meson build entries. Use `--prune` to also clean up entries that point at test sources that no longer exist.
+
+**Typical workflow:**
+
+```bash
+gr4_modtool sync --dry-run      # preview changes
+gr4_modtool sync --yes          # apply immediately
+gr4_modtool sync --prune --yes  # apply and remove stale entries
+```
+
+Sync is the automated counterpart to `check`: where `check` audits and reports, `sync` fixes.
