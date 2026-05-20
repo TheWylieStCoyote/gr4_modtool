@@ -68,12 +68,13 @@ def load_config(project_dir: Path | None = None) -> ProjectConfig:
         root = Path(project_dir).resolve()
         config_path = root / CONFIG_FILE
     else:
-        root = find_project_root()
-        if root is None:
+        _found = find_project_root()
+        if _found is None:
             raise FileNotFoundError(
                 f"No {CONFIG_FILE} found. Run 'gr4_modtool newmod' to create a project, "
                 "or use --project-dir to specify the project root."
             )
+        root = _found
         config_path = root / CONFIG_FILE
 
     with open(config_path, "rb") as f:

@@ -10,7 +10,7 @@ from typing import ClassVar
 from rich.syntax import Syntax
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.binding import Binding
+from textual.binding import Binding, BindingType
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -242,7 +242,7 @@ class DetailPanel(ScrollableContainer):
 
 
 class HelpScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [
+    BINDINGS: ClassVar[list[BindingType]] = [
         Binding("escape", "dismiss", "Close"),
         Binding("question_mark", "dismiss", "Close"),
     ]
@@ -266,7 +266,7 @@ class HelpScreen(ModalScreen):
 class BuildOutputScreen(ModalScreen):
     """Runs one or more commands sequentially, streaming output into a log."""
 
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Close")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Close")]
 
     def __init__(self, cmds: list[list[str]], cwd: Path) -> None:
         super().__init__()
@@ -326,7 +326,7 @@ class BuildOutputScreen(ModalScreen):
 
 
 class NewGroupScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="modal-form modal-form--narrow"):
@@ -356,7 +356,7 @@ class NewGroupScreen(ModalScreen):
 
 
 class NewBlockScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(
         self,
@@ -458,7 +458,7 @@ class NewBlockScreen(ModalScreen):
 
 
 class RenameBlockScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(
         self,
@@ -515,7 +515,7 @@ class RenameBlockScreen(ModalScreen):
 
 
 class ConfirmDeleteScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(self, block_name: str, group: str) -> None:
         super().__init__()
@@ -547,7 +547,7 @@ class ConfirmDeleteScreen(ModalScreen):
 
 
 class NewParamScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(
         self,
@@ -609,7 +609,7 @@ class NewParamScreen(ModalScreen):
 
 
 class MoveBlockScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(
         self,
@@ -662,7 +662,7 @@ class MoveBlockScreen(ModalScreen):
 
 
 class CopyBlockScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(
         self,
@@ -719,7 +719,7 @@ class CopyBlockScreen(ModalScreen):
 
 
 class AddTestScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(
         self,
@@ -769,7 +769,7 @@ class AddTestScreen(ModalScreen):
 
 
 class NewBenchScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(
         self,
@@ -820,7 +820,7 @@ class NewBenchScreen(ModalScreen):
 
 
 class BuildScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="modal-form modal-form--narrow"):
@@ -860,7 +860,7 @@ class BuildScreen(ModalScreen):
 
 
 class RunTestScreen(ModalScreen):
-    BINDINGS: ClassVar[list[Binding]] = [Binding("escape", "dismiss", "Cancel")]
+    BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "dismiss", "Cancel")]
 
     def __init__(self, default_block: str | None = None) -> None:
         super().__init__()
@@ -902,7 +902,7 @@ class GR4ModtoolApp(App):
     TITLE = "gr4_modtool"
     CSS = _APP_CSS
 
-    BINDINGS: ClassVar[list[Binding]] = [
+    BINDINGS: ClassVar[list[BindingType]] = [
         Binding("q", "quit", "Quit"),
         Binding("question_mark", "help", "Help", key_display="?"),
         Binding("ctrl+p", "command_palette", "Commands"),
@@ -1027,7 +1027,7 @@ class GR4ModtoolApp(App):
             from gr4_modtool.project import meson as meson_mod
             from gr4_modtool.project.discovery import save_config
 
-            cfg = self._cfg  # type: ignore[assignment]
+            cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
             if name in cfg.groups:
                 self.notify(f"Group '{name}' already exists.", severity="error")
                 return
@@ -1051,6 +1051,7 @@ class GR4ModtoolApp(App):
     def action_new_block(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
 
         def _handle(answers: dict | None) -> None:
             if answers is None:
@@ -1065,13 +1066,14 @@ class GR4ModtoolApp(App):
                 self.notify(str(exc), severity="error")
 
         self.push_screen(
-            NewBlockScreen(self._cfg, self._groups, self._selected_group),  # type: ignore[arg-type]
+            NewBlockScreen(self._cfg, self._groups, self._selected_group),
             _handle,
         )
 
     def action_rename_block(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
 
         def _handle(answers: dict | None) -> None:
             if answers is None:
@@ -1080,7 +1082,7 @@ class GR4ModtoolApp(App):
             from gr4_modtool.project import cmake as cmake_mod
             from gr4_modtool.project import meson as meson_mod
 
-            cfg = self._cfg  # type: ignore[assignment]
+            cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
             group = answers["group"]
             old_name, new_name = answers["old_name"], answers["new_name"]
             old_header = cfg.group_include_dir(group) / f"{old_name}.hpp"
@@ -1108,15 +1110,14 @@ class GR4ModtoolApp(App):
                 self.notify(str(exc), severity="error")
 
         self.push_screen(
-            RenameBlockScreen(  # type: ignore[arg-type]
-                self._cfg, self._groups, self._selected_group, self._selected_block
-            ),
+            RenameBlockScreen(self._cfg, self._groups, self._selected_group, self._selected_block),
             _handle,
         )
 
     def action_delete_block(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
         if self._selected_block is None or self._selected_group is None:
             self.notify("Select a block first.", severity="warning")
             return
@@ -1130,7 +1131,7 @@ class GR4ModtoolApp(App):
             from gr4_modtool.project import cmake as cmake_mod
             from gr4_modtool.project import meson as meson_mod
 
-            cfg = self._cfg  # type: ignore[assignment]
+            cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
             try:
                 for f in [
                     cfg.group_include_dir(group) / f"{block_name}.hpp",
@@ -1155,6 +1156,7 @@ class GR4ModtoolApp(App):
     def action_new_param(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
 
         def _handle(answers: dict | None) -> None:
             if answers is None:
@@ -1186,15 +1188,14 @@ class GR4ModtoolApp(App):
                 self.notify(str(exc), severity="error")
 
         self.push_screen(
-            NewParamScreen(  # type: ignore[arg-type]
-                self._cfg, self._groups, self._selected_group, self._selected_block
-            ),
+            NewParamScreen(self._cfg, self._groups, self._selected_group, self._selected_block),
             _handle,
         )
 
     def action_move_block(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
         if len(self._groups) < 2:
             self.notify("Need at least two groups to move a block.", severity="warning")
             return
@@ -1217,15 +1218,14 @@ class GR4ModtoolApp(App):
                 self.notify(str(exc), severity="error")
 
         self.push_screen(
-            MoveBlockScreen(  # type: ignore[arg-type]
-                self._cfg, self._groups, self._selected_group, self._selected_block
-            ),
+            MoveBlockScreen(self._cfg, self._groups, self._selected_group, self._selected_block),
             _handle,
         )
 
     def action_copy_block(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
 
         def _handle(answers: dict | None) -> None:
             if answers is None:
@@ -1247,25 +1247,24 @@ class GR4ModtoolApp(App):
                 self.notify(str(exc), severity="error")
 
         self.push_screen(
-            CopyBlockScreen(  # type: ignore[arg-type]
-                self._cfg, self._groups, self._selected_group, self._selected_block
-            ),
+            CopyBlockScreen(self._cfg, self._groups, self._selected_group, self._selected_block),
             _handle,
         )
 
     def action_show_header(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
         if self._selected_block is None or self._selected_group is None:
             self.notify("Select a block first.", severity="warning")
             return
-        cfg = self._cfg  # type: ignore[assignment]
-        header = cfg.group_include_dir(self._selected_group) / f"{self._selected_block}.hpp"
+        header = self._cfg.group_include_dir(self._selected_group) / f"{self._selected_block}.hpp"
         self.query_one(DetailPanel).show_block(self._selected_block, header)
 
     def action_add_test(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
 
         def _handle(answers: dict | None) -> None:
             if answers is None:
@@ -1284,15 +1283,14 @@ class GR4ModtoolApp(App):
                 self.notify(str(exc), severity="error")
 
         self.push_screen(
-            AddTestScreen(  # type: ignore[arg-type]
-                self._cfg, self._groups, self._selected_group, self._selected_block
-            ),
+            AddTestScreen(self._cfg, self._groups, self._selected_group, self._selected_block),
             _handle,
         )
 
     def action_new_bench(self) -> None:
         if not self._guard():
             return
+        assert self._cfg is not None
 
         def _handle(answers: dict | None) -> None:
             if answers is None:
@@ -1311,9 +1309,7 @@ class GR4ModtoolApp(App):
                 self.notify(str(exc), severity="error")
 
         self.push_screen(
-            NewBenchScreen(  # type: ignore[arg-type]
-                self._cfg, self._groups, self._selected_group, self._selected_block
-            ),
+            NewBenchScreen(self._cfg, self._groups, self._selected_group, self._selected_block),
             _handle,
         )
 
@@ -1371,7 +1367,7 @@ class GR4ModtoolApp(App):
             import os
             import shutil
 
-            cfg = self._cfg  # type: ignore[assignment]
+            cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
             root = cfg.root
             bd = root / opts["build_dir"]
             has_cmake = (root / "CMakeLists.txt").exists()
@@ -1406,7 +1402,7 @@ class GR4ModtoolApp(App):
         def _handle(opts: dict | None) -> None:
             if opts is None:
                 return
-            cfg = self._cfg  # type: ignore[assignment]
+            cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
             root = cfg.root
             build_dir = root / opts["build_dir"]
             block_name = opts["block_name"]

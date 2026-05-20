@@ -53,7 +53,7 @@ python blocks/<group>/benchmarks/plot_<Name>.py ./build/blocks/<group>/benchmark
 
 ## test
 
-Run a single block's test binary inside an existing build directory — no rebuild.
+Run a single block's test binary inside an existing build directory.
 
 ```bash
 gr4_modtool test BLOCK_NAME [OPTIONS]
@@ -63,6 +63,7 @@ gr4_modtool test BLOCK_NAME [OPTIONS]
 |---|---|
 | `--build-dir PATH` | Build directory (default: `build`) |
 | `--verbose / -v` | Pass `--verbose` to ctest/meson |
+| `--watch / -w` | Rebuild and retest on every `.hpp` save |
 | `--project-dir PATH` | Project root |
 
 For CMake projects runs:
@@ -76,3 +77,21 @@ For Meson projects runs:
 ```bash
 meson test -C <build_dir> qa_<BLOCK_NAME>
 ```
+
+### Watch mode
+
+```bash
+gr4_modtool test MyFilter --watch
+```
+
+Watches the block's include directory for `.hpp` modifications. On each save it runs an incremental rebuild targeting only `qa_<BLOCK_NAME>` (faster than a full build), then re-runs the test:
+
+```
+Watching blocks/dsp/include/gnuradio-4.0/dsp for .hpp changes (Ctrl+C to stop)
+── 14:32:05 — rebuilding ──────────────────────────────────────
+  $ cmake --build build --target qa_MyFilter
+  $ ctest --test-dir build -R qa_MyFilter --output-on-failure
+100% tests passed
+```
+
+Rapid saves are debounced (1-second cooldown) to avoid double-fires from editor temp-file patterns. Requires the `watchdog` package (`pip install watchdog`).
