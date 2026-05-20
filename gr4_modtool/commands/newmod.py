@@ -106,11 +106,25 @@ endfunction()
     help="Where to create the project (default: current dir).",
 )
 @click.option("--name", default=None, help="Project name (skips prompt).")
-def cmd(project_dir: str | None, name: str | None) -> None:
+@click.option("--yes", "-y", is_flag=True, help="Accept all defaults without prompting.")
+def cmd(project_dir: str | None, name: str | None, yes: bool) -> None:
     """Scaffold a new GNURadio 4 OOT project."""
     dest = Path(project_dir).resolve() if project_dir else Path.cwd()
 
+    def _ask_text(question, *, default: str) -> str:
+        if yes:
+            return default
+        return questionary.text(question, default=default).ask() or default
+
+    def _ask_confirm(question, *, default: bool) -> bool:
+        if yes:
+            return default
+        return questionary.confirm(question, default=default).ask() or False
+
     if name is None:
+        if yes:
+            click.echo("--yes requires --name to be specified.", err=True)
+            sys.exit(1)
         name = questionary.text(
             "Project name (e.g. myblocks):",
             validate=lambda v: bool(v.strip()) or "Name cannot be empty",
@@ -119,51 +133,30 @@ def cmd(project_dir: str | None, name: str | None) -> None:
             sys.exit(1)
 
     name = name.strip()
-    version = questionary.text("Version:", default="0.1.0").ask() or "0.1.0"
-    cpp_ns = (
-        questionary.text("C++ namespace:", default=f"gr::{_slug(name)}").ask()
-        or f"gr::{_slug(name)}"
-    )
-    cmake_pfx = questionary.text(
-        "CMake prefix:", default=_cmake_prefix(name)
-    ).ask() or _cmake_prefix(name)
-    gr4_prefix = (
-        questionary.text("GNURadio4 include prefix:", default="gnuradio-4.0").ask()
-        or "gnuradio-4.0"
-    )
+    version = _ask_text("Version:", default="0.1.0")
+    cpp_ns = _ask_text("C++ namespace:", default=f"gr::{_slug(name)}")
+    cmake_pfx = _ask_text("CMake prefix:", default=_cmake_prefix(name))
+    gr4_prefix = _ask_text("GNURadio4 include prefix:", default="gnuradio-4.0")
 
-    build_cmake = questionary.confirm("Generate CMake build files?", default=True).ask()
-    build_meson = questionary.confirm("Generate Meson build files?", default=True).ask()
-    gen_git = questionary.confirm("Initialize git repository?", default=True).ask()
-    gen_devcontainer = questionary.confirm("Generate devcontainer?", default=False).ask()
-    gen_clang = questionary.confirm(
-        "Generate .clang-format and .clang-tidy config?", default=True
-    ).ask()
-    gen_ci_clang = questionary.confirm(
-        "Generate GitHub Actions CI for clang checks?", default=False
-    ).ask()
-    gen_presets = questionary.confirm(
-        "Generate CMakePresets.json (asan/ubsan/tsan)?", default=False
-    ).ask()
-    gen_ci_sanitizers = questionary.confirm(
-        "Generate GitHub Actions CI for sanitizers?", default=False
-    ).ask()
-    gen_ci_matrix = questionary.confirm(
-        "Generate CI build matrix workflow (gcc×clang)?", default=False
-    ).ask()
-    gen_vscode = questionary.confirm("Generate VS Code settings (.vscode/)?", default=True).ask()
-    gen_ci_coverage = questionary.confirm("Generate CI coverage workflow?", default=False).ask()
-    gen_ci_release = questionary.confirm("Generate CI release workflow?", default=False).ask()
-    gen_precommit = questionary.confirm("Generate .pre-commit-config.yaml?", default=False).ask()
-    gen_doxyfile = questionary.confirm("Generate Doxyfile for Doxygen?", default=False).ask()
+    build_cmake = _ask_confirm("Generate CMake build files?", default=True)
+    build_meson = _ask_confirm("Generate Meson build files?", default=True)
+    gen_git = _ask_confirm("Initialize git repository?", default=True)
+    gen_devcontainer = _ask_confirm("Generate devcontainer?", default=False)
+    gen_clang = _ask_confirm("Generate .clang-format and .clang-tidy config?", default=True)
+    gen_ci_clang = _ask_confirm("Generate GitHub Actions CI for clang checks?", default=False)
+    gen_presets = _ask_confirm("Generate CMakePresets.json (asan/ubsan/tsan)?", default=False)
+    gen_ci_sanitizers = _ask_confirm("Generate GitHub Actions CI for sanitizers?", default=False)
+    gen_ci_matrix = _ask_confirm("Generate CI build matrix workflow (gcc×clang)?", default=False)
+    gen_vscode = _ask_confirm("Generate VS Code settings (.vscode/)?", default=True)
+    gen_ci_coverage = _ask_confirm("Generate CI coverage workflow?", default=False)
+    gen_ci_release = _ask_confirm("Generate CI release workflow?", default=False)
+    gen_precommit = _ask_confirm("Generate .pre-commit-config.yaml?", default=False)
+    gen_doxyfile = _ask_confirm("Generate Doxyfile for Doxygen?", default=False)
 
-    first_group = (
-        questionary.text("Name of first block group (leave blank to skip):", default="basic").ask()
-        or ""
-    )
+    first_group = _ask_text("Name of first block group (leave blank to skip):", default="basic")
 
     project_root = dest / _slug(name)
-    if project_root.exists():
+    if project_root.exists() and not yes:
         if not questionary.confirm(
             f"Directory {project_root} already exists. Continue?", default=False
         ).ask():

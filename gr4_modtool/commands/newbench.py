@@ -183,7 +183,7 @@ def cmd(
         if block_name is None:
             sys.exit(0)
 
-    if not wire_build:
+    if not wire_build and not yes:
         wire_build = (
             questionary.confirm("Wire into build system (cmake/meson)?", default=False).ask()
             or False

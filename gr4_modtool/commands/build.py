@@ -88,8 +88,12 @@ def run_build(
 
 def _run(cmd: list[str]) -> int:
     click.echo(f"  $ {' '.join(cmd)}")
-    proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-    return proc.wait()
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.stdout:
+        click.echo(result.stdout, nl=False)
+    if result.stderr:
+        click.echo(result.stderr, nl=False, err=True)
+    return result.returncode
 
 
 @click.command("build")

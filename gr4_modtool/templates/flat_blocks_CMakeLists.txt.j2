@@ -1,6 +1,13 @@
 add_library({{ cmake_prefix }}_blocks_headers INTERFACE)
 add_library({{ cmake_prefix }}::blocks_headers ALIAS {{ cmake_prefix }}_blocks_headers)
 
+
+function(gr4_modtool_add_ut_test target_name source_file)
+  add_executable(${target_name} ${source_file})
+  target_link_libraries(${target_name} PRIVATE ${GR4I_GNURADIO4_TARGET} ${GR4I_BOOST_UT_TARGET})
+  add_test(NAME ${target_name} COMMAND ${target_name})
+endfunction()
+
 target_include_directories({{ cmake_prefix }}_blocks_headers INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

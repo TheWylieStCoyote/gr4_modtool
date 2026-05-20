@@ -4,8 +4,7 @@
 {% else %}#include <{{ gr4_include_prefix }}/{{ block_name }}.hpp>
 {% endif %}
 {% if needs_graph_test %}
-#include <{{ gr4_include_prefix }}/basic/VectorSink.hpp>
-#include <{{ gr4_include_prefix }}/basic/VectorSource.hpp>
+#include <gnuradio-4.0/testing/NullSources.hpp>
 #include <gnuradio-4.0/Graph.hpp>
 #include <gnuradio-4.0/Scheduler.hpp>
 {% endif %}
@@ -27,12 +26,12 @@ const boost::ut::suite<"{{ block_name }} graph"> {{ block_name | lower }}GraphTe
     "graph: runs without error"_test = [] {
         gr::Graph graph;
 {% for port in in_ports %}
-        auto& src{{ loop.index }} = graph.emplaceBlock<gr::incubator::basic::VectorSource<{{ first_port_type }}>>();
-        src{{ loop.index }}.data = std::vector<{{ first_port_type }}>(16, {});
+        auto& src{{ loop.index }} = graph.emplaceBlock<gr::testing::ConstantSource<{{ first_port_type }}>>();
+        src{{ loop.index }}.n_samples_max = 16U;
 {% endfor %}
         auto& blk = graph.emplaceBlock<{{ namespace }}::{{ block_name }}<{{ first_type }}>>();
 {% for port in out_ports %}
-        auto& snk{{ loop.index }} = graph.emplaceBlock<gr::incubator::basic::VectorSink<{{ first_out_type }}>>();
+        auto& snk{{ loop.index }} = graph.emplaceBlock<gr::testing::NullSink<{{ first_out_type }}>>();
 {% endfor %}
 {% for port in in_ports %}
         expect(graph.connect<"out", "{{ port.name }}">(src{{ loop.index }}, blk).has_value());

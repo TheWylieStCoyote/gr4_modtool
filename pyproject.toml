@@ -79,3 +79,9 @@ ignore = ["E501"]  # line length handled by formatter
 python_version = "3.11"
 strict = false
 ignore_missing_imports = true
+
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: requires cmake and GNURadio 4 headers; skipped by default",
+]
