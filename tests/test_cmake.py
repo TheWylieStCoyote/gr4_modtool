@@ -20,7 +20,7 @@ from gr4_modtool.project.cmake import (
 def cmake_file(tmp_path: Path) -> Path:
     f = tmp_path / "CMakeLists.txt"
     f.write_text(
-        "gr4_incubator_add_ut_test(qa_Copy qa_Copy.cpp)\n"
+        "gr4_modtool_add_ut_test(qa_Copy qa_Copy.cpp)\n"
         "target_link_libraries(qa_Copy PRIVATE gr4_testmod::blocks_basic_headers)\n"
     )
     return f

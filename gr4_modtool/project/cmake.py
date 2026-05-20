@@ -7,10 +7,10 @@ from pathlib import Path
 
 
 def append_test_entry(cmake_path: Path, block_name: str, target_libs: str) -> None:
-    """Add a gr4_incubator_add_ut_test + target_link_libraries pair."""
+    """Add a gr4_modtool_add_ut_test + target_link_libraries pair."""
     text = cmake_path.read_text()
     new_entry = (
-        f"\ngr4_incubator_add_ut_test(qa_{block_name} qa_{block_name}.cpp)\n"
+        f"\ngr4_modtool_add_ut_test(qa_{block_name} qa_{block_name}.cpp)\n"
         f"target_link_libraries(qa_{block_name} PRIVATE {target_libs})\n"
     )
     cmake_path.write_text(text.rstrip() + new_entry)
@@ -20,7 +20,7 @@ def remove_test_entry(cmake_path: Path, block_name: str) -> bool:
     """Remove the ut_test + target_link_libraries lines for block_name. Returns True if found."""
     text = cmake_path.read_text()
     pattern = (
-        rf"\ngr4_incubator_add_ut_test\(qa_{re.escape(block_name)}[^\n]*\)\n"
+        rf"\ngr4_modtool_add_ut_test\(qa_{re.escape(block_name)}[^\n]*\)\n"
         rf"target_link_libraries\(qa_{re.escape(block_name)}[^\n]*\)\n?"
     )
     new_text, count = re.subn(pattern, "\n", text)
