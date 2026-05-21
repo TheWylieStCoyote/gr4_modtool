@@ -22,10 +22,13 @@ def run_build(
     jobs: int | None = None,
     reconfigure: bool = False,
     cmake_args: tuple[str, ...] = (),
+    preset: str | None = None,
 ) -> int:
     """Configure + build (+ optionally test). Returns subprocess exit code.
 
     Does not require .gr4modtool.toml — works on any cmake/meson project.
+    When CMakePresets.json is present, uses preset-based invocation so that
+    compiler and flag defaults from the preset are applied automatically.
     """
     has_cmake = (project_root / "CMakeLists.txt").exists()
     has_meson = (project_root / "meson.build").exists()
@@ -43,28 +46,47 @@ def run_build(
     parallel = str(jobs) if jobs else str(os.cpu_count() or 4)
 
     if use_cmake:
-        need_configure = reconfigure or not (build_dir / "CMakeCache.txt").exists()
-        if need_configure:
-            configure_cmd = [
-                "cmake",
-                "-B",
-                str(build_dir),
-                "-S",
-                str(project_root),
-                *cmake_args,
-            ]
-            rc = _run(configure_cmd)
+        has_presets = (project_root / "CMakePresets.json").exists()
+        use_preset = preset or ("default" if has_presets else None)
+
+        if use_preset:
+            # Preset-based flow — binaryDir comes from the preset
+            need_configure = reconfigure or not _preset_cache_exists(project_root, use_preset)
+            if need_configure:
+                configure_cmd = ["cmake", "--preset", use_preset, *cmake_args]
+                rc = _run(configure_cmd, cwd=project_root)
+                if rc != 0:
+                    return rc
+            build_cmd = ["cmake", "--build", "--preset", use_preset, "--parallel", parallel]
+            rc = _run(build_cmd, cwd=project_root)
+            if rc != 0:
+                return rc
+            if run_tests:
+                test_cmd = ["ctest", "--preset", use_preset, "--output-on-failure"]
+                rc = _run(test_cmd, cwd=project_root)
+        else:
+            need_configure = reconfigure or not (build_dir / "CMakeCache.txt").exists()
+            if need_configure:
+                configure_cmd = [
+                    "cmake",
+                    "-B",
+                    str(build_dir),
+                    "-S",
+                    str(project_root),
+                    *cmake_args,
+                ]
+                rc = _run(configure_cmd)
+                if rc != 0:
+                    return rc
+
+            build_cmd = ["cmake", "--build", str(build_dir), "--parallel", parallel]
+            rc = _run(build_cmd)
             if rc != 0:
                 return rc
 
-        build_cmd = ["cmake", "--build", str(build_dir), "--parallel", parallel]
-        rc = _run(build_cmd)
-        if rc != 0:
-            return rc
-
-        if run_tests:
-            test_cmd = ["ctest", "--test-dir", str(build_dir), "--output-on-failure"]
-            rc = _run(test_cmd)
+            if run_tests:
+                test_cmd = ["ctest", "--test-dir", str(build_dir), "--output-on-failure"]
+                rc = _run(test_cmd)
 
     else:
         need_configure = reconfigure or not build_dir.exists()
@@ -86,9 +108,26 @@ def run_build(
     return rc
 
 
-def _run(cmd: list[str]) -> int:
+def _preset_cache_exists(project_root: Path, preset: str) -> bool:
+    """Return True if a CMakeCache.txt exists in any likely binary dir for this preset."""
+    import json
+
+    presets_file = project_root / "CMakePresets.json"
+    try:
+        data = json.loads(presets_file.read_text())
+        for p in data.get("configurePresets", []):
+            if p.get("name") == preset:
+                binary_dir = p.get("binaryDir", "")
+                binary_dir = binary_dir.replace("${sourceDir}", str(project_root))
+                return (Path(binary_dir) / "CMakeCache.txt").exists()
+    except Exception:  # noqa: BLE001
+        pass
+    return False
+
+
+def _run(cmd: list[str], cwd: Path | None = None) -> int:
     click.echo(f"  $ {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
     if result.stdout:
         click.echo(result.stdout, nl=False)
     if result.stderr:
@@ -114,6 +153,12 @@ def _run(cmd: list[str]) -> int:
 @click.option("--jobs", "-j", default=None, type=int, help="Parallel jobs.")
 @click.option("--reconfigure", is_flag=True, default=False, help="Force re-run of configure step.")
 @click.option(
+    "--preset",
+    default=None,
+    metavar="NAME",
+    help="CMake preset to use (auto-detected from CMakePresets.json when present).",
+)
+@click.option(
     "--cmake-args",
     multiple=True,
     metavar="ARG",
@@ -126,6 +171,7 @@ def cmd(
     run_tests: bool,
     jobs: int | None,
     reconfigure: bool,
+    preset: str | None,
     cmake_args: tuple[str, ...],
 ) -> None:
     """Configure and build the project using cmake or meson."""
@@ -144,6 +190,7 @@ def cmd(
         jobs=jobs,
         reconfigure=reconfigure,
         cmake_args=cmake_args,
+        preset=preset,
     )
     if rc != 0:
         sys.exit(rc)

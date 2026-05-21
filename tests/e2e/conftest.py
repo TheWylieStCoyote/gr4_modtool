@@ -49,7 +49,7 @@ def write_spec(
     block_name: str,
     *,
     group: str = "basic",
-    archetype: str = "filter",
+    archetype: str = "sync",
     type_list: str = "float, double",
     gen_test: bool = True,
 ) -> Path:

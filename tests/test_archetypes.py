@@ -59,8 +59,8 @@ def test_sink_archetype_no_output_ports(cfg: ProjectConfig) -> None:
     assert "PortOut" not in text
 
 
-def test_filter_archetype_processone(cfg: ProjectConfig) -> None:
-    answers = _make_answers(cfg, "filter", "MyFilter")
+def test_sync_archetype_processone(cfg: ProjectConfig) -> None:
+    answers = _make_answers(cfg, "sync", "MyFilter")
     write_block_files(cfg, answers)
     text = (cfg.group_include_dir("basic") / "MyFilter.hpp").read_text()
     assert "processOne" in text
@@ -100,7 +100,7 @@ def test_custom_archetype_uses_provided_ports(cfg: ProjectConfig) -> None:
 
 
 def test_archetypes_dict_has_all_keys() -> None:
-    for name in ("source", "sink", "filter", "decimator", "interpolator"):
+    for name in ("source", "sink", "sync", "sync_bulk", "decimator", "interpolator"):
         assert name in ARCHETYPES
         arch = ARCHETYPES[name]
         assert "in_ports" in arch

@@ -20,13 +20,13 @@ from gr4_modtool.project.discovery import ProjectConfig
 # ---------------------------------------------------------------------------
 
 
-def test_infer_archetype_filter() -> None:
+def test_infer_archetype_sync() -> None:
     result = infer_archetype(
         [{"name": "in", "type": "T"}],
         [{"name": "out", "type": "T"}],
         "processOne",
     )
-    assert result == "filter"
+    assert result == "sync"
 
 
 def test_infer_archetype_source() -> None:
@@ -49,14 +49,14 @@ def test_infer_archetype_none_custom_ports() -> None:
 
 
 def test_infer_archetype_none_wrong_style() -> None:
-    # filter ports but processBulk style → no exact match
+    # sync ports but processBulk style → no exact match
     result = infer_archetype(
         [{"name": "in", "type": "T"}],
         [{"name": "out", "type": "T"}],
         "processBulk",
     )
-    # decimator/interpolator have the same ports+bulk style
-    assert result in ("decimator", "interpolator")
+    # decimator/interpolator/sync_bulk have the same ports+bulk style
+    assert result in ("sync_bulk", "decimator", "interpolator")
 
 
 # ---------------------------------------------------------------------------
@@ -64,7 +64,7 @@ def test_infer_archetype_none_wrong_style() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_header_to_spec_entry_filter_archetype(project: ProjectConfig, tmp_path: Path) -> None:
+def test_header_to_spec_entry_sync_archetype(project: ProjectConfig, tmp_path: Path) -> None:
     answers = {
         "block_name": "MyFilter",
         "group_name": "basic",
@@ -83,7 +83,7 @@ def test_header_to_spec_entry_filter_archetype(project: ProjectConfig, tmp_path:
 
     assert entry["block_name"] == "MyFilter"
     assert entry["group"] == "basic"
-    assert entry["archetype"] == "filter"
+    assert entry["archetype"] == "sync"
     assert "in_ports" not in entry
     assert "out_ports" not in entry
     assert "processing_style" not in entry

@@ -11,7 +11,7 @@ from .conftest import invoke, write_spec
 
 
 def _flat_spec(tmp_path: Path, block_name: str = "MyFilter") -> Path:
-    return write_spec(tmp_path / "spec.yaml", block_name, group="", archetype="filter")
+    return write_spec(tmp_path / "spec.yaml", block_name, group="", archetype="sync")
 
 
 # ---------------------------------------------------------------------------

@@ -17,7 +17,7 @@ from .conftest import invoke
 _MULTI_SPEC = """\
 - block_name: BlockAlpha
   group: basic
-  archetype: filter
+  archetype: sync
   type_list: "float"
   gen_test: true
 
@@ -37,7 +37,7 @@ _MULTI_SPEC = """\
 _MIXED_ARCHETYPE_SPEC = """\
 - block_name: MyFilter
   group: basic
-  archetype: filter
+  archetype: sync
   type_list: "float"
   gen_test: true
 
@@ -98,7 +98,7 @@ def test_multi_block_spec_info_shows_all(project: ProjectConfig, tmp_path: Path)
 
 
 def test_multi_block_spec_mixed_archetypes(project: ProjectConfig, tmp_path: Path) -> None:
-    """A list spec with mixed archetypes (filter + decimator) passes check."""
+    """A list spec with mixed archetypes (sync + decimator) passes check."""
     spec = tmp_path / "mixed.yaml"
     spec.write_text(_MIXED_ARCHETYPE_SPEC)
     invoke(project.root, "newblock", "--spec", str(spec))

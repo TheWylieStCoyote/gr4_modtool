@@ -50,19 +50,29 @@ def test_newmod_cmake_scaffold(tmp_path: Path) -> None:
     assert (root / "cmake" / "Dependencies.cmake").exists()
 
 
-def test_newmod_meson_scaffold(tmp_path: Path) -> None:
-    """newmod --yes generates meson.build."""
+def test_newmod_no_meson_by_default(tmp_path: Path) -> None:
+    """newmod --yes does not generate meson.build (meson default is off)."""
     root = _newmod(tmp_path, "mymod")
 
-    assert (root / "meson.build").exists()
+    assert not (root / "meson.build").exists()
 
 
-def test_newmod_creates_first_group(tmp_path: Path) -> None:
-    """newmod --yes scaffolds the default first group 'basic'."""
+def test_newmod_flat_by_default(tmp_path: Path) -> None:
+    """newmod --yes creates a flat project with no groups by default."""
     root = _newmod(tmp_path, "mymod")
 
     cfg = load_config(root)
+    assert cfg.flat is True
+    assert cfg.groups == {}
+
+
+def test_newmod_first_group_flag(tmp_path: Path) -> None:
+    """--first-group creates a grouped project with the named group."""
+    root = _newmod(tmp_path, "mymod", "--first-group", "basic")
+
+    cfg = load_config(root)
     assert "basic" in cfg.groups
+    assert cfg.flat is False
 
 
 def test_newmod_project_dir_flag(tmp_path: Path) -> None:
@@ -86,7 +96,7 @@ def test_newmod_then_newblock_check_clean(tmp_path: Path) -> None:
 
     spec = tmp_path / "spec.yaml"
     spec.write_text(
-        'block_name: MyFilter\ngroup: basic\narchetype: filter\ntype_list: "float"\ngen_test: true\n'
+        'block_name: MyFilter\ngroup: basic\narchetype: sync\ntype_list: "float"\ngen_test: true\n'
     )
     invoke(root, "newblock", "--spec", str(spec))
 
@@ -96,13 +106,13 @@ def test_newmod_then_newblock_check_clean(tmp_path: Path) -> None:
 
 def test_newmod_then_newgroup_then_newblock_check_clean(tmp_path: Path) -> None:
     """newmod → newgroup → newblock → check: multi-group project stays clean."""
-    root = _newmod(tmp_path, "mymod")
+    root = _newmod(tmp_path, "mymod", "--first-group", "basic")
 
     invoke(root, "newgroup", "--name", "dsp")
 
     spec = tmp_path / "spec.yaml"
     spec.write_text(
-        'block_name: LowPass\ngroup: dsp\narchetype: filter\ntype_list: "float"\ngen_test: true\n'
+        'block_name: LowPass\ngroup: dsp\narchetype: sync\ntype_list: "float"\ngen_test: true\n'
     )
     invoke(root, "newblock", "--spec", str(spec))
 

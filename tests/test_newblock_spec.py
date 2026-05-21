@@ -31,7 +31,7 @@ def test_spec_single_block_creates_header(project: ProjectConfig, tmp_path: Path
 group: basic
 block_name: MyFilter
 type_list: "float, double"
-archetype: filter
+archetype: sync
 """,
     )
     entries = load_spec(spec)
@@ -47,7 +47,7 @@ def test_spec_single_block_creates_test(project: ProjectConfig, tmp_path: Path) 
 group: basic
 block_name: TestBlock
 type_list: "float"
-archetype: filter
+archetype: sync
 gen_test: true
 """,
     )
@@ -67,7 +67,7 @@ def test_spec_multiple_blocks(project: ProjectConfig, tmp_path: Path) -> None:
         """
 - group: basic
   block_name: FilterA
-  archetype: filter
+  archetype: sync
   type_list: "float"
 
 - group: basic
@@ -95,7 +95,7 @@ def test_spec_group_override(project: ProjectConfig, tmp_path: Path) -> None:
         """
 group: basic
 block_name: Overridden
-archetype: filter
+archetype: sync
 type_list: "float"
 """,
     )
@@ -117,7 +117,7 @@ def test_spec_archetype_fills_ports(tmp_path: Path) -> None:
         """
 group: basic
 block_name: AFilter
-archetype: filter
+archetype: sync
 type_list: "float"
 """,
     )
@@ -159,7 +159,7 @@ def test_spec_gen_test_defaults_true(tmp_path: Path) -> None:
         """
 group: basic
 block_name: Defaulted
-archetype: filter
+archetype: sync
 type_list: "float"
 """,
     )
@@ -173,7 +173,7 @@ def test_spec_template_params_defaults_to_T(tmp_path: Path) -> None:
         """
 group: basic
 block_name: Defaulted
-archetype: filter
+archetype: sync
 type_list: "float"
 """,
     )
@@ -193,7 +193,7 @@ def test_spec_validation_invalid_name(tmp_path: Path) -> None:
 group: basic
 block_name: my_filter
 type_list: "float"
-archetype: filter
+archetype: sync
 """,
     )
     entries = load_spec(spec)
@@ -207,7 +207,7 @@ def test_spec_validation_missing_group(tmp_path: Path) -> None:
         """
 block_name: MyFilter
 type_list: "float"
-archetype: filter
+archetype: sync
 """,
     )
     entries = load_spec(spec)

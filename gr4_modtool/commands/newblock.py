@@ -37,10 +37,15 @@ ARCHETYPES: dict[str, dict] = {
         "out_ports": [],
         "processing_style": "processBulk",
     },
-    "filter": {
+    "sync": {
         "in_ports": [{"name": "in", "type": "T"}],
         "out_ports": [{"name": "out", "type": "T"}],
         "processing_style": "processOne",
+    },
+    "sync_bulk": {
+        "in_ports": [{"name": "in", "type": "T"}],
+        "out_ports": [{"name": "out", "type": "T"}],
+        "processing_style": "processBulk",
     },
     "decimator": {
         "in_ports": [{"name": "in", "type": "T"}],

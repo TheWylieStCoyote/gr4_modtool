@@ -204,7 +204,7 @@ def test_export_spec_multi_block_roundtrip(project: ProjectConfig, tmp_path: Pat
     from gr4_modtool.project.discovery import ProjectConfig as PC
     from gr4_modtool.project.discovery import save_config
 
-    for name, arch in (("BlockOne", "filter"), ("BlockTwo", "sink")):
+    for name, arch in (("BlockOne", "sync"), ("BlockTwo", "sink")):
         spec = write_spec(tmp_path / f"spec_{name}.yaml", name, group="basic", archetype=arch)
         invoke(project.root, "newblock", "--spec", str(spec))
 
@@ -325,12 +325,14 @@ def test_newblock_custom_ports_spec(project: ProjectConfig, tmp_path: Path) -> N
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("archetype", ["filter", "source", "sink", "decimator", "interpolator"])
+@pytest.mark.parametrize(
+    "archetype", ["sync", "sync_bulk", "source", "sink", "decimator", "interpolator"]
+)
 def test_newblock_all_archetypes_check_clean(
     project: ProjectConfig, tmp_path: Path, archetype: str
 ) -> None:
     """newblock passes check for every supported archetype."""
-    block_name = f"My{archetype.capitalize()}Block"
+    block_name = "My" + "".join(part.capitalize() for part in archetype.split("_")) + "Block"
     spec = write_spec(
         tmp_path / f"spec_{archetype}.yaml", block_name, group="basic", archetype=archetype
     )

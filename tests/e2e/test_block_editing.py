@@ -381,7 +381,7 @@ def test_newblock_simd_header_uses_process_bulk(project: ProjectConfig, tmp_path
     spec.write_text(
         "block_name: VectorGain\n"
         "group: basic\n"
-        "archetype: filter\n"
+        "archetype: sync\n"
         'type_list: "float"\n'
         "gen_test: false\n"
         "simd: true\n"

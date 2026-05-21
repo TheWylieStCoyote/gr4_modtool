@@ -106,8 +106,14 @@ endfunction()
     help="Where to create the project (default: current dir).",
 )
 @click.option("--name", default=None, help="Project name (skips prompt).")
+@click.option(
+    "--first-group",
+    "first_group_cli",
+    default=None,
+    help="Name of first block group (overrides prompt).",
+)
 @click.option("--yes", "-y", is_flag=True, help="Accept all defaults without prompting.")
-def cmd(project_dir: str | None, name: str | None, yes: bool) -> None:
+def cmd(project_dir: str | None, name: str | None, first_group_cli: str | None, yes: bool) -> None:
     """Scaffold a new GNURadio 4 OOT project."""
     dest = Path(project_dir).resolve() if project_dir else Path.cwd()
 
@@ -133,18 +139,23 @@ def cmd(project_dir: str | None, name: str | None, yes: bool) -> None:
             sys.exit(1)
 
     name = name.strip()
+    if not yes and not name.startswith("gr4_"):
+        if _ask_confirm(f"Prepend 'gr4_' to name? (→ gr4_{name})", default=True):
+            name = f"gr4_{name}"
     version = _ask_text("Version:", default="0.1.0")
     cpp_ns = _ask_text("C++ namespace:", default=f"gr::{_slug(name)}")
     cmake_pfx = _ask_text("CMake prefix:", default=_cmake_prefix(name))
     gr4_prefix = _ask_text("GNURadio4 include prefix:", default="gnuradio-4.0")
 
     build_cmake = _ask_confirm("Generate CMake build files?", default=True)
-    build_meson = _ask_confirm("Generate Meson build files?", default=True)
+    build_meson = _ask_confirm("Generate Meson build files?", default=False)
     gen_git = _ask_confirm("Initialize git repository?", default=True)
     gen_devcontainer = _ask_confirm("Generate devcontainer?", default=False)
     gen_clang = _ask_confirm("Generate .clang-format and .clang-tidy config?", default=True)
     gen_ci_clang = _ask_confirm("Generate GitHub Actions CI for clang checks?", default=False)
-    gen_presets = _ask_confirm("Generate CMakePresets.json (asan/ubsan/tsan)?", default=False)
+    gen_presets = _ask_confirm(
+        "Generate CMakePresets.json (compiler, asan/ubsan/tsan)?", default=True
+    )
     gen_ci_sanitizers = _ask_confirm("Generate GitHub Actions CI for sanitizers?", default=False)
     gen_ci_matrix = _ask_confirm("Generate CI build matrix workflow (gcc×clang)?", default=False)
     gen_vscode = _ask_confirm("Generate VS Code settings (.vscode/)?", default=True)
@@ -153,7 +164,10 @@ def cmd(project_dir: str | None, name: str | None, yes: bool) -> None:
     gen_precommit = _ask_confirm("Generate .pre-commit-config.yaml?", default=False)
     gen_doxyfile = _ask_confirm("Generate Doxyfile for Doxygen?", default=False)
 
-    first_group = _ask_text("Name of first block group (leave blank to skip):", default="basic")
+    if first_group_cli is not None:
+        first_group = first_group_cli
+    else:
+        first_group = _ask_text("Name of first block group (leave blank to skip):", default="")
 
     project_root = dest / _slug(name)
     if project_root.exists() and not yes:
@@ -200,7 +214,10 @@ def cmd(project_dir: str | None, name: str | None, yes: bool) -> None:
     click.echo(f"\nCreated project '{name}' at {project_root}")
     click.echo(f"  cd {project_root}")
     if build_cmake:
-        click.echo("  cmake -B build && cmake --build build")
+        if gen_presets:
+            click.echo("  cmake --preset default && cmake --build --preset default")
+        else:
+            click.echo("  cmake -B build && cmake --build build")
     if build_meson:
         click.echo("  meson setup build && ninja -C build")
 

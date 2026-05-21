@@ -19,7 +19,7 @@ from .conftest import invoke, write_spec
 
 def _make_two_blocks(project: ProjectConfig, tmp_path: Path) -> None:
     """Add BlockOne (filter) and BlockTwo (sink) to the basic group."""
-    for name, arch in (("BlockOne", "filter"), ("BlockTwo", "sink")):
+    for name, arch in (("BlockOne", "sync"), ("BlockTwo", "sink")):
         spec = write_spec(tmp_path / f"s_{name}.yaml", name, group="basic", archetype=arch)
         invoke(project.root, "newblock", "--spec", str(spec))
 

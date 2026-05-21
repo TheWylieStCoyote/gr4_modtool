@@ -193,7 +193,7 @@ def test_grouped_project_test_passes(project_buildable: ProjectConfig, tmp_path:
 @skip_no_gr4
 def test_flat_project_builds(project_flat_buildable: ProjectConfig, tmp_path: Path) -> None:
     """A flat project configures and builds with cmake."""
-    spec = write_spec(tmp_path / "spec.yaml", "MyFilter", group="", archetype="filter")
+    spec = write_spec(tmp_path / "spec.yaml", "MyFilter", group="", archetype="sync")
     invoke(project_flat_buildable.root, "newblock", "--spec", str(spec))
 
     build_dir = tmp_path / "build"
@@ -205,7 +205,7 @@ def test_flat_project_builds(project_flat_buildable: ProjectConfig, tmp_path: Pa
 @skip_no_gr4
 def test_flat_project_test_passes(project_flat_buildable: ProjectConfig, tmp_path: Path) -> None:
     """The flat-project qa_* test runs and exits 0 under ctest."""
-    spec = write_spec(tmp_path / "spec.yaml", "MyFilter", group="", archetype="filter")
+    spec = write_spec(tmp_path / "spec.yaml", "MyFilter", group="", archetype="sync")
     invoke(project_flat_buildable.root, "newblock", "--spec", str(spec))
 
     build_dir = tmp_path / "build"
