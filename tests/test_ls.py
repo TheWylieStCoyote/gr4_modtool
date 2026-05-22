@@ -302,6 +302,16 @@ def test_table_shows_test_tick(project: ProjectConfig) -> None:
     _render_table(collect_inventory(project), console)
     output = console.export_text()
     assert "MyFilter" in output
+    assert "✓" in output
+
+
+def test_table_shows_dash_when_no_test(project: ProjectConfig) -> None:
+    _write_block(project, "basic", "MyFilter")
+    console = Console(record=True, no_color=True)
+    _render_table(collect_inventory(project), console)
+    output = console.export_text()
+    assert "MyFilter" in output
+    assert "–" in output
 
 
 # ---------------------------------------------------------------------------

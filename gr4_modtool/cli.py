@@ -30,6 +30,7 @@ from gr4_modtool.commands.newmod import cmd as newmod_cmd
 from gr4_modtool.commands.newparam import cmd as newparam_cmd
 from gr4_modtool.commands.port import cmd as port_cmd
 from gr4_modtool.commands.precommit import cmd as precommit_cmd
+from gr4_modtool.commands.publish import cmd as publish_cmd
 from gr4_modtool.commands.rename import cmd as rename_cmd
 from gr4_modtool.commands.rename_block import cmd as rename_block_cmd
 from gr4_modtool.commands.rename_group import cmd as rename_group_cmd
@@ -42,6 +43,7 @@ from gr4_modtool.commands.status import cmd as status_cmd
 from gr4_modtool.commands.sync import cmd as sync_cmd
 from gr4_modtool.commands.templates import cmd as templates_cmd
 from gr4_modtool.commands.tidy import cmd as tidy_cmd
+from gr4_modtool.commands.validate import cmd as validate_cmd
 from gr4_modtool.commands.version_bump import cmd as version_bump_cmd
 from gr4_modtool.commands.vscode import cmd as vscode_cmd
 
@@ -91,7 +93,9 @@ cli.add_command(coverage_cmd, name="coverage")
 cli.add_command(doctor_cmd, name="doctor")
 cli.add_command(sync_cmd, name="sync")
 cli.add_command(templates_cmd, name="templates")
+cli.add_command(validate_cmd, name="validate")
 cli.add_command(version_bump_cmd, name="version-bump")
+cli.add_command(publish_cmd, name="publish")
 cli.add_command(ls_cmd, name="list")
 cli.add_command(ls_cmd, name="ls")
 
