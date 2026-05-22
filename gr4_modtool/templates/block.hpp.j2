@@ -29,12 +29,12 @@ struct {{ block_name }} : Block<{{ block_name }}<{{ template_args }}>> {
 
 {% if processing_style == 'processOne' %}
     [[nodiscard]] constexpr {{ return_type }} processOne({{ params_str }}) const noexcept {
-        // TODO: implement
-{% if multi_output %}
-        return {};
+{% if work_body_comment %}
+{{ work_body_comment }}
 {% else %}
-        return {};
+        // TODO: implement
 {% endif %}
+        return {};
     }
 {% else %}
     [[nodiscard]] gr::work::Status processBulk({{ bulk_params_str }}) noexcept {
@@ -49,6 +49,8 @@ struct {{ block_name }} : Block<{{ block_name }}<{{ template_args }}>> {
             // TODO: implement
 {% endif %}
         }
+{% elif work_body_comment %}
+{{ work_body_comment }}
 {% else %}
         // TODO: implement
 {% endif %}

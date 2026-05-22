@@ -128,6 +128,12 @@ _BLOCK_CONTEXT: list[dict] = [
         "desc": "True when graph integration test should be generated",
     },
     {"name": "simd", "type": "bool", "dummy": False, "desc": "True when SIMD archetype is used"},
+    {
+        "name": "work_body_comment",
+        "type": "str",
+        "dummy": "",
+        "desc": "Optional commented GR3 work() body (migrate command only); empty for new blocks",
+    },
 ]
 
 TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {

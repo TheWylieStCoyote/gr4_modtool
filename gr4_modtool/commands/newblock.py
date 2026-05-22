@@ -160,6 +160,7 @@ def _build_template_ctx(
         "first_out_type": first_out_type,
         "needs_graph_test": True,
         "simd": simd,
+        "work_body_comment": "",
     }
 
 

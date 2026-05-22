@@ -22,6 +22,7 @@ from gr4_modtool.commands.info import cmd as info_cmd
 from gr4_modtool.commands.init import cmd as init_cmd
 from gr4_modtool.commands.lint_headers import cmd as lint_headers_cmd
 from gr4_modtool.commands.ls import cmd as ls_cmd
+from gr4_modtool.commands.migrate import cmd as migrate_cmd
 from gr4_modtool.commands.mv import cmd as mv_cmd
 from gr4_modtool.commands.newbench import cmd as newbench_cmd
 from gr4_modtool.commands.newblock import cmd as newblock_cmd
@@ -98,6 +99,7 @@ cli.add_command(version_bump_cmd, name="version-bump")
 cli.add_command(publish_cmd, name="publish")
 cli.add_command(ls_cmd, name="list")
 cli.add_command(ls_cmd, name="ls")
+cli.add_command(migrate_cmd, name="migrate")
 
 
 @cli.command("tui")

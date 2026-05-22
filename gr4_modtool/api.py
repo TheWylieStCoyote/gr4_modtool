@@ -43,6 +43,18 @@ from gr4_modtool.commands.lint_headers import (
 from gr4_modtool.commands.ls import collect_inventory
 
 # ---------------------------------------------------------------------------
+# Migration
+# ---------------------------------------------------------------------------
+from gr4_modtool.commands.migrate import (
+    Gr3BlockInfo,
+    MigrationReport,
+    MigrationResult,
+    detect_gr3_project,
+    migrate_project,
+    parse_gr3_block,
+)
+
+# ---------------------------------------------------------------------------
 # Block scaffolding
 # ---------------------------------------------------------------------------
 from gr4_modtool.commands.newblock import (
@@ -112,6 +124,13 @@ __all__ = [
     # audit
     "BlockIssue",
     "audit_project",
+    # migration
+    "Gr3BlockInfo",
+    "MigrationReport",
+    "MigrationResult",
+    "detect_gr3_project",
+    "migrate_project",
+    "parse_gr3_block",
     # inventory
     "collect_inventory",
     # validation
