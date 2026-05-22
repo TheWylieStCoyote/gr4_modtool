@@ -381,3 +381,92 @@ def test_apply_version_bump_returns_paths(tmp_path: Path) -> None:
     paths = api.apply_version_bump(cfg, "1.3.0")
     assert isinstance(paths, list)
     assert any(p.name == ".gr4modtool.toml" for p in paths)
+
+
+# ---------------------------------------------------------------------------
+# collect_inventory
+# ---------------------------------------------------------------------------
+
+
+def test_collect_inventory_returns_dict(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    data = api.collect_inventory(cfg)
+    assert isinstance(data, dict)
+    assert "project" in data
+    assert "groups" in data
+
+
+def test_collect_inventory_project_meta(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    data = api.collect_inventory(cfg)
+    assert data["project"]["name"] == "testmod"
+    assert data["project"]["version"] == "1.2.3"
+    assert data["project"]["namespace"] == "gr::testmod"
+
+
+def test_collect_inventory_lists_blocks(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    _add_block(cfg, "Listed")
+    data = api.collect_inventory(cfg)
+    basic = next(g for g in data["groups"] if g["name"] == "basic")
+    assert any(b["name"] == "Listed" for b in basic["blocks"])
+
+
+def test_collect_inventory_group_filter(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    _add_block(cfg, "Listed")
+    data = api.collect_inventory(cfg, group_filter="basic")
+    assert len(data["groups"]) == 1
+    assert data["groups"][0]["name"] == "basic"
+
+
+def test_collect_inventory_group_filter_excludes_others(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    data = api.collect_inventory(cfg, group_filter="nonexistent")
+    assert data["groups"] == []
+
+
+def test_collect_inventory_exclude_blocks(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    _add_block(cfg, "Listed")
+    data = api.collect_inventory(cfg, include_blocks=False)
+    basic = next(g for g in data["groups"] if g["name"] == "basic")
+    assert basic["blocks"] == []
+
+
+# ---------------------------------------------------------------------------
+# validate_project / ValidationIssue
+# ---------------------------------------------------------------------------
+
+
+def test_validation_issue_is_dataclass() -> None:
+    assert hasattr(api.ValidationIssue, "__dataclass_fields__")
+    for field in ("category", "group", "subject", "check", "detail", "severity"):
+        assert field in api.ValidationIssue.__dataclass_fields__
+
+
+def test_validate_project_clean(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    _add_block(cfg, "Clean")
+    issues = api.validate_project(cfg)
+    assert isinstance(issues, list)
+    errors = [i for i in issues if i.severity == "error"]
+    assert errors == []
+
+
+def test_validate_project_returns_validation_issues(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    _add_block(cfg, "Checked")
+    issues = api.validate_project(cfg)
+    assert all(isinstance(i, api.ValidationIssue) for i in issues)
+
+
+def test_validate_project_detects_missing_pragma(tmp_path: Path) -> None:
+    cfg = _make_project(tmp_path)
+    _add_block(cfg, "NoPragma")
+    hpp = cfg.group_include_dir("basic") / "NoPragma.hpp"
+    text = hpp.read_text()
+    hpp.write_text(text.replace("#pragma once", ""))
+    issues = api.validate_project(cfg)
+    h1 = [i for i in issues if i.check == "H1"]
+    assert len(h1) > 0

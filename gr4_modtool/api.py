@@ -38,6 +38,11 @@ from gr4_modtool.commands.lint_headers import (
 )
 
 # ---------------------------------------------------------------------------
+# Inventory
+# ---------------------------------------------------------------------------
+from gr4_modtool.commands.ls import collect_inventory
+
+# ---------------------------------------------------------------------------
 # Block scaffolding
 # ---------------------------------------------------------------------------
 from gr4_modtool.commands.newblock import (
@@ -51,6 +56,14 @@ from gr4_modtool.commands.newblock import (
 # Group scaffolding
 # ---------------------------------------------------------------------------
 from gr4_modtool.commands.newgroup import write_group_skeleton
+
+# ---------------------------------------------------------------------------
+# Validation
+# ---------------------------------------------------------------------------
+from gr4_modtool.commands.validate import (
+    ValidationIssue,
+    validate_project,
+)
 
 # ---------------------------------------------------------------------------
 # Version management
@@ -99,6 +112,11 @@ __all__ = [
     # audit
     "BlockIssue",
     "audit_project",
+    # inventory
+    "collect_inventory",
+    # validation
+    "ValidationIssue",
+    "validate_project",
     # versioning
     "apply_version_bump",
 ]

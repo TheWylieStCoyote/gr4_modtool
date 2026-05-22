@@ -158,9 +158,8 @@ def _render_json(data: dict) -> str:
 def _render_yaml(data: dict) -> str:
     try:
         import yaml  # type: ignore[import-untyped]
-    except ImportError:
-        click.echo("Error: PyYAML is required for YAML output.  pip install PyYAML", err=True)
-        sys.exit(1)
+    except ImportError as exc:
+        raise ImportError("PyYAML is required for YAML output.  pip install PyYAML") from exc
     return yaml.dump(data, sort_keys=False, allow_unicode=True, default_flow_style=False)
 
 
@@ -404,11 +403,15 @@ def cmd(
         verbose=verbose,
     )
 
-    if fmt == "json":
-        click.echo(_render_json(data))
-    elif fmt == "yaml":
-        click.echo(_render_yaml(data))
-    elif fmt == "toml":
-        click.echo(_render_toml(data))
-    else:
-        _render_table(data)
+    try:
+        if fmt == "json":
+            click.echo(_render_json(data))
+        elif fmt == "yaml":
+            click.echo(_render_yaml(data))
+        elif fmt == "toml":
+            click.echo(_render_toml(data))
+        else:
+            _render_table(data)
+    except ImportError as exc:
+        click.echo(f"Error: {exc}", err=True)
+        sys.exit(1)
