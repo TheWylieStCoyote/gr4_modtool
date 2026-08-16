@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,15 @@ def _slug(name: str) -> str:
 
 def _cmake_prefix(name: str) -> str:
     return f"gr4_{_slug(name)}"
+
+
+def block_library_name(project_name: str, group_name: str = "") -> str:
+    """Return the GNU Radio-style block-library target name for an OOT group."""
+
+    def pascal_case(value: str) -> str:
+        return "".join(part[:1].upper() + part[1:] for part in re.split(r"[^A-Za-z0-9]+", value) if part)
+
+    return f"Gr{pascal_case(project_name)}{pascal_case(group_name)}Blocks"
 
 
 def _blocks_cmake(cfg: ProjectConfig) -> str:
@@ -364,7 +374,11 @@ def _write_project(
 def _flat_blocks_cmake(cfg: ProjectConfig) -> str:
     return render(
         "flat_blocks_CMakeLists.txt.j2",
-        {"cmake_prefix": cfg.cmake_prefix, "gr4_include_prefix": cfg.gr4_include_prefix},
+        {
+            "cmake_prefix": cfg.cmake_prefix,
+            "gr4_include_prefix": cfg.gr4_include_prefix,
+            "block_library_name": block_library_name(cfg.name),
+        },
         cfg.root,
     )
 

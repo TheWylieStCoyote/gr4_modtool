@@ -172,6 +172,12 @@ TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {
             "dummy": "gr4_basic_blocks_dep",
             "desc": "Meson dep variable name",
         },
+        {
+            "name": "block_library_name",
+            "type": "str",
+            "dummy": "GrMyModBasicBlocks",
+            "desc": "GNU Radio shared block-library target name",
+        },
     ],
     "group_meson.build.j2": "group_CMakeLists.txt.j2",
     "test_CMakeLists.txt.j2": [
@@ -191,6 +197,12 @@ TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {
             "type": "str",
             "dummy": "gnuradio-4.0",
             "desc": "Include path prefix",
+        },
+        {
+            "name": "block_library_name",
+            "type": "str",
+            "dummy": "GrMyModBlocks",
+            "desc": "GNU Radio shared block-library target name",
         },
         {"name": "cpp_namespace", "type": "str", "dummy": "gr::mymod", "desc": "C++ namespace"},
     ],

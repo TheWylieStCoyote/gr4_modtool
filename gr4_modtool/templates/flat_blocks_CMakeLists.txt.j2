@@ -17,7 +17,7 @@ file(GLOB {{ cmake_prefix }}_BLOCK_HEADERS CONFIGURE_DEPENDS
 )
 if({{ cmake_prefix }}_BLOCK_HEADERS)
   gr_add_block_library(
-    {{ cmake_prefix }}_blocks
+    {{ block_library_name }}
     MAKE_SHARED_LIBRARY
     HEADERS
       {{ '${' }}{{ cmake_prefix }}_BLOCK_HEADERS}
