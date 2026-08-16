@@ -114,12 +114,17 @@ def _build_template_ctx(
     else:
         return_type = out_ports[0]["type"] if out_ports else "void"
 
+    process_in_ports = [{**port, "arg_name": f"input_{port['name']}"} for port in in_ports]
+    process_out_ports = [{**port, "arg_name": f"output_{port['name']}"} for port in out_ports]
+
     if processing_style == "processOne":
-        params_str = ", ".join(f"{p['type']} {p['name']}" for p in in_ports)
+        params_str = ", ".join(f"{p['type']} {p['arg_name']}" for p in process_in_ports)
         bulk_params_str = ""
     else:
-        in_spans = ", ".join(f"std::span<const {p['type']}> {p['name']}" for p in in_ports)
-        out_spans = ", ".join(f"std::span<{p['type']}> {p['name']}" for p in out_ports)
+        in_spans = ", ".join(
+            f"std::span<const {p['type']}> {p['arg_name']}" for p in process_in_ports
+        )
+        out_spans = ", ".join(f"std::span<{p['type']}> {p['arg_name']}" for p in process_out_ports)
         bulk_params_str = ", ".join(filter(None, [in_spans, out_spans]))
         params_str = ""
 
@@ -146,12 +151,15 @@ def _build_template_ctx(
         "template_param_macro": template_param_macro,
         "in_ports": in_ports,
         "out_ports": out_ports,
+        "process_in_ports": process_in_ports,
+        "process_out_ports": process_out_ports,
         "all_port_names": all_port_names,
         "type_list": type_list,
         "processing_style": processing_style,
         "uses_complex": uses_complex,
         "multi_output": multi_output,
         "return_type": return_type,
+        "has_return_value": bool(out_ports),
         "params_str": params_str,
         "bulk_params_str": bulk_params_str,
         "gr4_include_prefix": gr4_include_prefix,

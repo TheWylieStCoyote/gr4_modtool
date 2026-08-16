@@ -40,7 +40,7 @@ def _cmake_prefix(name: str) -> str:
 
 def _blocks_cmake(cfg: ProjectConfig) -> str:
     lines = [
-        f"function({cfg.cmake_prefix}_add_ut_test target_name source_file)",
+        "function(gr4_modtool_add_ut_test target_name source_file)",
         "  add_executable(${target_name} ${source_file})",
         "  target_link_libraries(${target_name} PRIVATE ${GR4_OOT_GNURADIO4_TARGET} ${GR4_OOT_BOOST_UT_TARGET})",
         "  add_test(NAME ${target_name} COMMAND ${target_name})",
@@ -59,6 +59,7 @@ def _blocks_cmake(cfg: ProjectConfig) -> str:
     for name in cfg.groups:
         lines.append(f"  {cfg.cmake_prefix}::blocks_{name}_headers")
     lines.append(")")
+    lines.append(f"install(TARGETS {cfg.cmake_prefix}_blocks_headers EXPORT {cfg.cmake_prefix}Targets)")
     return "\n".join(lines) + "\n"
 
 
@@ -73,11 +74,14 @@ def _deps_cmake(cmake_prefix: str) -> str:
     return f"""\
 include_guard(GLOBAL)
 
-find_package(PkgConfig REQUIRED)
-
 function({cmake_prefix}_resolve_dependencies)
-  pkg_check_modules(GR4_OOT_GR4 REQUIRED IMPORTED_TARGET gnuradio4)
-  set(GR4_OOT_GNURADIO4_TARGET PkgConfig::GR4_OOT_GR4 PARENT_SCOPE)
+  find_package(gnuradio4 CONFIG REQUIRED)
+  find_package(GnuRadioBlockLib CONFIG REQUIRED)
+  set(
+    GR4_OOT_GNURADIO4_TARGET
+    "gnuradio4::gnuradio-core;gnuradio4::gnuradio-blocklib-core"
+    PARENT_SCOPE
+  )
 
   if(ENABLE_TESTING)
     find_package(boost_ut CONFIG QUIET)
@@ -259,6 +263,9 @@ def _write_project(
         cmake_dir = root / "cmake"
         cmake_dir.mkdir(exist_ok=True)
         (cmake_dir / "Dependencies.cmake").write_text(_deps_cmake(cfg.cmake_prefix))
+        (cmake_dir / f"{cfg.cmake_prefix}Config.cmake.in").write_text(
+            render("package_config.cmake.in.j2", ctx, root)
+        )
 
     if cfg.build_meson:
         (root / "meson.build").write_text(render("toplevel_meson.build.j2", ctx, root))
