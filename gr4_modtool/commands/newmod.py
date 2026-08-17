@@ -10,7 +10,12 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import ProjectConfig, save_config
+from gr4_modtool.project.discovery import (
+    ProjectConfig,
+    default_cmake_prefix,
+    default_namespace,
+    save_config,
+)
 from gr4_modtool.templates import render
 
 
@@ -32,10 +37,6 @@ def write_git_init(cfg: ProjectConfig) -> list[Path]:
 
 def _slug(name: str) -> str:
     return name.lower().replace(" ", "_").replace("-", "_")
-
-
-def _cmake_prefix(name: str) -> str:
-    return f"gr4_{_slug(name)}"
 
 
 def _blocks_cmake(cfg: ProjectConfig) -> str:
@@ -143,8 +144,8 @@ def cmd(project_dir: str | None, name: str | None, first_group_cli: str | None, 
         if _ask_confirm(f"Prepend 'gr4_' to name? (→ gr4_{name})", default=True):
             name = f"gr4_{name}"
     version = _ask_text("Version:", default="0.1.0")
-    cpp_ns = _ask_text("C++ namespace:", default=f"gr::{_slug(name)}")
-    cmake_pfx = _ask_text("CMake prefix:", default=_cmake_prefix(name))
+    cpp_ns = _ask_text("C++ namespace:", default=default_namespace(name))
+    cmake_pfx = _ask_text("CMake prefix:", default=default_cmake_prefix(name))
     gr4_prefix = _ask_text("GNURadio4 include prefix:", default="gnuradio-4.0")
 
     build_cmake = _ask_confirm("Generate CMake build files?", default=True)

@@ -42,6 +42,24 @@ def test_newmod_creates_config(tmp_path: Path) -> None:
     assert cfg.version == "0.1.0"
 
 
+def test_newmod_gr4_prefixed_name_strips_prefix_from_namespace(tmp_path: Path) -> None:
+    """A gr4_-prefixed project name does not leak the prefix into the C++ namespace."""
+    root = _newmod(tmp_path, "gr4_josh")
+
+    cfg = load_config(root)
+    assert cfg.cpp_namespace == "gr::josh"
+    assert cfg.cmake_prefix == "gr4_josh"
+
+
+def test_newmod_plain_name_namespace(tmp_path: Path) -> None:
+    """An unprefixed project name maps directly to gr::<name> / gr4_<name>."""
+    root = _newmod(tmp_path, "mymod")
+
+    cfg = load_config(root)
+    assert cfg.cpp_namespace == "gr::mymod"
+    assert cfg.cmake_prefix == "gr4_mymod"
+
+
 def test_newmod_cmake_scaffold(tmp_path: Path) -> None:
     """newmod --yes generates CMakeLists.txt and cmake/Dependencies.cmake."""
     root = _newmod(tmp_path, "mymod")

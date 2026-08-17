@@ -9,7 +9,13 @@ from pathlib import Path
 import click
 import questionary
 
-from gr4_modtool.project.discovery import CONFIG_FILE, ProjectConfig, save_config
+from gr4_modtool.project.discovery import (
+    CONFIG_FILE,
+    ProjectConfig,
+    default_cmake_prefix,
+    default_namespace,
+    save_config,
+)
 
 _GR4_BLOCK_MARKERS = ("GR_REGISTER_BLOCK", "Block<", ": public Block")
 
@@ -217,8 +223,8 @@ def cmd(project_dir: str | None, yes: bool, dry_run: bool, force: bool) -> None:
     if yes:
         name = detected["name"] or root.name
         version = detected["version"]
-        cpp_namespace = f"gr::{name.replace('-', '_')}"
-        cmake_prefix = f"gr4_{name.replace('-', '_')}"
+        cpp_namespace = default_namespace(name)
+        cmake_prefix = default_cmake_prefix(name)
         gr4_include_prefix = detected["gr4_include_prefix"]
         build_cmake = detected["has_cmake"]
         build_meson = detected["has_meson"]
@@ -233,10 +239,10 @@ def cmd(project_dir: str | None, yes: bool, dry_run: bool, force: bool) -> None:
             questionary.text("Version:", default=detected["version"]).ask() or detected["version"]
         )
 
-        default_ns = f"gr::{name.replace('-', '_')}"
+        default_ns = default_namespace(name)
         cpp_namespace = questionary.text("C++ namespace:", default=default_ns).ask() or default_ns
 
-        default_pfx = f"gr4_{name.replace('-', '_')}"
+        default_pfx = default_cmake_prefix(name)
         cmake_prefix = questionary.text("CMake prefix:", default=default_pfx).ask() or default_pfx
 
         gr4_include_prefix = (

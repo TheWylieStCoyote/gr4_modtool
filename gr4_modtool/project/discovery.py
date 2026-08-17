@@ -66,6 +66,25 @@ class ProjectConfig:
         return self.group_path(group) / "benchmarks"
 
 
+def _project_base_name(name: str) -> str:
+    """Slug of the project name with any leading gr4_/gr_ prefix stripped."""
+    base = name.lower().replace(" ", "_").replace("-", "_")
+    for prefix in ("gr4_", "gr_"):
+        if base.startswith(prefix) and len(base) > len(prefix):
+            return base[len(prefix) :]
+    return base
+
+
+def default_namespace(name: str) -> str:
+    """Default C++ namespace for a project name: 'gr4_josh' -> 'gr::josh'."""
+    return f"gr::{_project_base_name(name)}"
+
+
+def default_cmake_prefix(name: str) -> str:
+    """Default CMake prefix for a project name: 'gr4_josh' -> 'gr4_josh', 'josh' -> 'gr4_josh'."""
+    return f"gr4_{_project_base_name(name)}"
+
+
 def find_project_root(start: Path | None = None) -> Path | None:
     """Walk upward from start (default: cwd) looking for .gr4modtool.toml."""
     current = (start or Path.cwd()).resolve()
@@ -101,8 +120,8 @@ def load_config(project_dir: Path | None = None) -> ProjectConfig:
         root=root,
         name=proj.get("name", root.name),
         version=proj.get("version", "0.1.0"),
-        cpp_namespace=proj.get("cpp_namespace", f"gr::{root.name}"),
-        cmake_prefix=proj.get("cmake_prefix", f"gr4_{root.name}"),
+        cpp_namespace=proj.get("cpp_namespace", default_namespace(root.name)),
+        cmake_prefix=proj.get("cmake_prefix", default_cmake_prefix(root.name)),
         gr4_include_prefix=proj.get("gr4_include_prefix", "gnuradio-4.0"),
         build_cmake=build.get("cmake", True),
         build_meson=build.get("meson", True),
