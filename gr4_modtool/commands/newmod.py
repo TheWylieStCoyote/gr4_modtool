@@ -49,14 +49,7 @@ def block_library_name(project_name: str, group_name: str = "") -> str:
 
 
 def _blocks_cmake(cfg: ProjectConfig) -> str:
-    lines = [
-        "function(gr4_modtool_add_ut_test target_name source_file)",
-        "  add_executable(${target_name} ${source_file})",
-        "  target_link_libraries(${target_name} PRIVATE ${GR4_OOT_GNURADIO4_TARGET} ${GR4_OOT_BOOST_UT_TARGET})",
-        "  add_test(NAME ${target_name} COMMAND ${target_name})",
-        "endfunction()",
-        "",
-    ]
+    lines = []
     for name in cfg.groups:
         lines.append(f"add_subdirectory({name})")
     lines += [
@@ -108,6 +101,12 @@ function({cmake_prefix}_resolve_dependencies)
       set(GR4_OOT_BOOST_UT_TARGET {cmake_prefix}::boost_ut PARENT_SCOPE)
     endif()
   endif()
+endfunction()
+
+function(gr4_modtool_add_ut_test target_name source_file)
+  add_executable(${{target_name}} ${{source_file}})
+  target_link_libraries(${{target_name}} PRIVATE ${{GR4_OOT_GNURADIO4_TARGET}} ${{GR4_OOT_BOOST_UT_TARGET}})
+  add_test(NAME ${{target_name}} COMMAND ${{target_name}})
 endfunction()
 """
 

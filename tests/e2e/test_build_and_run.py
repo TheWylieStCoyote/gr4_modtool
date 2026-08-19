@@ -9,6 +9,7 @@ Run with:  pytest tests/e2e/test_build_and_run.py -m slow -v
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -31,12 +32,45 @@ def _cmake_available() -> bool:
     return bool(shutil.which("cmake"))
 
 
+def _installed_gr4_compiler() -> tuple[str, int] | None:
+    """Return ("gcc"|"clang", major) that built the installed libgnuradio-core.a, or None."""
+    try:
+        result = subprocess.run(
+            ["pkg-config", "--variable=libdir", "gnuradio4"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        data = (Path(result.stdout.strip()) / "libgnuradio-core.a").read_bytes()
+    except Exception:
+        return None
+    match = re.search(rb"GCC: \([^)]*\) (\d+)\.", data)
+    if match:
+        return ("gcc", int(match.group(1)))
+    match = re.search(rb"clang version (\d+)\.", data)
+    if match:
+        return ("clang", int(match.group(1)))
+    return None
+
+
 def _cxx14_compiler() -> str | None:
-    """Return path to a C++23-capable compiler (g++-14 or later), or None."""
-    for candidate in ("g++-14", "g++-15", "clang++-19", "clang++-18"):
+    """Return path to a C++23-capable compiler (g++-14 or later), or None.
+
+    Candidates from the same family as — but older than — the compiler that
+    built the installed gnuradio4 are skipped: their standard library may
+    lack symbols the library references.
+    """
+    lib_compiler = _installed_gr4_compiler()
+    for candidate in ("g++-14", "g++-15", "g++-16", "clang++-19", "clang++-18"):
         path = shutil.which(candidate)
-        if path:
-            return path
+        if not path:
+            continue
+        match = re.fullmatch(r"(g\+\+|clang\+\+)-(\d+)", candidate)
+        if match and lib_compiler is not None:
+            family = "gcc" if match.group(1) == "g++" else "clang"
+            if family == lib_compiler[0] and int(match.group(2)) < lib_compiler[1]:
+                continue
+        return path
     return None
 
 

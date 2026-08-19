@@ -40,7 +40,7 @@ def add_cmake_dep(
             f"  set({var_name}_TARGET {cmake_pkg}::{cmake_pkg} PARENT_SCOPE)\n"
         )
 
-    text = re.sub(r"(endfunction\(\))", snippet + r"\1", text)
+    text = re.sub(r"(endfunction\(\))", snippet + r"\1", text, count=1)
     deps_cmake.write_text(text)
 
 
