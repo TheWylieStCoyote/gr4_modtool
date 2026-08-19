@@ -29,8 +29,13 @@ struct {{ block_name }} : Block<{{ block_name }}<{{ template_args }}>> {
 
 {% if processing_style == 'processOne' %}
     [[nodiscard]] constexpr {{ return_type }} processOne({{ params_str }}) const noexcept {
+{% for port in process_in_ports %}
+        (void){{ port.arg_name }};
+{% endfor %}
         // TODO: implement
-{% if multi_output %}
+{% if not has_return_value %}
+        return;
+{% elif multi_output %}
         return {};
 {% else %}
         return {};
@@ -38,13 +43,19 @@ struct {{ block_name }} : Block<{{ block_name }}<{{ template_args }}>> {
     }
 {% else %}
     [[nodiscard]] gr::work::Status processBulk({{ bulk_params_str }}) noexcept {
+{% for port in process_in_ports %}
+        (void){{ port.arg_name }};
+{% endfor %}
+{% for port in process_out_ports %}
+        (void){{ port.arg_name }};
+{% endfor %}
 {% if simd %}
         // SIMD-vectorizable: loop body has no cross-iteration dependencies.
-        const std::size_t n = {% if in_ports %}{{ in_ports[0].name }}{% else %}{{ out_ports[0].name }}{% endif %}.size();
+        const std::size_t n = {% if process_in_ports %}{{ process_in_ports[0].arg_name }}{% else %}{{ process_out_ports[0].arg_name }}{% endif %}.size();
 #pragma GCC ivdep
         for (std::size_t i = 0; i != n; ++i) {
 {% if in_ports and out_ports %}
-            {{ out_ports[0].name }}[i] = {{ in_ports[0].name }}[i]; // TODO: implement
+            {{ process_out_ports[0].arg_name }}[i] = {{ process_in_ports[0].arg_name }}[i]; // TODO: implement
 {% else %}
             // TODO: implement
 {% endif %}

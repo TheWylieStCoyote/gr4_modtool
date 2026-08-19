@@ -59,6 +59,18 @@ _BLOCK_CONTEXT: list[dict] = [
         "desc": "Output port dicts",
     },
     {
+        "name": "process_in_ports",
+        "type": "list",
+        "dummy": [{"name": "in", "type": "T", "arg_name": "input_in"}],
+        "desc": "Input port dicts with generated process argument names",
+    },
+    {
+        "name": "process_out_ports",
+        "type": "list",
+        "dummy": [{"name": "out", "type": "T", "arg_name": "output_out"}],
+        "desc": "Output port dicts with generated process argument names",
+    },
+    {
         "name": "all_port_names",
         "type": "list",
         "dummy": ["in", "out"],
@@ -87,6 +99,12 @@ _BLOCK_CONTEXT: list[dict] = [
         "type": "bool",
         "dummy": False,
         "desc": "True when block has >1 output port",
+    },
+    {
+        "name": "has_return_value",
+        "type": "bool",
+        "dummy": True,
+        "desc": "True when processOne has output data to return",
     },
     {"name": "return_type", "type": "str", "dummy": "T", "desc": "processOne return type"},
     {"name": "params_str", "type": "str", "dummy": "T x", "desc": "processOne parameter signature"},
@@ -154,6 +172,12 @@ TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {
             "dummy": "gr4_basic_blocks_dep",
             "desc": "Meson dep variable name",
         },
+        {
+            "name": "block_library_name",
+            "type": "str",
+            "dummy": "GrMyModBasicBlocks",
+            "desc": "GNU Radio shared block-library target name",
+        },
     ],
     "group_meson.build.j2": "group_CMakeLists.txt.j2",
     "test_CMakeLists.txt.j2": [
@@ -174,9 +198,23 @@ TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {
             "dummy": "gnuradio-4.0",
             "desc": "Include path prefix",
         },
+        {
+            "name": "block_library_name",
+            "type": "str",
+            "dummy": "GrMyModBlocks",
+            "desc": "GNU Radio shared block-library target name",
+        },
         {"name": "cpp_namespace", "type": "str", "dummy": "gr::mymod", "desc": "C++ namespace"},
     ],
     "toplevel_meson.build.j2": "toplevel_CMakeLists.txt.j2",
+    "package_config.cmake.in.j2": [
+        {
+            "name": "cmake_prefix",
+            "type": "str",
+            "dummy": "gr4_mymod",
+            "desc": "CMake package and target prefix",
+        },
+    ],
     "flat_blocks_CMakeLists.txt.j2": [
         {
             "name": "cmake_prefix",

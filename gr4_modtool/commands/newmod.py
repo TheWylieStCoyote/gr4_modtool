@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import sys
@@ -39,15 +40,21 @@ def _slug(name: str) -> str:
     return name.lower().replace(" ", "_").replace("-", "_")
 
 
+def _cmake_prefix(name: str) -> str:
+    return f"gr4_{_slug(name)}"
+
+
+def block_library_name(project_name: str, group_name: str = "") -> str:
+    """Return the GNU Radio-style block-library target name for an OOT group."""
+
+    def pascal_case(value: str) -> str:
+        return "".join(part[:1].upper() + part[1:] for part in re.split(r"[^A-Za-z0-9]+", value) if part)
+
+    return f"Gr{pascal_case(project_name)}{pascal_case(group_name)}Blocks"
+
+
 def _blocks_cmake(cfg: ProjectConfig) -> str:
-    lines = [
-        f"function({cfg.cmake_prefix}_add_ut_test target_name source_file)",
-        "  add_executable(${target_name} ${source_file})",
-        "  target_link_libraries(${target_name} PRIVATE ${GR4_OOT_GNURADIO4_TARGET} ${GR4_OOT_BOOST_UT_TARGET})",
-        "  add_test(NAME ${target_name} COMMAND ${target_name})",
-        "endfunction()",
-        "",
-    ]
+    lines = []
     for name in cfg.groups:
         lines.append(f"add_subdirectory({name})")
     lines += [
@@ -60,6 +67,7 @@ def _blocks_cmake(cfg: ProjectConfig) -> str:
     for name in cfg.groups:
         lines.append(f"  {cfg.cmake_prefix}::blocks_{name}_headers")
     lines.append(")")
+    lines.append(f"install(TARGETS {cfg.cmake_prefix}_blocks_headers EXPORT {cfg.cmake_prefix}Targets)")
     return "\n".join(lines) + "\n"
 
 
@@ -74,11 +82,14 @@ def _deps_cmake(cmake_prefix: str) -> str:
     return f"""\
 include_guard(GLOBAL)
 
-find_package(PkgConfig REQUIRED)
-
 function({cmake_prefix}_resolve_dependencies)
-  pkg_check_modules(GR4_OOT_GR4 REQUIRED IMPORTED_TARGET gnuradio4)
-  set(GR4_OOT_GNURADIO4_TARGET PkgConfig::GR4_OOT_GR4 PARENT_SCOPE)
+  find_package(gnuradio4 CONFIG REQUIRED)
+  find_package(GnuRadioBlockLib CONFIG REQUIRED)
+  set(
+    GR4_OOT_GNURADIO4_TARGET
+    "gnuradio4::gnuradio-core;gnuradio4::gnuradio-blocklib-core"
+    PARENT_SCOPE
+  )
 
   if(ENABLE_TESTING)
     find_package(boost_ut CONFIG QUIET)
@@ -95,6 +106,12 @@ function({cmake_prefix}_resolve_dependencies)
       set(GR4_OOT_BOOST_UT_TARGET {cmake_prefix}::boost_ut PARENT_SCOPE)
     endif()
   endif()
+endfunction()
+
+function(gr4_modtool_add_ut_test target_name source_file)
+  add_executable(${{target_name}} ${{source_file}})
+  target_link_libraries(${{target_name}} PRIVATE ${{GR4_OOT_GNURADIO4_TARGET}} ${{GR4_OOT_BOOST_UT_TARGET}})
+  add_test(NAME ${{target_name}} COMMAND ${{target_name}})
 endfunction()
 """
 
@@ -260,6 +277,9 @@ def _write_project(
         cmake_dir = root / "cmake"
         cmake_dir.mkdir(exist_ok=True)
         (cmake_dir / "Dependencies.cmake").write_text(_deps_cmake(cfg.cmake_prefix))
+        (cmake_dir / f"{cfg.cmake_prefix}Config.cmake.in").write_text(
+            render("package_config.cmake.in.j2", ctx, root)
+        )
 
     if cfg.build_meson:
         (root / "meson.build").write_text(render("toplevel_meson.build.j2", ctx, root))
@@ -358,7 +378,11 @@ def _write_project(
 def _flat_blocks_cmake(cfg: ProjectConfig) -> str:
     return render(
         "flat_blocks_CMakeLists.txt.j2",
-        {"cmake_prefix": cfg.cmake_prefix, "gr4_include_prefix": cfg.gr4_include_prefix},
+        {
+            "cmake_prefix": cfg.cmake_prefix,
+            "gr4_include_prefix": cfg.gr4_include_prefix,
+            "block_library_name": block_library_name(cfg.name),
+        },
         cfg.root,
     )
 

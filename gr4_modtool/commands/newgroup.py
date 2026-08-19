@@ -66,11 +66,14 @@ def write_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:
     test_dir.mkdir(parents=True, exist_ok=True)
 
     dep_var = f"gr4_{group_name}_blocks_dep"
+    from gr4_modtool.commands.newmod import block_library_name
+
     group_ctx = {
         "cmake_prefix": cfg.cmake_prefix,
         "group_name": group_name,
         "gr4_include_prefix": cfg.gr4_include_prefix,
         "dep_var_name": dep_var,
+        "block_library_name": block_library_name(cfg.name, group_name),
     }
     test_ctx = {"group_name": group_name}
 
