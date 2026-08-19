@@ -14,7 +14,6 @@ from gr4_modtool.commands.doctor import (
     _check_cmake,
     _check_cxx_compiler,
     _check_gnuradio4,
-    _check_meson,
     _check_optional_tools,
     _check_python,
     cmd,
@@ -78,42 +77,6 @@ def test_cmake_too_old() -> None:
         results = _check_cmake(need_cmake=True)
     assert results[0].status == "error"
     assert "3.18" in results[0].detail
-
-
-# ---------------------------------------------------------------------------
-# meson check
-# ---------------------------------------------------------------------------
-
-
-def test_meson_skipped() -> None:
-    results = _check_meson(need_meson=False)
-    assert results[0].status == "skip"
-
-
-def test_meson_missing() -> None:
-    with patch("shutil.which", return_value=None):
-        results = _check_meson(need_meson=True)
-    assert results[0].status == "error"
-
-
-def test_meson_ok() -> None:
-    with (
-        patch("shutil.which", return_value="/usr/bin/meson"),
-        patch("subprocess.run") as mock_run,
-    ):
-        mock_run.return_value = MagicMock(stdout="1.3.0\n", stderr="")
-        results = _check_meson(need_meson=True)
-    assert results[0].status == "ok"
-
-
-def test_meson_old_warns() -> None:
-    with (
-        patch("shutil.which", return_value="/usr/bin/meson"),
-        patch("subprocess.run") as mock_run,
-    ):
-        mock_run.return_value = MagicMock(stdout="0.63.0\n", stderr="")
-        results = _check_meson(need_meson=True)
-    assert results[0].status == "warning"
 
 
 # ---------------------------------------------------------------------------
@@ -217,7 +180,7 @@ def test_optional_tools_all_missing() -> None:
 
 def test_project_aware_skips_cmake(monkeypatch) -> None:
     """Project with build_cmake=False → cmake is skipped."""
-    cfg = SimpleNamespace(build_cmake=False, build_meson=False)
+    cfg = SimpleNamespace(build_cmake=False)
     with (
         patch("shutil.which", return_value="/usr/bin/tool"),
         patch("subprocess.run") as mock_run,
@@ -226,18 +189,6 @@ def test_project_aware_skips_cmake(monkeypatch) -> None:
         results = run_doctor(cfg)
     cmake_results = [r for r in results if r.name == "cmake"]
     assert cmake_results[0].status == "skip"
-
-
-def test_project_aware_skips_meson(monkeypatch) -> None:
-    cfg = SimpleNamespace(build_cmake=False, build_meson=False)
-    with (
-        patch("shutil.which", return_value="/usr/bin/tool"),
-        patch("subprocess.run") as mock_run,
-    ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="1.0.0\n", stderr="")
-        results = run_doctor(cfg)
-    meson_results = [r for r in results if r.name == "meson"]
-    assert meson_results[0].status == "skip"
 
 
 # ---------------------------------------------------------------------------

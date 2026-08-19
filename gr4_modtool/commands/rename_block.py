@@ -17,7 +17,7 @@ _NAME_RE = re.compile(r"^[A-Z][A-Za-z0-9]*$")
 def rename_block(cfg, group: str, old_name: str, new_name: str) -> list[Path]:
     """Rename *old_name* to *new_name* inside *group*.
 
-    Updates the header, test source, CMakeLists.txt, and meson.build.
+    Updates the header, test source, CMakeLists.txt.
     Returns a list of written/removed paths (new paths only).
     """
     if not _NAME_RE.match(new_name):
@@ -64,15 +64,6 @@ def rename_block(cfg, group: str, old_name: str, new_name: str) -> list[Path]:
         if updated != text:
             cmake_test.write_text(updated)
             modified.append(cmake_test)
-
-    # --- test meson.build ---
-    meson_test = cfg.group_test_dir(group) / "meson.build"
-    if meson_test.exists():
-        text = meson_test.read_text()
-        updated = text.replace(f"qa_{old_name}", f"qa_{new_name}")
-        if updated != text:
-            meson_test.write_text(updated)
-            modified.append(meson_test)
 
     return modified
 

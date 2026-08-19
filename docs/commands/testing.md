@@ -8,13 +8,13 @@ Generate `qa_<Block>.cpp` for a block that has no test yet.
 gr4_modtool add-test [BLOCK_NAME] [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--group TEXT` | Group containing the block |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description                |
+| -------------------- | -------------------------- |
+| `--group TEXT`       | Group containing the block |
+| `--project-dir PATH` | Project root               |
+| `--yes / -y`         | Skip confirmation          |
 
-Parses the block header via regex to recover template parameters, ports, type list, and processing style, then renders `qa_block.cpp.j2` and adds the entry to CMakeLists.txt and meson.build.
+Parses the block header via regex to recover template parameters, ports, type list, and processing style, then renders `qa_block.cpp.j2` and adds the entry to CMakeLists.txt.
 
 ---
 
@@ -26,21 +26,21 @@ Generate a throughput benchmark for an existing block.
 gr4_modtool newbench [BLOCK_NAME] [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--group TEXT` | Group containing the block |
-| `--wire-build` | Add CMake/Meson entries for the benchmark |
-| `--plot` | Also generate a `plot_<Block>.py` matplotlib script |
-| `--project-dir PATH` | Project root |
-| `--yes / -y` | Skip confirmation |
+| Option               | Description                                         |
+| -------------------- | --------------------------------------------------- |
+| `--group TEXT`       | Group containing the block                          |
+| `--wire-build`       | Add CMake entries for the benchmark                 |
+| `--plot`             | Also generate a `plot_<Block>.py` matplotlib script |
+| `--project-dir PATH` | Project root                                        |
+| `--yes / -y`         | Skip confirmation                                   |
 
 Creates `blocks/<group>/benchmarks/bench_<Name>.cpp` with `<chrono>` timing over 2²⁰ samples and CSV output (`block,config,N,throughput_MSas`).
 
 When `--wire-build` is set:
+
 - Creates `blocks/<group>/benchmarks/CMakeLists.txt` if it doesn't exist
 - Adds the executable entry
 - Wraps the `add_subdirectory(benchmarks)` call in an `if(ENABLE_BENCHMARKING)` guard in the group CMakeLists.txt
-- Does the equivalent for Meson (`enable_benchmarking` option in `meson_options.txt`)
 
 When `--plot` is set, a Python script is written that runs the benchmark binary and renders a throughput bar chart:
 
@@ -59,23 +59,17 @@ Run a single block's test binary inside an existing build directory.
 gr4_modtool test BLOCK_NAME [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--build-dir PATH` | Build directory (default: `build`) |
-| `--verbose / -v` | Pass `--verbose` to ctest/meson |
-| `--watch / -w` | Rebuild and retest on every `.hpp` save |
-| `--project-dir PATH` | Project root |
+| Option               | Description                             |
+| -------------------- | --------------------------------------- |
+| `--build-dir PATH`   | Build directory (default: `build`)      |
+| `--verbose / -v`     | Pass `--verbose` to ctest               |
+| `--watch / -w`       | Rebuild and retest on every `.hpp` save |
+| `--project-dir PATH` | Project root                            |
 
 For CMake projects runs:
 
 ```bash
 ctest --test-dir <build_dir> -R qa_<BLOCK_NAME> --output-on-failure
-```
-
-For Meson projects runs:
-
-```bash
-meson test -C <build_dir> qa_<BLOCK_NAME>
 ```
 
 ### Watch mode
@@ -113,12 +107,12 @@ gr4_modtool coverage --build-dir build-coverage   # one-time setup
 gr4_modtool test MyFilter --watch --coverage       # then iterate
 ```
 
-| Option | Description |
-|---|---|
-| `--coverage` | Enable coverage regeneration on each passing run (requires `--watch`) |
-| `--coverage-dir PATH` | Coverage build directory to use (default: `build-coverage`) |
-| `--coverage-output PATH` | Directory for the HTML report (default: `coverage`) |
-| `--coverage-tool CHOICE` | `auto`, `gcovr`, or `llvm-cov` (default: `auto`) |
+| Option                   | Description                                                           |
+| ------------------------ | --------------------------------------------------------------------- |
+| `--coverage`             | Enable coverage regeneration on each passing run (requires `--watch`) |
+| `--coverage-dir PATH`    | Coverage build directory to use (default: `build-coverage`)           |
+| `--coverage-output PATH` | Directory for the HTML report (default: `coverage`)                   |
+| `--coverage-tool CHOICE` | `auto`, `gcovr`, or `llvm-cov` (default: `auto`)                      |
 
 ---
 
@@ -130,14 +124,14 @@ Build the project with coverage instrumentation, run all tests, and generate an 
 gr4_modtool coverage [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--build-dir PATH` | Coverage build directory (default: `build-coverage`) |
-| `--output-dir PATH` | HTML report output directory (default: `coverage`) |
-| `--tool CHOICE` | `auto`, `gcovr`, or `llvm-cov` (default: `auto`) |
+| Option               | Description                                                             |
+| -------------------- | ----------------------------------------------------------------------- |
+| `--build-dir PATH`   | Coverage build directory (default: `build-coverage`)                    |
+| `--output-dir PATH`  | HTML report output directory (default: `coverage`)                      |
+| `--tool CHOICE`      | `auto`, `gcovr`, or `llvm-cov` (default: `auto`)                        |
 | `--open / --no-open` | Open the report in the default browser after generation (default: open) |
-| `-j INT` | Parallel build jobs |
-| `--project-dir PATH` | Project root |
+| `-j INT`             | Parallel build jobs                                                     |
+| `--project-dir PATH` | Project root                                                            |
 
 Creates a dedicated build directory configured with coverage flags, builds the full project, runs all tests, then generates an HTML report:
 

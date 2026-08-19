@@ -3,7 +3,7 @@
 Covers commands that modify existing blocks in-place:
   - newparam  (add Annotated<> parameter to a block header)
   - add_test  (generate qa_*.cpp for a block that lacks one)
-  - add_dep   (register a cmake/meson dependency)
+  - add_dep   (register a cmake dependency)
   - lint_headers (validate block header conventions)
 """
 
@@ -357,17 +357,6 @@ def test_add_dep_duplicate_errors(project: ProjectConfig, tmp_path: Path) -> Non
     # Second add prints an error message (add_dep exits 0 but reports via stderr)
     result = invoke(project.root, "add-dep", "FFTW3", "--pkg-config", "fftw3")
     assert "already declared" in result.output or "No files modified" in result.output
-
-
-def test_add_dep_updates_meson_build(project: ProjectConfig) -> None:
-    """add-dep appends a dependency() call to meson.build when it exists."""
-    _create_deps_cmake(project)
-    (project.root / "meson.build").write_text("# top-level meson\n")
-
-    invoke(project.root, "add-dep", "FFTW3", "--pkg-config", "fftw3")
-
-    meson = (project.root / "meson.build").read_text()
-    assert "fftw3" in meson
 
 
 # ---------------------------------------------------------------------------

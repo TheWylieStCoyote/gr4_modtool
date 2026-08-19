@@ -82,6 +82,7 @@ def test_init_prints_context_vars(runner: CliRunner, project: object) -> None:
     assert "namespace" in result.output
 
 
+@pytest.mark.skipif(not CONTEXT_FREE_TEMPLATES, reason="no context-free built-in templates")
 def test_init_context_free_template(runner: CliRunner, project: object) -> None:
     """A context-free template prints the 'no context variables' message."""
     root = project.root  # type: ignore[attr-defined]

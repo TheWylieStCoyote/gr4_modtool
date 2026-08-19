@@ -21,7 +21,6 @@ def cfg(tmp_path: Path) -> ProjectConfig:
         cmake_prefix="gr4_mymod",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=False,
         groups={},
     )
     save_config(c)

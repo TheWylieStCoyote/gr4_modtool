@@ -212,17 +212,6 @@ def test_rename_group_moves_directory(project_two_groups: ProjectConfig, tmp_pat
     assert not (project_two_groups.root / "blocks" / "basic").exists()
 
 
-def test_rename_group_updates_cmake(project_two_groups: ProjectConfig, tmp_path: Path) -> None:
-    """rename-group updates meson.build references to the old group name."""
-    meson_top = project_two_groups.root / "blocks" / "meson.build"
-    assert "basic" in meson_top.read_text()
-
-    invoke(project_two_groups.root, "rename-group", "basic", "dsp", "-y")
-
-    assert "basic" not in meson_top.read_text()
-    assert "dsp" in meson_top.read_text()
-
-
 def test_rename_group_info_json_reflects_new_name(
     project_two_groups: ProjectConfig, tmp_path: Path
 ) -> None:
@@ -279,27 +268,6 @@ def test_rename_block_cmd_invalid_name_exits_nonzero(
         expect_ok=False,
     )
     assert result.exit_code != 0
-
-
-def test_rename_updates_meson(project: ProjectConfig, tmp_path: Path) -> None:
-    """rename updates the meson.build entry to the new block name."""
-    _add_block(project, tmp_path)
-    invoke(project.root, "rename", "--group", "basic", "MyFilter", "Booster", "-y")
-
-    meson = (project.group_test_dir("basic") / "meson.build").read_text()
-    assert "Booster" in meson
-    assert "MyFilter" not in meson
-
-
-def test_rename_group_updates_meson(project_two_groups: ProjectConfig, tmp_path: Path) -> None:
-    """rename-group updates the blocks/meson.build subdir reference to the new name."""
-    meson_top = project_two_groups.root / "blocks" / "meson.build"
-
-    invoke(project_two_groups.root, "rename-group", "basic", "dsp", "-y")
-
-    content = meson_top.read_text()
-    assert "dsp" in content
-    assert "basic" not in content
 
 
 def test_rename_group_updates_config(project_two_groups: ProjectConfig, tmp_path: Path) -> None:

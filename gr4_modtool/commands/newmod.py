@@ -71,13 +71,6 @@ def _blocks_cmake(cfg: ProjectConfig) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _blocks_meson(cfg: ProjectConfig) -> str:
-    lines = []
-    for name in cfg.groups:
-        lines.append(f"subdir('{name}')")
-    return "\n".join(lines) + "\n"
-
-
 def _deps_cmake(cmake_prefix: str) -> str:
     return f"""\
 include_guard(GLOBAL)
@@ -166,7 +159,6 @@ def cmd(project_dir: str | None, name: str | None, first_group_cli: str | None, 
     gr4_prefix = _ask_text("GNURadio4 include prefix:", default="gnuradio-4.0")
 
     build_cmake = _ask_confirm("Generate CMake build files?", default=True)
-    build_meson = _ask_confirm("Generate Meson build files?", default=False)
     gen_git = _ask_confirm("Initialize git repository?", default=True)
     gen_devcontainer = _ask_confirm("Generate devcontainer?", default=False)
     gen_clang = _ask_confirm("Generate .clang-format and .clang-tidy config?", default=True)
@@ -208,7 +200,6 @@ def cmd(project_dir: str | None, name: str | None, first_group_cli: str | None, 
         cmake_prefix=cmake_pfx,
         gr4_include_prefix=gr4_prefix,
         build_cmake=build_cmake,
-        build_meson=build_meson,
         groups=groups,
         flat=flat,
     )
@@ -236,8 +227,6 @@ def cmd(project_dir: str | None, name: str | None, first_group_cli: str | None, 
             click.echo("  cmake --preset default && cmake --build --preset default")
         else:
             click.echo("  cmake -B build && cmake --build build")
-    if build_meson:
-        click.echo("  meson setup build && ninja -C build")
 
 
 def _write_project(
@@ -281,9 +270,6 @@ def _write_project(
             render("package_config.cmake.in.j2", ctx, root)
         )
 
-    if cfg.build_meson:
-        (root / "meson.build").write_text(render("toplevel_meson.build.j2", ctx, root))
-
     # blocks/ directory
     blocks_dir = root / "blocks"
     blocks_dir.mkdir(exist_ok=True)
@@ -291,20 +277,14 @@ def _write_project(
     if cfg.flat:
         if cfg.build_cmake:
             (blocks_dir / "CMakeLists.txt").write_text(_flat_blocks_cmake(cfg))
-        if cfg.build_meson:
-            (blocks_dir / "meson.build").write_text(_flat_blocks_meson(cfg))
         cfg.block_include_dir().mkdir(parents=True, exist_ok=True)
         test_dir = cfg.block_test_dir()
         test_dir.mkdir(parents=True, exist_ok=True)
         if cfg.build_cmake:
             (test_dir / "CMakeLists.txt").write_text(f"# Tests for {cfg.name} blocks\n")
-        if cfg.build_meson:
-            (test_dir / "meson.build").write_text(render("test_meson.build.j2", {}, cfg.root))
     else:
         if cfg.build_cmake:
             (blocks_dir / "CMakeLists.txt").write_text(_blocks_cmake(cfg))
-        if cfg.build_meson:
-            (blocks_dir / "meson.build").write_text(_blocks_meson(cfg))
         if first_group:
             _create_group_skeleton(cfg, first_group)
 
@@ -385,10 +365,6 @@ def _flat_blocks_cmake(cfg: ProjectConfig) -> str:
         },
         cfg.root,
     )
-
-
-def _flat_blocks_meson(cfg: ProjectConfig) -> str:
-    return render("flat_blocks_meson.build.j2", {}, cfg.root)
 
 
 def _create_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:

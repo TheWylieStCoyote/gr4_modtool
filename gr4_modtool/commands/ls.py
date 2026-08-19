@@ -139,7 +139,6 @@ def collect_inventory(
             "namespace": cfg.cpp_namespace,
             "cmake_prefix": cfg.cmake_prefix,
             "build_cmake": cfg.build_cmake,
-            "build_meson": cfg.build_meson,
             "flat_mode": cfg.flat,
         },
         "groups": groups_out,
@@ -180,7 +179,6 @@ def _render_toml(data: dict) -> str:
         f'namespace = "{_toml_str(proj["namespace"])}"',
         f'cmake_prefix = "{_toml_str(proj["cmake_prefix"])}"',
         f"build_cmake = {'true' if proj['build_cmake'] else 'false'}",
-        f"build_meson = {'true' if proj['build_meson'] else 'false'}",
         f"flat_mode = {'true' if proj['flat_mode'] else 'false'}",
         "",
     ]

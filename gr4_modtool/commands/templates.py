@@ -11,12 +11,7 @@ from rich.table import Table
 
 from gr4_modtool.project.discovery import load_config
 
-CONTEXT_FREE_TEMPLATES: frozenset[str] = frozenset(
-    {
-        "flat_blocks_meson.build.j2",
-        "test_meson.build.j2",
-    }
-)
+CONTEXT_FREE_TEMPLATES: frozenset[str] = frozenset()
 
 _BLOCK_CONTEXT: list[dict] = [
     {"name": "block_name", "type": "str", "dummy": "MyBlock", "desc": "CamelCase struct name"},
@@ -167,19 +162,12 @@ TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {
             "desc": "Include path prefix",
         },
         {
-            "name": "dep_var_name",
-            "type": "str",
-            "dummy": "gr4_basic_blocks_dep",
-            "desc": "Meson dep variable name",
-        },
-        {
             "name": "block_library_name",
             "type": "str",
             "dummy": "GrMyModBasicBlocks",
             "desc": "GNU Radio shared block-library target name",
         },
     ],
-    "group_meson.build.j2": "group_CMakeLists.txt.j2",
     "test_CMakeLists.txt.j2": [
         {"name": "group_name", "type": "str", "dummy": "basic", "desc": "Group directory name"},
     ],
@@ -206,7 +194,6 @@ TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {
         },
         {"name": "cpp_namespace", "type": "str", "dummy": "gr::mymod", "desc": "C++ namespace"},
     ],
-    "toplevel_meson.build.j2": "toplevel_CMakeLists.txt.j2",
     "package_config.cmake.in.j2": [
         {
             "name": "cmake_prefix",
@@ -259,7 +246,6 @@ TEMPLATE_CONTEXT: dict[str, list[dict] | str] = {
             "desc": "Include path prefix",
         },
         {"name": "build_cmake", "type": "bool", "dummy": True, "desc": "Whether CMake is enabled"},
-        {"name": "build_meson", "type": "bool", "dummy": True, "desc": "Whether Meson is enabled"},
     ],
     "Dockerfile.devcontainer.j2": "devcontainer.json.j2",
     "clang-format.j2": [

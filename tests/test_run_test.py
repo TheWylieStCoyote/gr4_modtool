@@ -72,13 +72,6 @@ def cmake_root(tmp_path: Path) -> Path:
     return tmp_path
 
 
-@pytest.fixture()
-def meson_root(tmp_path: Path) -> Path:
-    (tmp_path / "meson.build").write_text("project('x', 'cpp')\n")
-    (tmp_path / "build").mkdir()
-    return tmp_path
-
-
 # ---------------------------------------------------------------------------
 # run_block_test
 # ---------------------------------------------------------------------------
@@ -90,15 +83,6 @@ def test_run_block_test_cmake_uses_ctest(cmake_root: Path) -> None:
     args = mock_popen.call_args[0][0]
     assert args[0] == "ctest"
     assert "-R" in args
-    assert "qa_MyFilter" in args
-
-
-def test_run_block_test_meson_uses_meson_test(meson_root: Path) -> None:
-    with patch("subprocess.Popen", return_value=_mock_popen()) as mock_popen:
-        run_block_test(meson_root, meson_root / "build", "MyFilter")
-    args = mock_popen.call_args[0][0]
-    assert args[0] == "meson"
-    assert "test" in args
     assert "qa_MyFilter" in args
 
 
@@ -154,15 +138,6 @@ def test_incremental_build_cmake(cmake_root: Path) -> None:
     args = mock_popen.call_args[0][0]
     assert args[:2] == ["cmake", "--build"]
     assert "--target" in args
-    assert "qa_MyFilter" in args
-
-
-def test_incremental_build_meson(meson_root: Path) -> None:
-    with patch("subprocess.Popen", return_value=_mock_popen()) as mock_popen:
-        _incremental_build(meson_root, meson_root / "build", "MyFilter")
-    args = mock_popen.call_args[0][0]
-    assert args[0] == "meson"
-    assert "compile" in args
     assert "qa_MyFilter" in args
 
 

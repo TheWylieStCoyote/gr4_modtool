@@ -98,14 +98,6 @@ def test_rename_block_updates_cmake(project: ProjectConfig) -> None:
     assert "qa_MyFilter" not in text
 
 
-def test_rename_block_updates_meson(project: ProjectConfig) -> None:
-    _add_block(project)
-    rename_block(project, "basic", "MyFilter", "MyNewFilter")
-    text = (project.group_test_dir("basic") / "meson.build").read_text()
-    assert "qa_MyNewFilter" in text
-    assert "qa_MyFilter" not in text
-
-
 def test_rename_block_no_test_file_ok(project: ProjectConfig) -> None:
     """Rename succeeds even when the block has no test file."""
     _add_block(project, gen_test=False)

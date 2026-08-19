@@ -193,7 +193,11 @@ class DetailPanel(ScrollableContainer):
         self.remove_children()
         build = (
             " + ".join(
-                s for s, flag in [("CMake", cfg.build_cmake), ("Meson", cfg.build_meson)] if flag
+                s
+                for s, flag in [
+                    ("CMake", cfg.build_cmake),
+                ]
+                if flag
             )
             or "none"
         )
@@ -1024,7 +1028,6 @@ class GR4ModtoolApp(App):
                 return
             from gr4_modtool.commands.newgroup import write_group_skeleton
             from gr4_modtool.project import cmake as cmake_mod
-            from gr4_modtool.project import meson as meson_mod
             from gr4_modtool.project.discovery import save_config
 
             cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
@@ -1036,11 +1039,8 @@ class GR4ModtoolApp(App):
                 cfg.groups[name] = f"blocks/{name}"
                 save_config(cfg)
                 blocks_cmake = cfg.blocks_dir / "CMakeLists.txt"
-                blocks_meson = cfg.blocks_dir / "meson.build"
                 if cfg.build_cmake and blocks_cmake.exists():
                     cmake_mod.add_group_to_blocks_cmake(blocks_cmake, name, cfg.cmake_prefix)
-                if cfg.build_meson and blocks_meson.exists():
-                    meson_mod.add_group_to_blocks_meson(blocks_meson, name)
                 self._load_project()
                 self.notify(f"Created group '{name}'.")
             except Exception as exc:  # noqa: BLE001
@@ -1080,7 +1080,6 @@ class GR4ModtoolApp(App):
                 return
             from gr4_modtool.commands.rename import _rename_in_header
             from gr4_modtool.project import cmake as cmake_mod
-            from gr4_modtool.project import meson as meson_mod
 
             cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
             group = answers["group"]
@@ -1090,7 +1089,6 @@ class GR4ModtoolApp(App):
             old_test = cfg.group_test_dir(group) / f"qa_{old_name}.cpp"
             new_test = cfg.group_test_dir(group) / f"qa_{new_name}.cpp"
             cmake_test = cfg.group_test_dir(group) / "CMakeLists.txt"
-            meson_test = cfg.group_test_dir(group) / "meson.build"
             try:
                 if old_header.exists():
                     _rename_in_header(old_header, old_name, new_name)
@@ -1101,8 +1099,6 @@ class GR4ModtoolApp(App):
                     old_test.rename(new_test)
                 if cfg.build_cmake and cmake_test.exists():
                     cmake_mod.rename_test_entry(cmake_test, old_name, new_name)
-                if cfg.build_meson and meson_test.exists():
-                    meson_mod.rename_test_entry(meson_test, old_name, new_name)
                 self._selected_block = new_name
                 self._load_project()
                 self.notify(f"Renamed '{old_name}' → '{new_name}'.")
@@ -1129,7 +1125,6 @@ class GR4ModtoolApp(App):
             if not confirmed:
                 return
             from gr4_modtool.project import cmake as cmake_mod
-            from gr4_modtool.project import meson as meson_mod
 
             cfg: ProjectConfig = self._cfg  # type: ignore[assignment]
             try:
@@ -1140,11 +1135,8 @@ class GR4ModtoolApp(App):
                     if f.exists():
                         f.unlink()
                 cmake_test = cfg.group_test_dir(group) / "CMakeLists.txt"
-                meson_test = cfg.group_test_dir(group) / "meson.build"
                 if cfg.build_cmake and cmake_test.exists():
                     cmake_mod.remove_test_entry(cmake_test, block_name)
-                if cfg.build_meson and meson_test.exists():
-                    meson_mod.remove_test_entry(meson_test, block_name)
                 self._selected_block = None
                 self._load_project()
                 self.notify(f"Deleted '{block_name}'.")
@@ -1376,19 +1368,16 @@ class GR4ModtoolApp(App):
             if opts["clean"] and bd.exists():
                 shutil.rmtree(bd)
 
+            if not has_cmake:
+                self.notify("No CMakeLists.txt found at project root.", severity="error")
+                return
+
             cmds: list[list[str]] = []
-            if has_cmake:
-                if opts["reconfigure"] or not (bd / "CMakeCache.txt").exists():
-                    cmds.append(["cmake", "-B", str(bd), "-S", str(root)])
-                cmds.append(["cmake", "--build", str(bd), "--parallel", parallel])
-                if opts["run_tests"]:
-                    cmds.append(["ctest", "--test-dir", str(bd), "--output-on-failure"])
-            else:
-                if opts["reconfigure"] or not bd.exists():
-                    cmds.append(["meson", "setup", str(bd), str(root)])
-                cmds.append(["ninja", "-C", str(bd), "-j", parallel])
-                if opts["run_tests"]:
-                    cmds.append(["meson", "test", "-C", str(bd)])
+            if opts["reconfigure"] or not (bd / "CMakeCache.txt").exists():
+                cmds.append(["cmake", "-B", str(bd), "-S", str(root)])
+            cmds.append(["cmake", "--build", str(bd), "--parallel", parallel])
+            if opts["run_tests"]:
+                cmds.append(["ctest", "--test-dir", str(bd), "--output-on-failure"])
 
             self.push_screen(BuildOutputScreen(cmds, root))
 
@@ -1409,17 +1398,17 @@ class GR4ModtoolApp(App):
             if not build_dir.exists():
                 self.notify(f"Build dir not found: {build_dir}. Run Build first.", severity="error")
                 return
-            if (root / "CMakeLists.txt").exists():
-                cmd = [
-                    "ctest",
-                    "--test-dir",
-                    str(build_dir),
-                    "-R",
-                    f"qa_{block_name}",
-                    "--output-on-failure",
-                ]
-            else:
-                cmd = ["meson", "test", "-C", str(build_dir), f"qa_{block_name}"]
+            if not (root / "CMakeLists.txt").exists():
+                self.notify("No CMakeLists.txt found at project root.", severity="error")
+                return
+            cmd = [
+                "ctest",
+                "--test-dir",
+                str(build_dir),
+                "-R",
+                f"qa_{block_name}",
+                "--output-on-failure",
+            ]
             self.push_screen(BuildOutputScreen([cmd], root))
 
         self.push_screen(RunTestScreen(self._selected_block), _handle)

@@ -58,14 +58,7 @@ def _from_block_issue(issue) -> ValidationIssue:
 # Benchmark build-file scanners
 # ---------------------------------------------------------------------------
 
-_MESON_BENCH_RE = re.compile(r"benchmark\('bench_(\w+)'")
 _CMAKE_BENCH_RE = re.compile(r"add_executable\(bench_(\w+)\b")
-
-
-def _meson_bench_entries(meson_path: Path) -> set[str]:
-    if not meson_path.exists():
-        return set()
-    return set(_MESON_BENCH_RE.findall(meson_path.read_text()))
 
 
 def _cmake_bench_entries(cmake_path: Path) -> set[str]:
@@ -79,7 +72,6 @@ def _cmake_bench_entries(cmake_path: Path) -> set[str]:
 # ---------------------------------------------------------------------------
 
 _CMAKE_VERSION_RE = re.compile(r"project\([^)]*\bVERSION\s+([\d.]+)", re.DOTALL)
-_MESON_VERSION_RE = re.compile(r"version\s*:\s*'([\d.]+)'")
 
 
 def _check_structure(cfg: ProjectConfig) -> list[ValidationIssue]:
@@ -112,25 +104,6 @@ def _check_structure(cfg: ProjectConfig) -> list[ValidationIssue]:
                     check="S2",
                     detail=(
                         f"VERSION '{m.group(1)}' in CMakeLists.txt "
-                        f"differs from config version '{cfg.version}'"
-                    ),
-                    severity="warning",
-                )
-            )
-
-    # S3 — meson.build version vs config
-    meson_path = cfg.root / "meson.build"
-    if meson_path.exists():
-        m = _MESON_VERSION_RE.search(meson_path.read_text())
-        if m and m.group(1) != cfg.version:
-            issues.append(
-                ValidationIssue(
-                    category="structure",
-                    group="",
-                    subject="meson.build",
-                    check="S3",
-                    detail=(
-                        f"version '{m.group(1)}' in meson.build "
                         f"differs from config version '{cfg.version}'"
                     ),
                     severity="warning",
@@ -298,23 +271,10 @@ def _check_build(cfg: ProjectConfig, group_filter: str | None = None) -> list[Va
         if not bench_files:
             continue
 
-        meson_entries = _meson_bench_entries(bench_dir / "meson.build")
         cmake_entries = _cmake_bench_entries(bench_dir / "CMakeLists.txt")
 
         for bf in bench_files:
             block_name = bf.stem[6:]  # strip "bench_"
-
-            if cfg.build_meson and block_name not in meson_entries:
-                issues.append(
-                    ValidationIssue(
-                        category="build",
-                        group=grp.name,
-                        subject=block_name,
-                        check="B6",
-                        detail=f"bench_{block_name}.cpp has no meson benchmark entry",
-                        severity="warning",
-                    )
-                )
 
             if cfg.build_cmake and block_name not in cmake_entries:
                 issues.append(

@@ -75,24 +75,6 @@ def _check_cmake(need_cmake: bool) -> list[DoctorResult]:
     return [DoctorResult("cmake", "ok", f"cmake {ver}")]
 
 
-def _check_meson(need_meson: bool) -> list[DoctorResult]:
-    if not need_meson:
-        return [DoctorResult("meson", "skip", "not required by project")]
-    if not shutil.which("meson"):
-        return [DoctorResult("meson", "error", "not found — install meson ≥ 1.0")]
-    ver = _run_version(["meson", "--version"])
-    if ver and ver != "unknown" and _parse_ver(ver) < (1, 0):
-        return [DoctorResult("meson", "warning", f"meson {ver} (recommend ≥ 1.0)")]
-    return [DoctorResult("meson", "ok", f"meson {ver}")]
-
-
-def _check_ninja() -> DoctorResult:
-    if not shutil.which("ninja"):
-        return DoctorResult("ninja", "warning", "not found — required for meson builds")
-    ver = _run_version(["ninja", "--version"])
-    return DoctorResult("ninja", "ok", f"ninja {ver}")
-
-
 def _check_pkg_config() -> DoctorResult:
     if not shutil.which("pkg-config"):
         return DoctorResult("pkg-config", "warning", "not found — required to detect gnuradio4")
@@ -174,14 +156,10 @@ def _check_optional_tools() -> list[DoctorResult]:
 def run_doctor(cfg=None) -> list[DoctorResult]:
     """Run all environment checks. cfg is used to scope build-system checks."""
     need_cmake = cfg.build_cmake if cfg is not None else True
-    need_meson = cfg.build_meson if cfg is not None else True
 
     results: list[DoctorResult] = []
     results += _check_python()
     results += _check_cmake(need_cmake)
-    results += _check_meson(need_meson)
-    if need_meson:
-        results.append(_check_ninja())
     results.append(_check_pkg_config())
     results += _check_cxx_compiler()
     results.append(_check_gnuradio4())

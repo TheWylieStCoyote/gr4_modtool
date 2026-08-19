@@ -1,4 +1,4 @@
-"""add-dep command — add a library dependency to cmake/Dependencies.cmake and meson.build."""
+"""add-dep command — add a library dependency to cmake/Dependencies.cmake."""
 
 from __future__ import annotations
 
@@ -44,24 +44,6 @@ def add_cmake_dep(
     deps_cmake.write_text(text)
 
 
-def add_meson_dep(meson_build: Path, var_name: str, pkg_name: str) -> None:
-    """Append a dependency() call to meson.build.
-
-    Raises FileNotFoundError if meson_build does not exist.
-    Raises ValueError if the dep variable is already present.
-    """
-    if not meson_build.exists():
-        raise FileNotFoundError(f"meson.build not found: {meson_build}")
-
-    dep_var = f"{var_name.lower()}_dep"
-    text = meson_build.read_text()
-    if dep_var in text:
-        raise ValueError(f"'{dep_var}' is already declared in {meson_build.name}")
-
-    line = f"{dep_var} = dependency('{pkg_name}')\n"
-    meson_build.write_text(text.rstrip() + "\n" + line)
-
-
 @click.command("add-dep")
 @click.argument("var_name", metavar="VAR_NAME")
 @click.option("--pkg-config", "pkg_name", default=None, help="pkg-config module name (e.g. fftw3).")
@@ -75,7 +57,7 @@ def cmd(
     cmake_pkg: str | None,
     project_dir: str | None,
 ) -> None:
-    """Add a library dependency to cmake/Dependencies.cmake (and meson.build).
+    """Add a library dependency to cmake/Dependencies.cmake.
 
     VAR_NAME is the CMake variable prefix, e.g. FFTW3.
 
@@ -97,15 +79,6 @@ def cmd(
             modified.append(deps_cmake)
         except ValueError as exc:
             click.echo(f"cmake: {exc}", err=True)
-
-    if cfg.build_meson and pkg_name:
-        meson_build = cfg.root / "meson.build"
-        if meson_build.exists():
-            try:
-                add_meson_dep(meson_build, var_name, pkg_name)
-                modified.append(meson_build)
-            except ValueError as exc:
-                click.echo(f"meson: {exc}", err=True)
 
     if modified:
         click.echo("Modified:")

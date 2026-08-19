@@ -24,8 +24,7 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
       4. Test .cpp files: include-path occurrences
       5. Group-level CMakeLists.txt and test/CMakeLists.txt: target names
       6. blocks/CMakeLists.txt: add_subdirectory + target_link_libraries
-      7. blocks/meson.build: subdir() call
-      8. .gr4modtool.toml: groups mapping
+      7. .gr4modtool.toml: groups mapping
 
     Returns list of created/modified paths.
 
@@ -122,16 +121,6 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
         modified.append(blocks_cmake)
 
     # ------------------------------------------------------------------
-    # 7. Update blocks/meson.build
-    # ------------------------------------------------------------------
-    blocks_meson = cfg.blocks_dir / "meson.build"
-    if blocks_meson.exists():
-        text = blocks_meson.read_text()
-        text = text.replace(f"subdir('{old_name}')", f"subdir('{new_name}')")
-        blocks_meson.write_text(text)
-        modified.append(blocks_meson)
-
-    # ------------------------------------------------------------------
     # 8. Update .gr4modtool.toml
     # ------------------------------------------------------------------
     old_rel = cfg.groups.pop(old_name)
@@ -158,7 +147,7 @@ def cmd(old_name: str, new_name: str, project_dir: str | None, yes: bool) -> Non
     click.echo(f"Rename group '{old_name}' → '{new_name}'")
     click.echo(f"  {cfg.group_path(old_name)}  →  {cfg.root / 'blocks' / new_name}")
     click.echo(
-        "  Updates: include subdir, .hpp namespaces, .cpp includes, CMakeLists.txt, meson.build, .gr4modtool.toml"
+        "  Updates: include subdir, .hpp namespaces, .cpp includes, CMakeLists.txt, .gr4modtool.toml"
     )
 
     if not yes:

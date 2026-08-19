@@ -61,7 +61,6 @@ def cmd(project_dir: str | None, output_json: bool, verbose: bool, catalog: bool
             "version": cfg.version,
             "cpp_namespace": cfg.cpp_namespace,
             "build_cmake": cfg.build_cmake,
-            "build_meson": cfg.build_meson,
             "groups": [
                 {
                     "name": g.name,
@@ -76,7 +75,7 @@ def cmd(project_dir: str | None, output_json: bool, verbose: bool, catalog: bool
     console = Console()
     console.print(f"\n[bold]Project:[/bold] {cfg.name}  v{cfg.version}")
     console.print(f"[bold]Namespace:[/bold] {cfg.cpp_namespace}")
-    console.print(f"[bold]Build:[/bold] cmake={cfg.build_cmake}  meson={cfg.build_meson}\n")
+    console.print(f"[bold]Build:[/bold] cmake={cfg.build_cmake}\n")
 
     if verbose:
         for group in groups:

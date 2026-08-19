@@ -92,13 +92,6 @@ def test_rename_group_updates_blocks_cmake(project: ProjectConfig) -> None:
     assert "add_subdirectory(basic)" not in text
 
 
-def test_rename_group_updates_blocks_meson(project: ProjectConfig) -> None:
-    rename_group(project, "basic", "dsp")
-    text = (project.root / "blocks" / "meson.build").read_text()
-    assert "subdir('dsp')" in text
-    assert "subdir('basic')" not in text
-
-
 def test_rename_group_updates_group_cmake_targets(project: ProjectConfig) -> None:
     _add_block(project, "basic")
     rename_group(project, "basic", "dsp")

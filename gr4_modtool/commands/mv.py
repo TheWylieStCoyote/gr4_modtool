@@ -10,7 +10,6 @@ import click
 import questionary
 
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 
@@ -60,31 +59,17 @@ def move_block(cfg: ProjectConfig, src_group: str, block_name: str, dst_group: s
 
     # Source build files — remove
     src_cmake = cfg.group_test_dir(src_group) / "CMakeLists.txt"
-    src_meson = cfg.group_test_dir(src_group) / "meson.build"
     if cfg.build_cmake and src_cmake.exists():
         cmake_mod.remove_test_entry(src_cmake, block_name)
         affected.append(src_cmake)
-    if cfg.build_meson and src_meson.exists():
-        meson_mod.remove_test_entry(src_meson, block_name)
-        affected.append(src_meson)
 
     # Destination build files — add
     dst_cmake = cfg.group_test_dir(dst_group) / "CMakeLists.txt"
-    dst_meson = cfg.group_test_dir(dst_group) / "meson.build"
-    if cfg.build_cmake and dst_cmake.exists() and src_test.exists() is False and dst_test.exists():
-        target_libs = f"{cfg.cmake_prefix}::blocks_{dst_group}_headers"
-        cmake_mod.append_test_entry(dst_cmake, block_name, target_libs)
-        affected.append(dst_cmake)
-    elif cfg.build_cmake and dst_cmake.exists() and dst_test.exists():
+    if cfg.build_cmake and dst_cmake.exists() and dst_test.exists():
         target_libs = f"{cfg.cmake_prefix}::blocks_{dst_group}_headers"
         cmake_mod.append_test_entry(dst_cmake, block_name, target_libs)
         if dst_cmake not in affected:
             affected.append(dst_cmake)
-    if cfg.build_meson and dst_meson.exists() and dst_test.exists():
-        dep_var = f"gr4_{dst_group}_blocks_dep"
-        meson_mod.append_test_entry(dst_meson, block_name, extra_deps=[dep_var])
-        if dst_meson not in affected:
-            affected.append(dst_meson)
 
     return affected
 

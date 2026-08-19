@@ -75,11 +75,6 @@ def test_gather_status_detects_cmake(project: ProjectConfig) -> None:
     assert status.build_cmake is True
 
 
-def test_gather_status_detects_meson(project: ProjectConfig) -> None:
-    status = gather_status(project)
-    assert status.build_meson is True
-
-
 def test_gather_status_detects_ci_workflow(project: ProjectConfig) -> None:
     wf_dir = project.root / ".github" / "workflows"
     wf_dir.mkdir(parents=True)

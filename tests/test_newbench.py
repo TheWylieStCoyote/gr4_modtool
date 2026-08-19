@@ -84,11 +84,3 @@ def test_newbench_raises_if_bench_exists(project: ProjectConfig) -> None:
     write_bench_file(project, "basic", "MyFilter")
     with pytest.raises(FileExistsError):
         write_bench_file(project, "basic", "MyFilter")
-
-
-def test_newbench_wire_build_creates_meson(project: ProjectConfig) -> None:
-    write_block_files(project, _basic_answers())
-    write_bench_file(project, "basic", "MyFilter", wire_build=True)
-    assert (project.group_bench_dir("basic") / "meson.build").exists()
-    meson_text = (project.group_bench_dir("basic") / "meson.build").read_text()
-    assert "bench_MyFilter" in meson_text

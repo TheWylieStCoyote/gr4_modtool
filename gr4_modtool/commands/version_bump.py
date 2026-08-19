@@ -44,19 +44,6 @@ def _update_cmake(cmake_path: Path, old: str, new: str) -> bool:
     return True
 
 
-def _update_meson(meson_path: Path, old: str, new: str) -> bool:
-    """Replace version : '...' in meson.build. Returns True if the file was changed."""
-    if not meson_path.exists():
-        return False
-    text = meson_path.read_text()
-    pattern = rf"(version\s*:\s*'){re.escape(old)}'"
-    new_text = re.sub(pattern, rf"\g<1>{new}'", text)
-    if new_text == text:
-        return False
-    meson_path.write_text(new_text)
-    return True
-
-
 def _update_doxyfile(doxy_path: Path, old: str, new: str) -> bool:
     """Replace PROJECT_NUMBER in Doxyfile. Returns True if the file was changed."""
     if not doxy_path.exists():
@@ -74,12 +61,6 @@ def _would_change_cmake(cmake_path: Path, old: str) -> bool:
     if not cmake_path.exists():
         return False
     return bool(re.search(rf"project\([^)]*\bVERSION\s+{re.escape(old)}", cmake_path.read_text()))
-
-
-def _would_change_meson(meson_path: Path, old: str) -> bool:
-    if not meson_path.exists():
-        return False
-    return bool(re.search(rf"version\s*:\s*'{re.escape(old)}'", meson_path.read_text()))
 
 
 def _would_change_doxyfile(doxy_path: Path, old: str) -> bool:
@@ -100,8 +81,6 @@ def apply_version_bump(cfg, new_version: str) -> list[Path]:
 
     if _update_cmake(root / "CMakeLists.txt", old, new_version):
         modified.append(root / "CMakeLists.txt")
-    if _update_meson(root / "meson.build", old, new_version):
-        modified.append(root / "meson.build")
     if _update_doxyfile(root / "Doxyfile", old, new_version):
         modified.append(root / "Doxyfile")
 
@@ -170,8 +149,6 @@ def cmd(
         would_change = [root / ".gr4modtool.toml"]
         if _would_change_cmake(root / "CMakeLists.txt", current):
             would_change.append(root / "CMakeLists.txt")
-        if _would_change_meson(root / "meson.build", current):
-            would_change.append(root / "meson.build")
         if _would_change_doxyfile(root / "Doxyfile", current):
             would_change.append(root / "Doxyfile")
         click.echo("Would update:")

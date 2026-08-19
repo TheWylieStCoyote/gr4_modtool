@@ -2,10 +2,10 @@
 
 gr4_modtool has two extension points that third-party packages can use:
 
-| Extension point | Entry-point group | What it does |
-|---|---|---|
-| CLI commands | `gr4_modtool.commands` | Adds new subcommands to `gr4_modtool` |
-| Template directories | `gr4_modtool.templates` | Injects additional Jinja2 templates |
+| Extension point      | Entry-point group       | What it does                          |
+| -------------------- | ----------------------- | ------------------------------------- |
+| CLI commands         | `gr4_modtool.commands`  | Adds new subcommands to `gr4_modtool` |
+| Template directories | `gr4_modtool.templates` | Injects additional Jinja2 templates   |
 
 Both are discovered at startup via Python's standard `importlib.metadata` entry-point system — no patching, no configuration files, no imports in gr4_modtool itself.
 
@@ -160,7 +160,7 @@ content = render(
 )
 ```
 
-To override templates used by *built-in* commands (e.g. the block header template), use the **per-project override** mechanism instead — copy the template into `.gr4modtool/templates/` in your project, which always takes priority and requires no plugin infrastructure:
+To override templates used by _built-in_ commands (e.g. the block header template), use the **per-project override** mechanism instead — copy the template into `.gr4modtool/templates/` in your project, which always takes priority and requires no plugin infrastructure:
 
 ```bash
 gr4_modtool templates init block.hpp
@@ -170,36 +170,32 @@ gr4_modtool templates check   # validate before committing
 
 ### Available built-in templates
 
-| Template | Used by |
-|---|---|
-| `block.hpp.j2` | `newblock`, `cp`, `port` |
-| `qa_block.cpp.j2` | `newblock`, `add-test`, `port` |
-| `group_CMakeLists.txt.j2` | `newgroup` |
-| `group_meson.build.j2` | `newgroup` |
-| `test_CMakeLists.txt.j2` | `newgroup` |
-| `test_meson.build.j2` | `newgroup` |
-| `toplevel_CMakeLists.txt.j2` | `newmod` |
-| `toplevel_meson.build.j2` | `newmod` |
-| `flat_blocks_CMakeLists.txt.j2` | `newmod --flat` |
-| `flat_blocks_meson.build.j2` | `newmod --flat` |
-| `bench_block.cpp.j2` | `newbench` |
-| `bench_CMakeLists.txt.j2` | `newbench` |
-| `ci_coverage.yml.j2` | `ci --coverage` |
-| `ci_matrix.yml.j2` | `ci --matrix` |
-| `ci_release.yml.j2` | `ci --release` |
-| `ci_sanitizers.yml.j2` | `presets --init` |
-| `ci_clang.yml.j2` | `tidy --init` |
-| `clang-format.j2` | `tidy --init` |
-| `clang-tidy.j2` | `tidy --init` |
-| `cmake_presets.json.j2` | `presets` |
-| `Doxyfile.j2` | `docs` |
-| `Dockerfile.devcontainer.j2` | `devcontainer` |
-| `devcontainer.json.j2` | `devcontainer` |
-| `gitignore.j2` | `newmod` |
-| `pre_commit_config.yaml.j2` | `pre-commit` |
-| `vscode_settings.json.j2` | `vscode` |
-| `vscode_launch.json.j2` | `vscode` |
-| `plot_bench.py.j2` | `newbench --plot` |
+| Template                        | Used by                        |
+| ------------------------------- | ------------------------------ |
+| `block.hpp.j2`                  | `newblock`, `cp`, `port`       |
+| `qa_block.cpp.j2`               | `newblock`, `add-test`, `port` |
+| `group_CMakeLists.txt.j2`       | `newgroup`                     |
+| `test_CMakeLists.txt.j2`        | `newgroup`                     |
+| `toplevel_CMakeLists.txt.j2`    | `newmod`                       |
+| `flat_blocks_CMakeLists.txt.j2` | `newmod --flat`                |
+| `bench_block.cpp.j2`            | `newbench`                     |
+| `bench_CMakeLists.txt.j2`       | `newbench`                     |
+| `ci_coverage.yml.j2`            | `ci --coverage`                |
+| `ci_matrix.yml.j2`              | `ci --matrix`                  |
+| `ci_release.yml.j2`             | `ci --release`                 |
+| `ci_sanitizers.yml.j2`          | `presets --init`               |
+| `ci_clang.yml.j2`               | `tidy --init`                  |
+| `clang-format.j2`               | `tidy --init`                  |
+| `clang-tidy.j2`                 | `tidy --init`                  |
+| `cmake_presets.json.j2`         | `presets`                      |
+| `Doxyfile.j2`                   | `docs`                         |
+| `Dockerfile.devcontainer.j2`    | `devcontainer`                 |
+| `devcontainer.json.j2`          | `devcontainer`                 |
+| `gitignore.j2`                  | `newmod`                       |
+| `pre_commit_config.yaml.j2`     | `pre-commit`                   |
+| `vscode_settings.json.j2`       | `vscode`                       |
+| `vscode_launch.json.j2`         | `vscode`                       |
+| `plot_bench.py.j2`              | `newbench --plot`              |
 
 Use `gr4_modtool templates list` to see which built-in templates exist and whether any are currently overridden in your project.
 

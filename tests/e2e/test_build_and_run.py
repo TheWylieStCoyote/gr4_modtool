@@ -116,7 +116,6 @@ def _make_buildable_project(root: Path, flat: bool = False) -> ProjectConfig:
         cmake_prefix="gr4_testmod",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=False,
         groups=groups,
         flat=flat,
     )

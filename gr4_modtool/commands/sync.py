@@ -11,18 +11,15 @@ import questionary
 from rich.console import Console
 from rich.table import Table
 
-from gr4_modtool.commands.check import _cmake_test_entries, _meson_test_entries
+from gr4_modtool.commands.check import _cmake_test_entries
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 
 # (color, label) for each action type
 _ACTION_META: dict[str, tuple[str, str]] = {
     "generate_test": ("green", "generate test + register"),
     "add_cmake_entry": ("cyan", "add CMake entry"),
-    "add_meson_entry": ("cyan", "add meson entry"),
     "remove_cmake_entry": ("yellow", "remove stale CMake entry"),
-    "remove_meson_entry": ("yellow", "remove stale meson entry"),
     "warn_orphan": ("red", "orphan source (no header)"),
 }
 
@@ -50,7 +47,6 @@ def plan_sync(cfg, prune: bool = False) -> list[SyncAction]:
             {qa.stem[3:] for qa in test_dir.glob("qa_*.cpp")} if test_dir.exists() else set()
         )
         cmake_set = _cmake_test_entries(test_dir / "CMakeLists.txt") if cfg.build_cmake else set()
-        meson_set = _meson_test_entries(test_dir / "meson.build") if cfg.build_meson else set()
 
         # 1. Header with no test source → generate test (write_test_for_block also adds build entries)
         generating: set[str] = set()
@@ -60,20 +56,14 @@ def plan_sync(cfg, prune: bool = False) -> list[SyncAction]:
 
         # 2. Test source exists but build entry missing (skip blocks already being generated)
         cmake_file = test_dir / "CMakeLists.txt"
-        meson_file = test_dir / "meson.build"
         for block in sorted((test_srcs - cmake_set) - generating):
             if cfg.build_cmake and cmake_file.exists():
                 actions.append(SyncAction(g, block, "add_cmake_entry"))
-        for block in sorted((test_srcs - meson_set) - generating):
-            if cfg.build_meson and meson_file.exists():
-                actions.append(SyncAction(g, block, "add_meson_entry"))
 
         # 3. Stale build entries (only with --prune; skip blocks being regenerated)
         if prune:
             for block in sorted((cmake_set - test_srcs) - generating):
                 actions.append(SyncAction(g, block, "remove_cmake_entry"))
-            for block in sorted((meson_set - test_srcs) - generating):
-                actions.append(SyncAction(g, block, "remove_meson_entry"))
 
         # 4. Orphan test sources (warn regardless of prune)
         for block in sorted(test_srcs - headers):
@@ -96,7 +86,6 @@ def apply_sync(cfg, actions: list[SyncAction]) -> list[str]:
             if not g
             else f"{cfg.cmake_prefix}::blocks_{g}_headers"
         )
-        dep_var = "gr4_blocks_dep" if not g else f"gr4_{g}_blocks_dep"
 
         if action.action == "generate_test":
             try:
@@ -109,14 +98,8 @@ def apply_sync(cfg, actions: list[SyncAction]) -> list[str]:
         elif action.action == "add_cmake_entry":
             cmake_mod.append_test_entry(test_dir / "CMakeLists.txt", block, target_libs)
 
-        elif action.action == "add_meson_entry":
-            meson_mod.append_test_entry(test_dir / "meson.build", block, extra_deps=[dep_var])
-
         elif action.action == "remove_cmake_entry":
             cmake_mod.remove_test_entry(test_dir / "CMakeLists.txt", block)
-
-        elif action.action == "remove_meson_entry":
-            meson_mod.remove_test_entry(test_dir / "meson.build", block)
 
         # warn_orphan: informational only — already shown in the plan table
 

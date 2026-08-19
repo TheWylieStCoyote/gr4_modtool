@@ -50,7 +50,7 @@ def test_show_missing_block_errors(project: ProjectConfig) -> None:
 
 def test_doctor_runs(project: ProjectConfig) -> None:
     """doctor runs without unhandled exceptions (exit code reflects environment)."""
-    # Exit code 1 is acceptable when the environment is missing tools (e.g. meson).
+    # Exit code 1 is acceptable when the environment is missing tools (e.g. cmake).
     invoke(project.root, "doctor", expect_ok=False)
 
 

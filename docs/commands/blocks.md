@@ -41,7 +41,7 @@ Without `--template`, you are asked for: block name, description, template param
 
 - `blocks/<group>/include/gnuradio-4.0/<group>/<Name>.hpp`
 - `blocks/<group>/test/qa_<Name>.cpp` (if `gen_test`)
-- Updated `blocks/<group>/test/CMakeLists.txt` and `meson.build`
+- Updated `blocks/<group>/test/CMakeLists.txt`
 
 ### SIMD / vectorization hints
 
@@ -206,7 +206,7 @@ gr4_modtool mv [BLOCK_NAME] [OPTIONS]
 | `--project-dir PATH` | Project root      |
 | `--yes / -y`         | Skip confirmation |
 
-Updates namespace references in the header, `#include` paths in the test file, and removes/adds CMake and Meson entries in both groups.
+Updates namespace references in the header, `#include` paths in the test file, and removes/adds CMake entries in groups.
 
 ---
 
@@ -224,7 +224,7 @@ gr4_modtool rename [OLD_NAME] [NEW_NAME] [OPTIONS]
 | `--project-dir PATH` | Project root               |
 | `--yes / -y`         | Skip confirmation          |
 
-Renames: the header file, all symbol occurrences inside it (using `\bOldName\b` regex), the test file and its include, and CMake/Meson entries. Searches across all groups if `--group` is omitted.
+Renames: the header file, all symbol occurrences inside it (using `\bOldName\b` regex), the test file and its include, and CMake entries. Searches across all groups if `--group` is omitted.
 
 ---
 
@@ -242,7 +242,7 @@ gr4_modtool rename-block OLD_NAME NEW_NAME [OPTIONS]
 | `--project-dir PATH` | Project root                                          |
 | `--yes / -y`         | Skip confirmation                                     |
 
-Renames the header file and replaces every occurrence of the old name inside it (`struct`, `Block<>`, `GR_MAKE_REFLECTABLE`, `GR_REGISTER_BLOCK`). Also renames the test file and updates its `#include`, suite variable names, and namespace references, then patches `CMakeLists.txt` and `meson.build`.
+Renames the header file and replaces every occurrence of the old name inside it (`struct`, `Block<>`, `GR_MAKE_REFLECTABLE`, `GR_REGISTER_BLOCK`). Also renames the test file and updates its `#include`, suite variable names, and namespace references, and then patches `CMakeLists.txt` .
 
 If `--group` is omitted and the block exists in exactly one group, that group is used automatically. An error is raised if the block appears in multiple groups.
 
@@ -276,8 +276,7 @@ Performs the full rename cascade:
 3. Updates `namespace ::<old>` → `::<new>` and `/<old>/` → `/<new>/` in all `.hpp` headers and `qa_*.cpp` test files
 4. Rewrites CMake target names (`blocks_<old>_headers` → `blocks_<new>_headers`) in the group's own `CMakeLists.txt`
 5. Updates `add_subdirectory(<old>)` → `add_subdirectory(<new>)` in `blocks/CMakeLists.txt`
-6. Updates `subdir('<old>')` → `subdir('<new>')` in `blocks/meson.build`
-7. Updates the group entry in `.gr4modtool.toml`
+6. Updates the group entry in `.gr4modtool.toml`
 
 Group names must be `snake_case`. The new name must not already exist.
 
@@ -301,7 +300,7 @@ gr4_modtool rm [BLOCK_NAME] [OPTIONS]
 | `--project-dir PATH` | Project root               |
 | `--yes / -y`         | Skip confirmation          |
 
-Deletes the header, test source (if present), and removes CMake/Meson entries.
+Deletes the header, test source (if present), and removes CMake entries.
 
 ---
 

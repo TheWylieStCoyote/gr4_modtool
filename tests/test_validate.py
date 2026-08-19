@@ -183,28 +183,6 @@ def _write_cmake_test(cfg: ProjectConfig, group: str, *block_names: str) -> Path
     return p
 
 
-def _write_meson_test(cfg: ProjectConfig, group: str, *block_names: str) -> Path:
-    d = cfg.group_test_dir(group)
-    d.mkdir(parents=True, exist_ok=True)
-    p = d / "meson.build"
-    entries = "\n".join(f"test('qa_{b}', executable('qa_{b}', 'qa_{b}.cpp'))" for b in block_names)
-    p.write_text(entries + "\n")
-    return p
-
-
-def _write_bench_meson(cfg: ProjectConfig, group: str, *block_names: str) -> Path:
-    d = cfg.group_bench_dir(group)
-    d.mkdir(parents=True, exist_ok=True)
-    p = d / "meson.build"
-    entries = "\n".join(
-        f"bench_{b}_exe = executable('bench_{b}', 'bench_{b}.cpp')\n"
-        f"benchmark('bench_{b}', bench_{b}_exe)"
-        for b in block_names
-    )
-    p.write_text(entries + "\n")
-    return p
-
-
 def _ids(issues: list[ValidationIssue]) -> list[str]:
     return [i.check for i in issues]
 
@@ -254,34 +232,11 @@ def test_s2_version_match_cmake_clean(project: ProjectConfig) -> None:
     assert not any(i.check == "S2" for i in issues)
 
 
-def test_s3_version_mismatch_meson(project: ProjectConfig) -> None:
-    (project.root / "meson.build").write_text("project('testmod', 'cpp', version : '9.9.9')\n")
-    issues = _check_structure(project)
-    s3 = [i for i in issues if i.check == "S3"]
-    assert len(s3) == 1
-    assert s3[0].severity == "warning"
-    assert "9.9.9" in s3[0].detail
-
-
-def test_s3_version_match_meson_clean(project: ProjectConfig) -> None:
-    (project.root / "meson.build").write_text(
-        f"project('testmod', 'cpp', version : '{project.version}')\n"
-    )
-    issues = _check_structure(project)
-    assert not any(i.check == "S3" for i in issues)
-
-
 def test_s2_no_cmake_file_skips(project: ProjectConfig) -> None:
     # No root CMakeLists.txt → no S2 issue
     assert not (project.root / "CMakeLists.txt").exists()
     issues = _check_structure(project)
     assert not any(i.check == "S2" for i in issues)
-
-
-def test_s3_no_meson_file_skips(project: ProjectConfig) -> None:
-    assert not (project.root / "meson.build").exists()
-    issues = _check_structure(project)
-    assert not any(i.check == "S3" for i in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -417,14 +372,6 @@ def test_b_test_no_cmake_entry_error(project: ProjectConfig) -> None:
     assert any("CMake" in i.detail and i.severity == "error" for i in issues)
 
 
-def test_b_test_no_meson_entry_error(project: ProjectConfig) -> None:
-    _write_header(project, "basic", "MyFilter")
-    _write_test_file(project, "basic", "MyFilter")
-    _write_meson_test(project, "basic")  # empty — no entries
-    issues = _check_build(project)
-    assert any("meson" in i.detail and i.severity == "error" for i in issues)
-
-
 def test_b_stale_cmake_entry_error(project: ProjectConfig) -> None:
     # CMake entry for "Ghost" but no qa_Ghost.cpp
     _write_cmake_test(project, "basic", "Ghost")
@@ -432,34 +379,10 @@ def test_b_stale_cmake_entry_error(project: ProjectConfig) -> None:
     assert any("CMake" in i.detail and i.severity == "error" for i in issues)
 
 
-def test_b_stale_meson_entry_error(project: ProjectConfig) -> None:
-    _write_meson_test(project, "basic", "Ghost")
-    issues = _check_build(project)
-    assert any("meson" in i.detail and i.severity == "error" for i in issues)
-
-
-def test_b6_bench_no_meson_entry(project: ProjectConfig) -> None:
-    _write_bench_file(project, "basic", "MyFilter")
-    # No benchmarks/meson.build → no entry
-    issues = _check_build(project)
-    b6 = [i for i in issues if i.check == "B6" and "meson" in i.detail]
-    assert len(b6) == 1
-    assert b6[0].severity == "warning"
-
-
-def test_b6_bench_with_meson_entry_clean(project: ProjectConfig) -> None:
-    _write_bench_file(project, "basic", "MyFilter")
-    _write_bench_meson(project, "basic", "MyFilter")
-    # Only cmake B6 may fire (project has build_cmake=True); meson should be clean
-    issues = _check_build(project)
-    assert not any(i.check == "B6" and "meson" in i.detail for i in issues)
-
-
 def test_b_clean_project_no_issues(project: ProjectConfig) -> None:
     _write_header(project, "basic", "MyFilter")
     _write_test_file(project, "basic", "MyFilter")
     _write_cmake_test(project, "basic", "MyFilter")
-    _write_meson_test(project, "basic", "MyFilter")
     issues = _check_build(project)
     errors = [i for i in issues if i.severity == "error"]
     assert errors == []

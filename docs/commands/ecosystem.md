@@ -108,7 +108,7 @@ Example output:
 
 ## add-dep
 
-Add a library dependency to `cmake/Dependencies.cmake` and optionally the top-level `meson.build`.
+Add a library dependency to `cmake/Dependencies.cmake`.
 
 ```bash
 gr4_modtool add-dep VAR_NAME [OPTIONS]

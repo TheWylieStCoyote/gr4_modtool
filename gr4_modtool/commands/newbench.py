@@ -9,20 +9,8 @@ import click
 import questionary
 
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 from gr4_modtool.templates import render
-
-
-def _ensure_meson_option(project_root: Path) -> None:
-    """Ensure meson_options.txt has the enable_benchmarking option."""
-    opts_path = project_root / "meson_options.txt"
-    option_line = "option('enable_benchmarking', type: 'boolean', value: false)"
-    if opts_path.exists():
-        if "enable_benchmarking" not in opts_path.read_text():
-            opts_path.write_text(opts_path.read_text().rstrip() + f"\n{option_line}\n")
-    else:
-        opts_path.write_text(f"{option_line}\n")
 
 
 def _build_bench_ctx(cfg: ProjectConfig, group: str, info: dict) -> dict:
@@ -84,45 +72,24 @@ def write_bench_file(
     bench_file.write_text(render("bench_block.cpp.j2", ctx, cfg.root))
     written: list[Path] = [bench_file]
 
-    if wire_build:
+    if wire_build and cfg.build_cmake:
         target_libs = f"{cfg.cmake_prefix}::blocks_{group}_headers"
 
-        # CMake
-        if cfg.build_cmake:
-            bench_cmake = bench_dir / "CMakeLists.txt"
-            if not bench_cmake.exists():
-                bench_cmake.write_text(
-                    render("bench_CMakeLists.txt.j2", {"group_name": group}, cfg.root)
-                )
-                written.append(bench_cmake)
-            cmake_mod.append_bench_entry(bench_cmake, block_name, target_libs)
-            if bench_cmake not in written:
-                written.append(bench_cmake)
+        bench_cmake = bench_dir / "CMakeLists.txt"
+        if not bench_cmake.exists():
+            bench_cmake.write_text(
+                render("bench_CMakeLists.txt.j2", {"group_name": group}, cfg.root)
+            )
+            written.append(bench_cmake)
+        cmake_mod.append_bench_entry(bench_cmake, block_name, target_libs)
+        if bench_cmake not in written:
+            written.append(bench_cmake)
 
-            group_cmake = cfg.group_path(group) / "CMakeLists.txt"
-            if group_cmake.exists():
-                cmake_mod.add_bench_subdirectory(group_cmake)
-                if group_cmake not in written:
-                    written.append(group_cmake)
-
-        # Meson
-        if cfg.build_meson:
-            bench_meson = bench_dir / "meson.build"
-            dep_var = f"gr4_{group}_blocks_dep"
-            if not bench_meson.exists():
-                bench_meson.write_text("# Benchmarks\n")
-                written.append(bench_meson)
-            meson_mod.append_bench_entry(bench_meson, block_name, extra_deps=[dep_var])
-            if bench_meson not in written:
-                written.append(bench_meson)
-
-            group_meson = cfg.group_path(group) / "meson.build"
-            if group_meson.exists():
-                meson_mod.add_bench_subdir(group_meson)
-                if group_meson not in written:
-                    written.append(group_meson)
-
-            _ensure_meson_option(cfg.root)
+        group_cmake = cfg.group_path(group) / "CMakeLists.txt"
+        if group_cmake.exists():
+            cmake_mod.add_bench_subdirectory(group_cmake)
+            if group_cmake not in written:
+                written.append(group_cmake)
 
     if write_plot:
         written.extend(write_plot_script(cfg, group, block_name))
@@ -137,7 +104,7 @@ def write_bench_file(
     "--wire-build",
     is_flag=True,
     default=False,
-    help="Wire into CMake/meson build system (adds ENABLE_BENCHMARKING guard).",
+    help="Wire into CMake build system (adds ENABLE_BENCHMARKING guard).",
 )
 @click.option(
     "--plot",
@@ -185,7 +152,7 @@ def cmd(
 
     if not wire_build and not yes:
         wire_build = (
-            questionary.confirm("Wire into build system (cmake/meson)?", default=False).ask()
+            questionary.confirm("Wire into build system (cmake)?", default=False).ask()
             or False
         )
 

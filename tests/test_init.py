@@ -34,7 +34,6 @@ def _make_project_skeleton(
     (tmp_path / "CMakeLists.txt").write_text(
         f"cmake_minimum_required(VERSION 3.22)\nproject({name} LANGUAGES CXX{ver_line})\n"
     )
-    (tmp_path / "meson.build").write_text("project('myproj', 'cpp')\n")
     blocks = tmp_path / "blocks"
     blocks.mkdir()
     for group in ("basic", "filter"):
@@ -74,11 +73,10 @@ def test_scan_detects_include_prefix(tmp_path: Path) -> None:
     assert result["gr4_include_prefix"] == "gnuradio-4.0"
 
 
-def test_scan_detects_cmake_meson(tmp_path: Path) -> None:
+def test_scan_detects_cmake(tmp_path: Path) -> None:
     _make_project_skeleton(tmp_path)
     result = scan_project_dir(tmp_path)
     assert result["has_cmake"] is True
-    assert result["has_meson"] is True
 
 
 def test_write_init_config_creates_toml(tmp_path: Path) -> None:
@@ -90,7 +88,6 @@ def test_write_init_config_creates_toml(tmp_path: Path) -> None:
         "gr4_testmod",
         "gnuradio-4.0",
         True,
-        False,
         {"basic": "blocks/basic"},
     )
     assert (tmp_path / CONFIG_FILE).exists()
@@ -103,7 +100,7 @@ def test_write_init_config_creates_toml(tmp_path: Path) -> None:
 def test_write_init_config_raises_if_exists(tmp_path: Path) -> None:
     (tmp_path / CONFIG_FILE).write_text("[project]\nname = 'x'\n")
     with pytest.raises(FileExistsError):
-        write_init_config(tmp_path, "x", "0.1.0", "gr::x", "gr4_x", "gnuradio-4.0", True, False, {})
+        write_init_config(tmp_path, "x", "0.1.0", "gr::x", "gr4_x", "gnuradio-4.0", True, {})
 
 
 def test_scan_no_blocks_dir(tmp_path: Path) -> None:
@@ -220,7 +217,6 @@ def test_write_init_config_force_flag(tmp_path: Path) -> None:
         "gr4_new",
         "gnuradio-4.0",
         True,
-        False,
         {},
         force=True,
     )

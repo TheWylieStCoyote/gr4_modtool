@@ -73,7 +73,7 @@ mkdocs build
 ```
 gr4_modtool/
 ├── commands/        # One file per CLI command (business logic + Click command)
-├── project/         # cmake.py, meson.py, discovery.py — build-file utilities
+├── project/         # cmake.py, discovery.py — build-file utilities
 ├── templates/       # Jinja2 .j2 template files
 ├── tui/             # Textual TUI application
 ├── cli.py           # Click group + command registration

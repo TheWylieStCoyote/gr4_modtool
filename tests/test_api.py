@@ -24,7 +24,6 @@ def _make_project(tmp_path: Path) -> ProjectConfig:
         cmake_prefix="gr4_testmod",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=False,
         groups={"basic": "blocks/basic"},
     )
     save_config(cfg)
@@ -250,7 +249,6 @@ def test_write_group_skeleton_creates_directories(tmp_path: Path) -> None:
         cmake_prefix="gr4_mod2",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=False,
         groups={"dsp": "blocks/dsp"},
     )
     save_config(cfg2)

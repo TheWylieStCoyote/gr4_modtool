@@ -62,10 +62,7 @@ def coverage_test_env(tool: str, output_dir: Path) -> dict[str, str]:
 
 def _run_tests(project_root: Path, build_dir: Path, env: dict[str, str] | None = None) -> int:
     """Run all tests, merging optional env vars for coverage profiling."""
-    if (project_root / "CMakeLists.txt").exists():
-        cmd = ["ctest", "--test-dir", str(build_dir), "--output-on-failure"]
-    else:
-        cmd = ["meson", "test", "-C", str(build_dir)]
+    cmd = ["ctest", "--test-dir", str(build_dir), "--output-on-failure"]
     click.echo(f"  $ {' '.join(cmd)}")
     merged = {**os.environ, **(env or {})}
     proc = subprocess.Popen(cmd, env=merged, stdout=sys.stdout, stderr=sys.stderr)

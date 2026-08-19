@@ -26,16 +26,11 @@ def run_build(
 ) -> int:
     """Configure + build (+ optionally test). Returns subprocess exit code.
 
-    Does not require .gr4modtool.toml — works on any cmake/meson project.
+    Does not require .gr4modtool.toml — works on any cmake project.
     When CMakePresets.json is present, uses preset-based invocation so that
     compiler and flag defaults from the preset are applied automatically.
     """
     has_cmake = (project_root / "CMakeLists.txt").exists()
-    has_meson = (project_root / "meson.build").exists()
-
-    if not has_cmake and not has_meson:
-        click.echo(f"Error: no CMakeLists.txt or meson.build found in {project_root}", err=True)
-        return 1
 
     use_cmake = has_cmake  # prefer cmake when both present
 
@@ -91,7 +86,7 @@ def run_build(
     else:
         need_configure = reconfigure or not build_dir.exists()
         if need_configure:
-            configure_cmd = ["meson", "setup", str(build_dir), str(project_root)]
+            configure_cmd = ["setup", str(build_dir), str(project_root)]
             rc = _run(configure_cmd)
             if rc != 0:
                 return rc
@@ -102,7 +97,7 @@ def run_build(
             return rc
 
         if run_tests:
-            test_cmd = ["meson", "test", "-C", str(build_dir)]
+            test_cmd = ["test", "-C", str(build_dir)]
             rc = _run(test_cmd)
 
     return rc
@@ -174,7 +169,7 @@ def cmd(
     preset: str | None,
     cmake_args: tuple[str, ...],
 ) -> None:
-    """Configure and build the project using cmake or meson."""
+    """Configure and build the project using cmake."""
     if project_dir:
         root = Path(project_dir).resolve()
     else:

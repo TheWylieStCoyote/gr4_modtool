@@ -10,7 +10,6 @@ import click
 import questionary
 
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 from gr4_modtool.templates import render
 
@@ -90,12 +89,6 @@ def copy_block(
             )
             cmake_mod.append_test_entry(cmake_test, dst_name, target_libs)
             written.append(cmake_test)
-
-        meson_test = test_dir / "meson.build"
-        if cfg.build_meson and meson_test.exists():
-            dep_var = "gr4_blocks_dep" if not dst_group else f"gr4_{dst_group}_blocks_dep"
-            meson_mod.append_test_entry(meson_test, dst_name, extra_deps=[dep_var])
-            written.append(meson_test)
 
     return written
 

@@ -15,7 +15,6 @@ This creates:
 myfilters/
 ├── .gr4modtool.toml
 ├── CMakeLists.txt
-├── meson.build
 └── blocks/
     └── CMakeLists.txt
 ```
@@ -45,7 +44,7 @@ You'll be prompted for:
 - **Type list** — instantiation types, e.g. `float, double`
 - **Generate test?** — yes/no
 
-This writes `blocks/dsp/include/gnuradio-4.0/dsp/LowPassFilter.hpp` and (optionally) `blocks/dsp/test/qa_LowPassFilter.cpp`, and updates both CMakeLists.txt and meson.build.
+This writes `blocks/dsp/include/gnuradio-4.0/dsp/LowPassFilter.hpp` and (optionally) `blocks/dsp/test/qa_LowPassFilter.cpp`, and updates both CMakeLists.txt.
 
 ## 4. Add a parameter to a block
 
@@ -107,15 +106,15 @@ gr4_modtool tui
 
 Key bindings:
 
-| Key | Action |
-|---|---|
-| `n` | New block |
-| `m` | Move block |
-| `c` | Copy block |
-| `t` | Add test |
+| Key | Action        |
+| --- | ------------- |
+| `n` | New block     |
+| `m` | Move block    |
+| `c` | Copy block    |
+| `t` | Add test      |
 | `b` | New benchmark |
-| `k` | Run check |
-| `s` | Show block |
+| `k` | Run check     |
+| `s` | Show block    |
 | `p` | Add parameter |
-| `r` | Refresh |
-| `q` | Quit |
+| `r` | Refresh       |
+| `q` | Quit          |

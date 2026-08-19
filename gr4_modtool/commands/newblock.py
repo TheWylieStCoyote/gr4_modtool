@@ -10,7 +10,6 @@ import click
 import questionary
 
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 from gr4_modtool.templates import render
 
@@ -408,14 +407,12 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
         header_dir = cfg.block_include_dir()
         test_dir = cfg.block_test_dir()
         target_libs = f"{cfg.cmake_prefix}::blocks_headers"
-        dep_var = "gr4_blocks_dep"
     else:
         group_name = answers["group_name"]
         namespace = cfg.cpp_namespace + f"::{group_name}"
         header_dir = cfg.group_include_dir(group_name)
         test_dir = cfg.group_test_dir(group_name)
         target_libs = f"{cfg.cmake_prefix}::blocks_{group_name}_headers"
-        dep_var = f"gr4_{group_name}_blocks_dep"
 
     ctx = _build_template_ctx(
         block_name=block_name,
@@ -452,12 +449,6 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
         if cfg.build_cmake and cmake_test.exists():
             cmake_mod.append_test_entry(cmake_test, block_name, target_libs)
             written.append(cmake_test)
-
-        # Update meson.build
-        meson_test = test_dir / "meson.build"
-        if cfg.build_meson and meson_test.exists():
-            meson_mod.append_test_entry(meson_test, block_name, extra_deps=[dep_var])
-            written.append(meson_test)
 
     return written
 
@@ -535,7 +526,6 @@ def cmd(
         test_dir = cfg.group_test_dir(answers["group_name"])
         click.echo(f"  {test_dir / ('qa_' + answers['block_name'] + '.cpp')}")
         click.echo(f"  (update) {test_dir / 'CMakeLists.txt'}")
-        click.echo(f"  (update) {test_dir / 'meson.build'}")
 
     confirm = questionary.confirm("\nProceed?", default=True).ask()
     if not confirm:

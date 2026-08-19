@@ -8,12 +8,12 @@ Scaffold a complete GNURadio 4 OOT project.
 gr4_modtool newmod [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--name TEXT` | Module name (snake_case) |
-| `--version TEXT` | Initial version (default: `0.1.0`) |
+| Option             | Description                           |
+| ------------------ | ------------------------------------- |
+| `--name TEXT`      | Module name (snake_case)              |
+| `--version TEXT`   | Initial version (default: `0.1.0`)    |
 | `--namespace TEXT` | C++ namespace (default: `gr::<name>`) |
-| `--yes / -y` | Skip confirmation prompts |
+| `--yes / -y`       | Skip confirmation prompts             |
 
 **What it creates:**
 
@@ -21,11 +21,8 @@ gr4_modtool newmod [OPTIONS]
 <name>/
 ├── .gr4modtool.toml      # tool configuration
 ├── CMakeLists.txt
-├── meson.build
-├── meson_options.txt
 └── blocks/
     ├── CMakeLists.txt
-    └── meson.build
 ```
 
 ---
@@ -38,25 +35,23 @@ Add a block group directory to an existing project.
 gr4_modtool newgroup [OPTIONS]
 ```
 
-| Option | Description |
-|---|---|
-| `--name TEXT` | Group name (snake_case) |
+| Option               | Description                         |
+| -------------------- | ----------------------------------- |
+| `--name TEXT`        | Group name (snake_case)             |
 | `--project-dir PATH` | Project root (default: auto-detect) |
-| `--yes / -y` | Skip confirmation |
+| `--yes / -y`         | Skip confirmation                   |
 
 **What it creates:**
 
 ```
 blocks/<name>/
 ├── CMakeLists.txt
-├── meson.build
 ├── include/gnuradio-4.0/<name>/   # block headers go here
 └── test/
     ├── CMakeLists.txt
-    └── meson.build
 ```
 
-It also updates `blocks/CMakeLists.txt` and `blocks/meson.build` to include the new group.
+It also updates `blocks/CMakeLists.txt` to include the new group.
 
 ---
 
@@ -78,15 +73,12 @@ This sets `flat = true` in `.gr4modtool.toml` and generates a flat block directo
 <name>/
 ├── .gr4modtool.toml          # flat = true
 ├── CMakeLists.txt
-├── meson.build
 └── blocks/
     ├── CMakeLists.txt
-    ├── meson.build
     ├── include/
     │   └── gnuradio-4.0/     # block headers go here
     └── test/
         ├── CMakeLists.txt
-        └── meson.build
 ```
 
 In a flat project, block headers are placed at `blocks/include/<gr4_prefix>/<Name>.hpp` instead of the grouped path `blocks/<group>/include/<gr4_prefix>/<group>/<Name>.hpp`.

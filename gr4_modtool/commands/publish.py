@@ -29,12 +29,11 @@ KNOWN_TARGETS: dict[str, str] = {
 }
 
 _CMAKE_VERSION_RE = re.compile(r"project\([^)]*\bVERSION\s+([\d.]+)", re.DOTALL)
-_MESON_VERSION_RE = re.compile(r"version\s*:\s*'([\d.]+)'")
 
 
 @dataclass
 class PreFlightResult:
-    check_id: str  # "version" | "validate" | "cmake_sync" | "meson_sync" | "git_clean" | "git_tag"
+    check_id: str  # "version" | "validate" | "cmake_sync" | "git_clean" | "git_tag"
     status: str  # "pass" | "warn" | "fail" | "skip"
     detail: str
 
@@ -81,22 +80,6 @@ def _check_cmake_sync(cfg: ProjectConfig) -> PreFlightResult:
     return PreFlightResult("cmake_sync", "pass", "matches config")
 
 
-def _check_meson_sync(cfg: ProjectConfig) -> PreFlightResult:
-    meson = cfg.root / "meson.build"
-    if not meson.exists():
-        return PreFlightResult("meson_sync", "skip", "meson.build not present")
-    m = _MESON_VERSION_RE.search(meson.read_text())
-    if not m:
-        return PreFlightResult("meson_sync", "skip", "no version in meson.build")
-    if m.group(1) != cfg.version:
-        return PreFlightResult(
-            "meson_sync",
-            "warn",
-            f"meson.build version '{m.group(1)}' ≠ config '{cfg.version}'",
-        )
-    return PreFlightResult("meson_sync", "pass", "matches config")
-
-
 def _git_run(args: list[str], cwd: Path) -> subprocess.CompletedProcess | None:
     try:
         return subprocess.run(
@@ -140,7 +123,6 @@ def pre_flight(cfg: ProjectConfig) -> list[PreFlightResult]:
         _check_version(cfg),
         _check_validate(cfg),
         _check_cmake_sync(cfg),
-        _check_meson_sync(cfg),
         _check_git_clean(cfg),
         _check_git_tag(cfg),
     ]

@@ -46,13 +46,6 @@ def test_newblock_updates_cmake(project: ProjectConfig) -> None:
     assert "qa_MyFilter" in text
 
 
-def test_newblock_updates_meson(project: ProjectConfig) -> None:
-    write_block_files(project, _basic_answers())
-    meson = project.group_test_dir("basic") / "meson.build"
-    text = meson.read_text()
-    assert "qa_MyFilter" in text
-
-
 def test_newblock_multi_output(project: ProjectConfig) -> None:
     answers = {
         "group_name": "basic",

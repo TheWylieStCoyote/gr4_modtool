@@ -10,7 +10,6 @@ from gr4_modtool.commands.version_bump import (
     _parse_semver,
     _update_cmake,
     _update_doxyfile,
-    _update_meson,
     apply_version_bump,
     cmd,
 )
@@ -79,22 +78,6 @@ def test_update_cmake_not_matched(tmp_path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# _update_meson
-# ---------------------------------------------------------------------------
-
-
-def test_update_meson_found(tmp_path) -> None:
-    f = tmp_path / "meson.build"
-    f.write_text("project('mymod',\n  version : '1.2.3',\n)\n")
-    assert _update_meson(f, "1.2.3", "1.3.0") is True
-    assert "version : '1.3.0'" in f.read_text()
-
-
-def test_update_meson_missing_file(tmp_path) -> None:
-    assert _update_meson(tmp_path / "meson.build", "1.2.3", "1.3.0") is False
-
-
-# ---------------------------------------------------------------------------
 # _update_doxyfile
 # ---------------------------------------------------------------------------
 
@@ -129,16 +112,6 @@ def test_apply_updates_cmake(project) -> None:
 
     assert cmake in modified
     assert "VERSION 2.0.0" in cmake.read_text()
-
-
-def test_apply_updates_meson(project) -> None:
-    meson = project.root / "meson.build"
-    meson.write_text(f"project('testmod',\n  version : '{project.version}',\n)\n")
-
-    modified = apply_version_bump(project, "0.2.0")
-
-    assert meson in modified
-    assert "version : '0.2.0'" in meson.read_text()
 
 
 def test_apply_skips_absent_files(project) -> None:

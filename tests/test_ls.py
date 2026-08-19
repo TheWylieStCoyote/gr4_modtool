@@ -133,7 +133,6 @@ def test_project_meta(project: ProjectConfig) -> None:
     assert proj["namespace"] == "gr::testmod"
     assert proj["cmake_prefix"] == "gr4_testmod"
     assert proj["build_cmake"] is True
-    assert proj["build_meson"] is True
     assert proj["flat_mode"] is False
 
 

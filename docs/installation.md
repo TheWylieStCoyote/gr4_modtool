@@ -6,8 +6,9 @@
 - pip
 
 Optional (for specific commands):
+
 - `clang-format` — required by `gr4_modtool format`
-- `cmake` + `ninja` or `meson` — required by `gr4_modtool build` and `gr4_modtool test`
+- `cmake` — required by `gr4_modtool build` and `gr4_modtool test`
 
 ## From PyPI
 

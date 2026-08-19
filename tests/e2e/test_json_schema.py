@@ -19,10 +19,10 @@ from .conftest import invoke, write_spec
 
 
 def test_info_json_top_level_keys(project: ProjectConfig) -> None:
-    """info --json has name, version, cpp_namespace, build_cmake, build_meson, groups."""
+    """info --json has name, version, cpp_namespace, build_cmake, groups."""
     result = invoke(project.root, "info", "--json")
     data = json.loads(result.output)
-    for key in ("name", "version", "cpp_namespace", "build_cmake", "build_meson", "groups"):
+    for key in ("name", "version", "cpp_namespace", "build_cmake", "groups"):
         assert key in data, f"missing key: {key}"
 
 

@@ -37,7 +37,6 @@ def _make_grouped_tree(
     (root / "CMakeLists.txt").write_text(
         f"cmake_minimum_required(VERSION 3.22)\nproject({name} LANGUAGES CXX VERSION {version})\n"
     )
-    (root / "meson.build").write_text(f"project('{name}', 'cpp', version: '{version}')\n")
 
     blocks = root / "blocks"
     blocks.mkdir()
@@ -60,7 +59,6 @@ def _make_flat_tree(root: Path, name: str = "flatmod", version: str = "0.1.0") -
     (root / "CMakeLists.txt").write_text(
         f"cmake_minimum_required(VERSION 3.22)\nproject({name} LANGUAGES CXX VERSION {version})\n"
     )
-    (root / "meson.build").write_text(f"project('{name}', 'cpp', version: '{version}')\n")
 
     inc = root / "blocks" / "include" / "gnuradio-4.0"
     inc.mkdir(parents=True)
@@ -118,10 +116,6 @@ def test_init_followed_by_check_clean(tmp_path: Path) -> None:
     (test_dir / "CMakeLists.txt").write_text(
         "gr4_modtool_add_ut_test(qa_MyFilter SOURCES qa_MyFilter.cpp\n"
         "  LINK_LIBRARIES gr4_testmod::blocks_basic_headers)\n"
-    )
-    (test_dir / "meson.build").write_text(
-        "test('qa_MyFilter', executable('qa_MyFilter', 'qa_MyFilter.cpp',\n"
-        "  dependencies: [gr4_basic_blocks_dep]))\n"
     )
     (test_dir / "qa_MyFilter.cpp").write_text("int main() { return 0; }\n")
 

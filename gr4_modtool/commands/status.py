@@ -29,7 +29,6 @@ class ProjectStatus:
     groups: list[GroupSummary]
     flat: bool
     build_cmake: bool
-    build_meson: bool
     ci_workflows: list[str]
     has_clang_format: bool
     has_clang_tidy: bool
@@ -66,7 +65,6 @@ def gather_status(cfg) -> ProjectStatus:
         groups=group_summaries,
         flat=cfg.flat,
         build_cmake=cfg.build_cmake,
-        build_meson=cfg.build_meson,
         ci_workflows=ci_workflows,
         has_clang_format=(cfg.root / ".clang-format").exists(),
         has_clang_tidy=(cfg.root / ".clang-tidy").exists(),
@@ -83,18 +81,7 @@ def render_status(status: ProjectStatus) -> None:
     console = Console()
 
     total_blocks = sum(g.block_count for g in status.groups)
-    build_str = (
-        " + ".join(
-            filter(
-                None,
-                [
-                    "cmake" if status.build_cmake else "",
-                    "meson" if status.build_meson else "",
-                ],
-            )
-        )
-        or "none"
-    )
+    build_str = "cmake" if status.build_cmake else "none"
 
     console.print()
     console.rule(f"[bold]{status.name}[/bold]  [dim]v{status.version}[/dim]")

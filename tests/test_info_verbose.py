@@ -25,7 +25,6 @@ def project_with_block(tmp_path: Path) -> ProjectConfig:
         cmake_prefix="gr4_testmod",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=False,
         groups={"basic": "blocks/basic"},
     )
     save_config(cfg)
@@ -104,7 +103,6 @@ def test_verbose_empty_block_no_crash(tmp_path: Path) -> None:
         cmake_prefix="gr4_testmod",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=False,
         groups={"basic": "blocks/basic"},
     )
     save_config(cfg)

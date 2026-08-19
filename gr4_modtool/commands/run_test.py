@@ -38,26 +38,21 @@ def run_block_test(
     verbose: bool = False,
     extra_env: dict[str, str] | None = None,
 ) -> int:
-    """Run qa_<block_name> inside build_dir using ctest (cmake) or meson test.
+    """Run qa_<block_name> inside build_dir using ctest.
 
-    Detects build system from project_root. Returns the subprocess exit code.
+    Returns the subprocess exit code.
     extra_env is merged with os.environ when provided (used for coverage profiling).
     """
-    if (project_root / "CMakeLists.txt").exists():
-        cmd = [
-            "ctest",
-            "--test-dir",
-            str(build_dir),
-            "-R",
-            f"qa_{block_name}",
-            "--output-on-failure",
-        ]
-        if verbose:
-            cmd.append("--verbose")
-    else:
-        cmd = ["meson", "test", "-C", str(build_dir), f"qa_{block_name}"]
-        if verbose:
-            cmd.append("--verbose")
+    cmd = [
+        "ctest",
+        "--test-dir",
+        str(build_dir),
+        "-R",
+        f"qa_{block_name}",
+        "--output-on-failure",
+    ]
+    if verbose:
+        cmd.append("--verbose")
 
     click.echo(f"  $ {' '.join(cmd)}")
     env = {**os.environ, **extra_env} if extra_env else None
@@ -67,10 +62,7 @@ def run_block_test(
 
 def _incremental_build(project_root: Path, build_dir: Path, block_name: str) -> int:
     """Rebuild only qa_<block_name> without a full build."""
-    if (project_root / "CMakeLists.txt").exists():
-        cmd = ["cmake", "--build", str(build_dir), "--target", f"qa_{block_name}"]
-    else:
-        cmd = ["meson", "compile", "-C", str(build_dir), f"qa_{block_name}"]
+    cmd = ["cmake", "--build", str(build_dir), "--target", f"qa_{block_name}"]
     click.echo(f"  $ {' '.join(cmd)}")
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
     return proc.wait()
@@ -229,7 +221,7 @@ def watch_block_test(
     show_default=True,
     help="Build directory (relative to project root).",
 )
-@click.option("--verbose", "-v", is_flag=True, help="Pass --verbose to ctest/meson.")
+@click.option("--verbose", "-v", is_flag=True, help="Pass --verbose to ctest.")
 @click.option(
     "--watch", "-w", is_flag=True, help="Rebuild and retest on every .hpp save (requires watchdog)."
 )

@@ -73,7 +73,7 @@ def scan_project_dir(project_dir: Path) -> dict:
     """Auto-detect project metadata from directory structure.
 
     Returns dict with keys:
-      name, version, groups, group_blocks, gr4_include_prefix, has_cmake, has_meson.
+      name, version, groups, group_blocks, gr4_include_prefix, has_cmake.
     groups maps group_name -> relative path string.
     group_blocks maps group_name -> list of block stem names.
     """
@@ -84,13 +84,10 @@ def scan_project_dir(project_dir: Path) -> dict:
         "group_blocks": {},
         "gr4_include_prefix": "gnuradio-4.0",
         "has_cmake": False,
-        "has_meson": False,
     }
 
     cmake_path = project_dir / "CMakeLists.txt"
-    meson_path = project_dir / "meson.build"
     result["has_cmake"] = cmake_path.exists()
-    result["has_meson"] = meson_path.exists()
 
     if cmake_path.exists():
         text = cmake_path.read_text()
@@ -145,7 +142,6 @@ def write_init_config(
     cmake_prefix: str,
     gr4_include_prefix: str,
     build_cmake: bool,
-    build_meson: bool,
     groups: dict[str, str],
     *,
     force: bool = False,
@@ -163,7 +159,6 @@ def write_init_config(
         cmake_prefix=cmake_prefix,
         gr4_include_prefix=gr4_include_prefix,
         build_cmake=build_cmake,
-        build_meson=build_meson,
         groups=groups,
     )
     save_config(cfg)
@@ -178,8 +173,6 @@ def _format_scan_report(root: Path, detected: dict) -> str:
     build_tags = []
     if detected["has_cmake"]:
         build_tags.append("cmake")
-    if detected["has_meson"]:
-        build_tags.append("meson")
     lines.append(f"  Build:   {', '.join(build_tags) or '(none detected)'}")
     lines.append("")
     if detected["groups"]:
@@ -227,7 +220,6 @@ def cmd(project_dir: str | None, yes: bool, dry_run: bool, force: bool) -> None:
         cmake_prefix = default_cmake_prefix(name)
         gr4_include_prefix = detected["gr4_include_prefix"]
         build_cmake = detected["has_cmake"]
-        build_meson = detected["has_meson"]
         groups = detected["groups"]
     else:
         click.echo()
@@ -253,7 +245,6 @@ def cmd(project_dir: str | None, yes: bool, dry_run: bool, force: bool) -> None:
         )
 
         build_cmake = questionary.confirm("CMake build files?", default=detected["has_cmake"]).ask()
-        build_meson = questionary.confirm("Meson build files?", default=detected["has_meson"]).ask()
         groups = detected["groups"]
 
     try:
@@ -265,7 +256,6 @@ def cmd(project_dir: str | None, yes: bool, dry_run: bool, force: bool) -> None:
             cmake_prefix,
             gr4_include_prefix,
             build_cmake,
-            build_meson,
             groups,
             force=force,
         )

@@ -62,7 +62,7 @@ GitHub Actions `${{ }}` expressions must be wrapped in `{% raw %}...{% endraw %}
 
 ### Build-system writers
 
-`gr4_modtool/project/cmake.py` and `gr4_modtool/project/meson.py` manipulate build files with line-based regex, not AST parsers. They append, remove, and rename test/benchmark entries surgically. Both modules follow the same function signatures: `append_test_entry`, `remove_test_entry`, `rename_test_entry`, `append_bench_entry`, etc.
+`gr4_modtool/project/cmake.py` manipulate build files with line-based regex, not AST parsers. They append, remove, and rename test/benchmark entries surgically. Both modules follow the same function signatures: `append_test_entry`, `remove_test_entry`, `rename_test_entry`, `append_bench_entry`, etc.
 
 ### Plugin system
 

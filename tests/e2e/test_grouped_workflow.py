@@ -49,15 +49,6 @@ def test_newblock_registers_in_cmake(project: ProjectConfig, tmp_path: Path) -> 
     assert "MyFilter" in cmake
 
 
-def test_newblock_registers_in_meson(project: ProjectConfig, tmp_path: Path) -> None:
-    """newblock adds the block's entry to meson.build."""
-    spec = write_spec(tmp_path / "spec.yaml", "MyFilter", group="basic")
-    invoke(project.root, "newblock", "--spec", str(spec))
-
-    meson = (project.group_test_dir("basic") / "meson.build").read_text()
-    assert "MyFilter" in meson
-
-
 # ---------------------------------------------------------------------------
 # newblock → info
 # ---------------------------------------------------------------------------
@@ -184,7 +175,6 @@ def test_export_spec_roundtrip(project: ProjectConfig, tmp_path: Path) -> None:
         cmake_prefix="gr4_testmod2",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=True,
         groups={"basic": "blocks/basic"},
     )
     save_config(cfg2)
@@ -224,7 +214,6 @@ def test_export_spec_multi_block_roundtrip(project: ProjectConfig, tmp_path: Pat
         cmake_prefix="gr4_testmod2",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=True,
         groups={"basic": "blocks/basic"},
     )
     save_config(cfg2)

@@ -202,17 +202,6 @@ def test_version_bump_updates_cmake(project: ProjectConfig) -> None:
     assert "0.1.0" not in cmake.read_text()
 
 
-def test_version_bump_updates_meson(project: ProjectConfig) -> None:
-    """version-bump also updates the version in meson.build when present."""
-    meson = project.root / "meson.build"
-    meson.write_text("project('testmod', 'cpp',\n  version : '0.1.0',\n)\n")
-
-    invoke(project.root, "version-bump", "--patch", "-y")
-
-    assert "0.1.1" in meson.read_text()
-    assert "0.1.0" not in meson.read_text()
-
-
 def test_ci_release_creates_workflow(project: ProjectConfig) -> None:
     """ci --release writes a release workflow file."""
     invoke(project.root, "ci", "--release")

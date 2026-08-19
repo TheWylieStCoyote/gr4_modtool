@@ -113,13 +113,6 @@ def test_newblock_flat_cmake_target(project_flat: ProjectConfig) -> None:
     assert "gr4_testmod::blocks_headers" in text
 
 
-def test_newblock_flat_meson_dep(project_flat: ProjectConfig) -> None:
-    write_block_files(project_flat, _flat_answers())
-    meson = project_flat.block_test_dir() / "meson.build"
-    text = meson.read_text()
-    assert "gr4_blocks_dep" in text
-
-
 # ---------------------------------------------------------------------------
 # add-test
 # ---------------------------------------------------------------------------
@@ -294,16 +287,6 @@ def test_rm_flat_removes_cmake_entry(project_flat: ProjectConfig) -> None:
     assert "Amplifier" not in cmake.read_text()
 
 
-def test_rm_flat_removes_meson_entry(project_flat: ProjectConfig) -> None:
-    """rm removes the block's entry from meson.build."""
-    write_block_files(project_flat, _flat_answers())
-    meson = project_flat.block_test_dir() / "meson.build"
-    assert "Amplifier" in meson.read_text()
-    runner = CliRunner()
-    runner.invoke(rm_cmd, ["Amplifier", "--project-dir", str(project_flat.root), "--yes"])
-    assert "Amplifier" not in meson.read_text()
-
-
 def test_rm_flat_output_message(project_flat: ProjectConfig) -> None:
     """rm output says "(flat layout)" rather than a group name."""
     write_block_files(project_flat, _flat_answers())
@@ -343,19 +326,6 @@ def test_rename_flat_cmake_entry_updated(project_flat: ProjectConfig) -> None:
     assert "Amplifier" not in cmake
 
 
-def test_rename_flat_meson_entry_updated(project_flat: ProjectConfig) -> None:
-    """Renaming a block updates the meson.build entry."""
-    write_block_files(project_flat, _flat_answers())
-    runner = CliRunner()
-    runner.invoke(
-        rename_cmd,
-        ["Amplifier", "Booster", "--project-dir", str(project_flat.root), "--yes"],
-    )
-    meson = (project_flat.block_test_dir() / "meson.build").read_text()
-    assert "Booster" in meson
-    assert "Amplifier" not in meson
-
-
 def test_rename_flat_output_message(project_flat: ProjectConfig) -> None:
     """rename output says "(flat layout)" rather than a group name."""
     write_block_files(project_flat, _flat_answers())
@@ -368,20 +338,7 @@ def test_rename_flat_output_message(project_flat: ProjectConfig) -> None:
 
 
 # ---------------------------------------------------------------------------
-# cp — meson dep in copied test
-# ---------------------------------------------------------------------------
-
-
-def test_cp_flat_meson_dep(project_flat: ProjectConfig) -> None:
-    """Copied test file's meson.build references the flat dep variable."""
-    write_block_files(project_flat, _flat_answers())
-    copy_block(project_flat, "", "Amplifier", "Booster", gen_test=True)
-    meson = (project_flat.block_test_dir() / "meson.build").read_text()
-    assert "gr4_blocks_dep" in meson
-
-
-# ---------------------------------------------------------------------------
-# check — cmake/meson entry errors in flat mode
+# check — cmake entry errors in flat mode
 # ---------------------------------------------------------------------------
 
 
@@ -399,16 +356,6 @@ def test_check_flat_missing_cmake_entry(project_flat: ProjectConfig) -> None:
     cmake_errs = [i for i in issues if i.block == "Mixer" and "CMake" in i.issue]
     assert cmake_errs
     assert cmake_errs[0].severity == "error"
-
-
-def test_check_flat_missing_meson_entry(project_flat: ProjectConfig) -> None:
-    """check reports an error when a test source has no meson entry."""
-    _make_flat_header(project_flat, "Mixer")
-    _make_flat_test_source(project_flat, "Mixer")
-    issues = audit_project(project_flat)
-    meson_errs = [i for i in issues if i.block == "Mixer" and "eson" in i.issue]
-    assert meson_errs
-    assert meson_errs[0].severity == "error"
 
 
 # ---------------------------------------------------------------------------

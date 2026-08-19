@@ -7,7 +7,6 @@ from pathlib import Path
 from click.testing import CliRunner
 
 from gr4_modtool.commands.sync import SyncAction, apply_sync, cmd, plan_sync
-from gr4_modtool.project import meson as meson_mod
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -45,15 +44,6 @@ def _write_cmake_entry(cfg, group: str, block: str) -> None:
     )
 
 
-def _write_meson_entry(cfg, group: str, block: str) -> None:
-    meson_file = cfg.group_test_dir(group) / "meson.build"
-    text = meson_file.read_text()
-    meson_file.write_text(
-        text.rstrip() + f"\ntest('qa_{block}', executable('qa_{block}', 'qa_{block}.cpp',\n"
-        f"  dependencies: [gr4_{group}_blocks_dep]))\n"
-    )
-
-
 # ---------------------------------------------------------------------------
 # plan_sync — no-op
 # ---------------------------------------------------------------------------
@@ -78,14 +68,10 @@ def test_plan_generate_test(project) -> None:
 
 
 def test_plan_no_extra_entries_when_generating(project) -> None:
-    """When generate_test is planned, no add_cmake/meson_entry for the same block."""
+    """When generate_test is planned, no add_cmake for the same block."""
     _write_header(project, "basic", "Foo")
     actions = plan_sync(project)
-    extra = [
-        a
-        for a in actions
-        if a.block == "Foo" and a.action in ("add_cmake_entry", "add_meson_entry")
-    ]
+    extra = [a for a in actions if a.block == "Foo" and a.action in ("add_cmake_entry",)]
     assert not extra
 
 
@@ -103,20 +89,11 @@ def test_plan_add_cmake_entry(project) -> None:
     assert any(a.action == "add_cmake_entry" and a.block == "Foo" for a in actions)
 
 
-def test_plan_add_meson_entry(project) -> None:
-    """Test source exists without meson entry → add_meson_entry."""
-    _write_header(project, "basic", "Foo")
-    _write_test_src(project, "basic", "Foo")
-    actions = plan_sync(project)
-    assert any(a.action == "add_meson_entry" and a.block == "Foo" for a in actions)
-
-
 def test_plan_no_actions_when_fully_registered(project) -> None:
     """Header + test source + build entries → no actions."""
     _write_header(project, "basic", "Foo")
     _write_test_src(project, "basic", "Foo")
     _write_cmake_entry(project, "basic", "Foo")
-    _write_meson_entry(project, "basic", "Foo")
     actions = plan_sync(project)
     # Only possible remaining action: warn_orphan — not expected here since header exists
     actionable = [a for a in actions if a.action != "warn_orphan"]
@@ -142,15 +119,8 @@ def test_plan_prune_stale_cmake(project) -> None:
     assert any(a.action == "remove_cmake_entry" and a.block == "Gone" for a in actions)
 
 
-def test_plan_prune_stale_meson(project) -> None:
-    """meson entry with no test source AND no header → remove_meson_entry with --prune."""
-    _write_meson_entry(project, "basic", "Gone")
-    actions = plan_sync(project, prune=True)
-    assert any(a.action == "remove_meson_entry" and a.block == "Gone" for a in actions)
-
-
 def test_plan_prune_does_not_remove_generating_block(project) -> None:
-    """Block with a cmake/meson entry AND a header (but no test source) is regenerated,
+    """Block with a cmake entry AND a header (but no test source) is regenerated,
     not removed, even with --prune."""
     _write_header(project, "basic", "Regen")
     _write_cmake_entry(project, "basic", "Regen")
@@ -205,46 +175,6 @@ def test_apply_adds_cmake_entry(project) -> None:
 
     cmake_text = (project.group_test_dir("basic") / "CMakeLists.txt").read_text()
     assert "qa_Foo" in cmake_text
-
-
-# ---------------------------------------------------------------------------
-# apply_sync — add meson entry
-# ---------------------------------------------------------------------------
-
-
-def test_apply_adds_meson_entry(project) -> None:
-    """apply_sync with add_meson_entry appends the test entry to meson.build."""
-    _write_header(project, "basic", "Foo")
-    _write_test_src(project, "basic", "Foo")
-
-    actions = [a for a in plan_sync(project) if a.action == "add_meson_entry"]
-    assert actions
-
-    apply_sync(project, actions)
-
-    meson_text = (project.group_test_dir("basic") / "meson.build").read_text()
-    assert "qa_Foo" in meson_text
-
-
-# ---------------------------------------------------------------------------
-# apply_sync — prune stale meson entry
-# ---------------------------------------------------------------------------
-
-
-def test_apply_prune_removes_stale_meson(project) -> None:
-    """apply_sync remove_meson_entry deletes the stale entry from meson.build."""
-    # Use append_test_entry so the entry is in the canonical format that
-    # remove_test_entry expects (qa_Gone_exe = executable(...) + test(...)).
-    meson_mod.append_test_entry(project.group_test_dir("basic") / "meson.build", "Gone")
-
-    actions = plan_sync(project, prune=True)
-    remove_actions = [a for a in actions if a.action == "remove_meson_entry"]
-    assert remove_actions
-
-    apply_sync(project, remove_actions)
-
-    meson_text = (project.group_test_dir("basic") / "meson.build").read_text()
-    assert "qa_Gone" not in meson_text
 
 
 # ---------------------------------------------------------------------------

@@ -9,7 +9,6 @@ import click
 import questionary
 
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import ProjectConfig, load_config, save_config
 from gr4_modtool.templates import render
 
@@ -46,12 +45,9 @@ def cmd(project_dir: str | None, name: str | None) -> None:
 
     # Wire into blocks/ build files
     blocks_cmake = cfg.blocks_dir / "CMakeLists.txt"
-    blocks_meson = cfg.blocks_dir / "meson.build"
 
     if cfg.build_cmake and blocks_cmake.exists():
         cmake_mod.add_group_to_blocks_cmake(blocks_cmake, name, cfg.cmake_prefix)
-    if cfg.build_meson and blocks_meson.exists():
-        meson_mod.add_group_to_blocks_meson(blocks_meson, name)
 
     click.echo(f"Created group '{name}' at {cfg.group_path(name)}")
 
@@ -65,14 +61,12 @@ def write_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:
     include_dir.mkdir(parents=True, exist_ok=True)
     test_dir.mkdir(parents=True, exist_ok=True)
 
-    dep_var = f"gr4_{group_name}_blocks_dep"
     from gr4_modtool.commands.newmod import block_library_name
 
     group_ctx = {
         "cmake_prefix": cfg.cmake_prefix,
         "group_name": group_name,
         "gr4_include_prefix": cfg.gr4_include_prefix,
-        "dep_var_name": dep_var,
         "block_library_name": block_library_name(cfg.name, group_name),
     }
     test_ctx = {"group_name": group_name}
@@ -84,7 +78,3 @@ def write_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:
         (test_dir / "CMakeLists.txt").write_text(
             render("test_CMakeLists.txt.j2", test_ctx, cfg.root)
         )
-
-    if cfg.build_meson:
-        (group_path / "meson.build").write_text(render("group_meson.build.j2", group_ctx, cfg.root))
-        (test_dir / "meson.build").write_text(render("test_meson.build.j2", test_ctx, cfg.root))

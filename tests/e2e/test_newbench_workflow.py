@@ -2,7 +2,7 @@
 
 Tests the benchmark scaffolding command against an existing block.
   - newbench creates bench_*.cpp
-  - newbench --wire-build wires into cmake/meson
+  - newbench --wire-build wires into cmake
   - newbench --plot creates plot_*.py
   - newbench errors when header is missing
   - newbench errors when benchmark already exists

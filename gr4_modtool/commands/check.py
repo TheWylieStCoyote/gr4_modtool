@@ -31,13 +31,6 @@ def _cmake_test_entries(cmake_path: Path) -> set[str]:
     return set(re.findall(r"add_ut_test\(qa_(\w+)", text))
 
 
-def _meson_test_entries(meson_path: Path) -> set[str]:
-    if not meson_path.exists():
-        return set()
-    text = meson_path.read_text()
-    return set(re.findall(r"test\('qa_(\w+)'", text))
-
-
 def audit_project(cfg: ProjectConfig, groups: list[str] | None = None) -> list[BlockIssue]:
     """Scan the project and return a list of BlockIssue records."""
     issues: list[BlockIssue] = []
@@ -67,27 +60,19 @@ def audit_project(cfg: ProjectConfig, groups: list[str] | None = None) -> list[B
                 test_srcs.add(qa.stem[3:])  # strip "qa_"
 
         cmake_entries = _cmake_test_entries(test_dir / "CMakeLists.txt")
-        meson_entries = _meson_test_entries(test_dir / "meson.build")
 
         for block in headers:
             if block not in test_srcs:
                 issues.append(BlockIssue(g, block, "no test source (qa_*.cpp missing)", "warning"))
 
         cmake_file = test_dir / "CMakeLists.txt"
-        meson_file = test_dir / "meson.build"
         for block in test_srcs:
             if cfg.build_cmake and cmake_file.exists() and block not in cmake_entries:
                 issues.append(BlockIssue(g, block, "test source has no CMake entry", "error"))
-            if cfg.build_meson and meson_file.exists() and block not in meson_entries:
-                issues.append(BlockIssue(g, block, "test source has no meson entry", "error"))
 
         for block in cmake_entries:
             if block not in test_srcs:
                 issues.append(BlockIssue(g, block, "CMake entry has no test source", "error"))
-
-        for block in meson_entries:
-            if block not in test_srcs:
-                issues.append(BlockIssue(g, block, "meson entry has no test source", "error"))
 
     return issues
 

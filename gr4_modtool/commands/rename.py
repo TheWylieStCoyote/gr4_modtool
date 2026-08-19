@@ -10,7 +10,6 @@ import click
 import questionary
 
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 
 
@@ -77,7 +76,6 @@ def cmd(
     old_test = cfg.group_test_dir(group) / f"qa_{old_name}.cpp"
     new_test = cfg.group_test_dir(group) / f"qa_{new_name}.cpp"
     cmake_test = cfg.group_test_dir(group) / "CMakeLists.txt"
-    meson_test = cfg.group_test_dir(group) / "meson.build"
 
     click.echo("\nWill rename:")
     if old_header.exists():
@@ -86,8 +84,6 @@ def cmd(
         click.echo(f"  {old_test} → {new_test}")
     if cmake_test.exists():
         click.echo(f"  (update) {cmake_test}")
-    if meson_test.exists():
-        click.echo(f"  (update) {meson_test}")
 
     if not yes:
         confirm = questionary.confirm("Proceed?", default=True).ask()
@@ -106,8 +102,6 @@ def cmd(
 
     if cfg.build_cmake and cmake_test.exists():
         cmake_mod.rename_test_entry(cmake_test, old_name, new_name)
-    if cfg.build_meson and meson_test.exists():
-        meson_mod.rename_test_entry(meson_test, old_name, new_name)
 
     location = f"in group '{group}'" if group else "(flat layout)"
     click.echo(f"Renamed '{old_name}' → '{new_name}' {location}.")

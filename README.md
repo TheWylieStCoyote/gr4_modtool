@@ -10,20 +10,20 @@ A command-line tool for creating and managing [GNURadio 4](https://github.com/gn
 
 ## Features
 
-| Category | Commands |
-|---|---|
-| Scaffolding | `newmod`, `newgroup` |
-| Block lifecycle | `newblock`, `newparam`, `cp`, `mv`, `rename`, `rename-block`, `rename-group`, `rm` |
-| Testing & benchmarking | `add-test`, `test`, `newbench` |
-| Project health | `init`, `check`, `info`, `show`, `status` |
-| Building | `build`, `format`, `tidy` |
-| Dev environment | `vscode`, `devcontainer`, `completion` |
-| CI / quality | `ci`, `presets`, `pre-commit` |
-| Documentation & registry | `docs`, `add-dep`, `search` |
-| Migration | `port` |
-| Interactive | `tui` |
+| Category                 | Commands                                                                           |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| Scaffolding              | `newmod`, `newgroup`                                                               |
+| Block lifecycle          | `newblock`, `newparam`, `cp`, `mv`, `rename`, `rename-block`, `rename-group`, `rm` |
+| Testing & benchmarking   | `add-test`, `test`, `newbench`                                                     |
+| Project health           | `init`, `check`, `info`, `show`, `status`                                          |
+| Building                 | `build`, `format`, `tidy`                                                          |
+| Dev environment          | `vscode`, `devcontainer`, `completion`                                             |
+| CI / quality             | `ci`, `presets`, `pre-commit`                                                      |
+| Documentation & registry | `docs`, `add-dep`, `search`                                                        |
+| Migration                | `port`                                                                             |
+| Interactive              | `tui`                                                                              |
 
-- **CMake and Meson** build systems supported side-by-side
+- **CMake** build systems supported side-by-side
 - **Jinja2 templates** with per-project override support
 - **Plugin system** — third-party packages can register extra commands and templates via entry-points
 - **Textual TUI** for keyboard-driven block management
@@ -146,76 +146,76 @@ See the [full documentation](https://thewyliestcoyote.github.io/gr4_modtool) for
 
 ### Scaffolding
 
-| Command | Description |
-|---|---|
-| `newmod` | Scaffold a new GNURadio 4 OOT project |
-| `newgroup` | Add a new block group directory |
+| Command    | Description                           |
+| ---------- | ------------------------------------- |
+| `newmod`   | Scaffold a new GNURadio 4 OOT project |
+| `newgroup` | Add a new block group directory       |
 
 ### Block lifecycle
 
-| Command | Description |
-|---|---|
-| `newblock` | Add a new block (header + test + build entries) |
-| `newparam` | Insert an `Annotated<>` parameter into an existing block |
-| `newbench` | Generate a throughput benchmark for a block |
-| `add-test` | Generate a test file for a block that has none |
-| `cp` | Copy a block to a new name (optionally into a different group) |
-| `mv` | Move a block from one group to another |
-| `rename` | Rename a block everywhere (header, test, build files) |
-| `rm` | Remove a block and all its associated files |
+| Command    | Description                                                    |
+| ---------- | -------------------------------------------------------------- |
+| `newblock` | Add a new block (header + test + build entries)                |
+| `newparam` | Insert an `Annotated<>` parameter into an existing block       |
+| `newbench` | Generate a throughput benchmark for a block                    |
+| `add-test` | Generate a test file for a block that has none                 |
+| `cp`       | Copy a block to a new name (optionally into a different group) |
+| `mv`       | Move a block from one group to another                         |
+| `rename`   | Rename a block everywhere (header, test, build files)          |
+| `rm`       | Remove a block and all its associated files                    |
 
 ### Project health
 
-| Command | Description |
-|---|---|
-| `init` | Bootstrap `.gr4modtool.toml` for an existing project (scans groups and blocks) |
-| `check` | Audit the project for out-of-sync headers, tests, and build entries |
-| `info` | List all groups and blocks; `--verbose` shows ports and parameters |
-| `show` | Display a block's header or test file with syntax highlighting |
+| Command | Description                                                                    |
+| ------- | ------------------------------------------------------------------------------ |
+| `init`  | Bootstrap `.gr4modtool.toml` for an existing project (scans groups and blocks) |
+| `check` | Audit the project for out-of-sync headers, tests, and build entries            |
+| `info`  | List all groups and blocks; `--verbose` shows ports and parameters             |
+| `show`  | Display a block's header or test file with syntax highlighting                 |
 
 ### Building
 
-| Command | Description |
-|---|---|
-| `build` | Configure and build using CMake or Meson |
-| `test` | Run a single block's test binary without rebuilding |
-| `format` | Run clang-format over headers and test sources |
-| `tidy` | Run clang-tidy on block headers |
+| Command  | Description                                         |
+| -------- | --------------------------------------------------- |
+| `build`  | Configure and build using CMake                     |
+| `test`   | Run a single block's test binary without rebuilding |
+| `format` | Run clang-format over headers and test sources      |
+| `tidy`   | Run clang-tidy on block headers                     |
 
 ### Dev environment
 
-| Command | Description |
-|---|---|
-| `vscode` | Write `.vscode/settings.json` and `launch.json` |
-| `devcontainer` | Write `.devcontainer/` with Docker setup |
-| `completion` | Print shell completion setup line (bash / zsh / fish) |
+| Command        | Description                                           |
+| -------------- | ----------------------------------------------------- |
+| `vscode`       | Write `.vscode/settings.json` and `launch.json`       |
+| `devcontainer` | Write `.devcontainer/` with Docker setup              |
+| `completion`   | Print shell completion setup line (bash / zsh / fish) |
 
 ### CI / quality
 
-| Command | Description |
-|---|---|
-| `ci` | Write GitHub Actions workflows (coverage, release, matrix) |
-| `presets` | Write `CMakePresets.json` and optional sanitizer CI workflow |
-| `pre-commit` | Write `.pre-commit-config.yaml` (clang-format + tidy hooks) |
+| Command      | Description                                                  |
+| ------------ | ------------------------------------------------------------ |
+| `ci`         | Write GitHub Actions workflows (coverage, release, matrix)   |
+| `presets`    | Write `CMakePresets.json` and optional sanitizer CI workflow |
+| `pre-commit` | Write `.pre-commit-config.yaml` (clang-format + tidy hooks)  |
 
 ### Documentation & dependencies
 
-| Command | Description |
-|---|---|
-| `docs` | Write a `Doxyfile` or print a Markdown block catalog |
-| `add-dep` | Add a library dependency to CMake/Meson build files |
+| Command   | Description                                          |
+| --------- | ---------------------------------------------------- |
+| `docs`    | Write a `Doxyfile` or print a Markdown block catalog |
+| `add-dep` | Add a library dependency to CMake build files        |
 
 ### Migration
 
-| Command | Description |
-|---|---|
-| `port` | Parse a GNURadio 3.x Python block and scaffold a gr4 header + test |
+| Command | Description                                                        |
+| ------- | ------------------------------------------------------------------ |
+| `port`  | Parse a GNURadio 3.x Python block and scaffold a gr4 header + test |
 
 ### Interactive
 
-| Command | Description |
-|---|---|
-| `tui` | Launch the interactive Textual TUI |
+| Command | Description                        |
+| ------- | ---------------------------------- |
+| `tui`   | Launch the interactive Textual TUI |
 
 ---
 
@@ -233,7 +233,6 @@ gr4_include_prefix = "gnuradio-4.0"
 
 [build]
 cmake = true
-meson = false
 
 [groups]
 dsp = "blocks/dsp"

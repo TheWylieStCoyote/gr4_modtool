@@ -68,13 +68,6 @@ def test_newmod_cmake_scaffold(tmp_path: Path) -> None:
     assert (root / "cmake" / "Dependencies.cmake").exists()
 
 
-def test_newmod_no_meson_by_default(tmp_path: Path) -> None:
-    """newmod --yes does not generate meson.build (meson default is off)."""
-    root = _newmod(tmp_path, "mymod")
-
-    assert not (root / "meson.build").exists()
-
-
 def test_newmod_flat_by_default(tmp_path: Path) -> None:
     """newmod --yes creates a flat project with no groups by default."""
     root = _newmod(tmp_path, "mymod")

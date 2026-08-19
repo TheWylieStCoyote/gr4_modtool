@@ -102,7 +102,6 @@ def test_export_spec_per_block_roundtrip(project: ProjectConfig, tmp_path: Path)
         cmake_prefix="gr4_testmod2",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=True,
         groups={"basic": "blocks/basic"},
     )
     save_config(cfg2)
@@ -188,7 +187,6 @@ def test_export_spec_project_roundtrip(project: ProjectConfig, tmp_path: Path) -
         cmake_prefix="gr4_testmod2",
         gr4_include_prefix="gnuradio-4.0",
         build_cmake=True,
-        build_meson=True,
         groups={"basic": "blocks/basic"},
     )
     save_config(cfg2)

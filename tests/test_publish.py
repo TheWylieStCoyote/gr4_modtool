@@ -17,7 +17,6 @@ from gr4_modtool.commands.publish import (
     _check_cmake_sync,
     _check_git_clean,
     _check_git_tag,
-    _check_meson_sync,
     _check_validate,
     _check_version,
     _do_publish,
@@ -136,31 +135,6 @@ def test_pre_flight_cmake_mismatch(project: ProjectConfig) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Pre-flight: meson_sync
-# ---------------------------------------------------------------------------
-
-
-def test_pre_flight_meson_absent(project: ProjectConfig) -> None:
-    r = _check_meson_sync(project)
-    assert r.status == "skip"
-
-
-def test_pre_flight_meson_match(project: ProjectConfig) -> None:
-    (project.root / "meson.build").write_text(
-        f"project('testmod', 'cpp', version : '{project.version}')\n"
-    )
-    r = _check_meson_sync(project)
-    assert r.status == "pass"
-
-
-def test_pre_flight_meson_mismatch(project: ProjectConfig) -> None:
-    (project.root / "meson.build").write_text("project('testmod', 'cpp', version : '9.9.9')\n")
-    r = _check_meson_sync(project)
-    assert r.status == "warn"
-    assert "9.9.9" in r.detail
-
-
-# ---------------------------------------------------------------------------
 # Pre-flight: git checks (monkeypatched)
 # ---------------------------------------------------------------------------
 
@@ -222,7 +196,7 @@ def test_pre_flight_git_tag_exists(project: ProjectConfig, monkeypatch) -> None:
 def test_pre_flight_returns_all_checks(project: ProjectConfig) -> None:
     results = pre_flight(project)
     ids = {r.check_id for r in results}
-    assert {"version", "validate", "cmake_sync", "meson_sync", "git_clean", "git_tag"} == ids
+    assert {"version", "validate", "cmake_sync", "git_clean", "git_tag"} == ids
 
 
 # ---------------------------------------------------------------------------

@@ -22,7 +22,6 @@ def write_devcontainer(cfg: ProjectConfig) -> list[Path]:
         "cmake_prefix": cfg.cmake_prefix,
         "gr4_include_prefix": cfg.gr4_include_prefix,
         "build_cmake": cfg.build_cmake,
-        "build_meson": cfg.build_meson,
     }
 
     json_path = dc_dir / "devcontainer.json"

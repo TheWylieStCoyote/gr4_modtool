@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 CONFIG_FILE = ".gr4modtool.toml"
-_HEURISTIC_MARKERS = ("CMakeLists.txt", "meson.build")
+_HEURISTIC_MARKERS = ("CMakeLists.txt",)
 
 
 @dataclass
@@ -32,7 +32,6 @@ class ProjectConfig:
     cmake_prefix: str
     gr4_include_prefix: str
     build_cmake: bool
-    build_meson: bool
     groups: dict[str, str]  # name -> relative path string
     flat: bool = False  # True → no groups; blocks live directly under blocks/
 
@@ -124,7 +123,6 @@ def load_config(project_dir: Path | None = None) -> ProjectConfig:
         cmake_prefix=proj.get("cmake_prefix", default_cmake_prefix(root.name)),
         gr4_include_prefix=proj.get("gr4_include_prefix", "gnuradio-4.0"),
         build_cmake=build.get("cmake", True),
-        build_meson=build.get("meson", True),
         groups=groups,
         flat=proj.get("flat", False),
     )
@@ -147,7 +145,6 @@ def save_config(cfg: ProjectConfig) -> None:
         "",
         "[build]",
         f"cmake = {'true' if cfg.build_cmake else 'false'}",
-        f"meson = {'true' if cfg.build_meson else 'false'}",
         "",
         "[groups]",
     ]

@@ -9,7 +9,6 @@ import click
 import questionary
 
 from gr4_modtool.project import cmake as cmake_mod
-from gr4_modtool.project import meson as meson_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 
 
@@ -55,15 +54,12 @@ def cmd(block_name: str | None, project_dir: str | None, group: str | None, yes:
 
     files_to_remove = [f for f in [header, test_src] if f.exists()]
     build_cmake = cfg.group_test_dir(group) / "CMakeLists.txt"
-    build_meson = cfg.group_test_dir(group) / "meson.build"
 
     click.echo("\nWill remove:")
     for f in files_to_remove:
         click.echo(f"  {f}")
     if build_cmake.exists():
         click.echo(f"  (update) {build_cmake}")
-    if build_meson.exists():
-        click.echo(f"  (update) {build_meson}")
 
     if not yes:
         confirm = questionary.confirm("Proceed?", default=False).ask()
@@ -75,8 +71,6 @@ def cmd(block_name: str | None, project_dir: str | None, group: str | None, yes:
 
     if cfg.build_cmake and build_cmake.exists():
         cmake_mod.remove_test_entry(build_cmake, block_name)
-    if cfg.build_meson and build_meson.exists():
-        meson_mod.remove_test_entry(build_meson, block_name)
 
     location = f"from group '{group}'" if group else "(flat layout)"
     click.echo(f"Removed block '{block_name}' {location}.")
