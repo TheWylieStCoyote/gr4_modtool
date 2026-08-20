@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from gr4_modtool.commands.newmod import _write_project
+from gr4_modtool.commands.newmod import write_project
 from gr4_modtool.project.discovery import ProjectConfig
 
 from .conftest import invoke, write_spec
@@ -104,7 +104,7 @@ skip_no_gr4 = pytest.mark.skipif(
 
 
 def _make_buildable_project(root: Path, flat: bool = False) -> ProjectConfig:
-    """Create a complete cmake-able project using _write_project."""
+    """Create a complete cmake-able project using write_project."""
     root.mkdir(parents=True, exist_ok=True)
     first_group = "" if flat else "basic"
     groups = {} if flat else {"basic": "blocks/basic"}
@@ -119,7 +119,7 @@ def _make_buildable_project(root: Path, flat: bool = False) -> ProjectConfig:
         groups=groups,
         flat=flat,
     )
-    _write_project(
+    write_project(
         cfg,
         first_group,
         gen_git=False,

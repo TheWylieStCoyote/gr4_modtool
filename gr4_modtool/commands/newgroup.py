@@ -13,6 +13,26 @@ from gr4_modtool.project.discovery import ProjectConfig, load_config, save_confi
 from gr4_modtool.templates import render
 
 
+def add_group(cfg: ProjectConfig, name: str) -> None:
+    """Create a group skeleton, register it in the config, and wire the build.
+
+    Raises ValueError if the project is flat or the group already exists.
+    """
+    if cfg.flat:
+        raise ValueError("Flat projects do not support groups.")
+    if name in cfg.groups:
+        raise ValueError(f"Group '{name}' already exists.")
+
+    write_group_skeleton(cfg, name)
+
+    cfg.groups[name] = f"blocks/{name}"
+    save_config(cfg)
+
+    blocks_cmake = cfg.blocks_dir / "CMakeLists.txt"
+    if cfg.build_cmake and blocks_cmake.exists():
+        cmake_mod.add_group_to_blocks_cmake(blocks_cmake, name, cfg.cmake_prefix)
+
+
 @click.command("newgroup")
 @click.option("--project-dir", default=None, type=click.Path(exists=True))
 @click.option("--name", default=None, help="Group name (skips prompt).")
@@ -33,21 +53,11 @@ def cmd(project_dir: str | None, name: str | None) -> None:
             sys.exit(1)
 
     name = name.strip()
-    if name in cfg.groups:
-        click.echo(f"Group '{name}' already exists.", err=True)
+    try:
+        add_group(cfg, name)
+    except ValueError as exc:
+        click.echo(str(exc), err=True)
         sys.exit(1)
-
-    write_group_skeleton(cfg, name)
-
-    # Update config
-    cfg.groups[name] = f"blocks/{name}"
-    save_config(cfg)
-
-    # Wire into blocks/ build files
-    blocks_cmake = cfg.blocks_dir / "CMakeLists.txt"
-
-    if cfg.build_cmake and blocks_cmake.exists():
-        cmake_mod.add_group_to_blocks_cmake(blocks_cmake, name, cfg.cmake_prefix)
 
     click.echo(f"Created group '{name}' at {cfg.group_path(name)}")
 
