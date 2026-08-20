@@ -148,11 +148,14 @@ def cmd(
     if cfg.flat:
         to_group = ""
     elif to_group is None:
-        to_group = questionary.select(
-            "Destination group:", choices=group_names, default=from_group
-        ).ask()
-        if to_group is None:
-            sys.exit(0)
+        if yes:
+            to_group = from_group
+        else:
+            to_group = questionary.select(
+                "Destination group:", choices=group_names, default=from_group
+            ).ask()
+            if to_group is None:
+                sys.exit(0)
 
     location = f"(group: {to_group})" if to_group else "(flat layout)"
     click.echo(f"\nCopy '{src_name}' → '{dst_name}' {location}")

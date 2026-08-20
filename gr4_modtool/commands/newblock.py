@@ -384,6 +384,7 @@ def load_spec(path: Path, group_override: str | None = None) -> list[dict]:
 
         # Apply defaults
         e.setdefault("template_params", ["T"])
+        e.setdefault("type_list", "float, double")
         e.setdefault("gen_test", True)
         e.setdefault("simd", False)
         e.setdefault("description", "")
