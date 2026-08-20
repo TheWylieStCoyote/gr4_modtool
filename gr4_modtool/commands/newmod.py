@@ -204,7 +204,7 @@ def cmd(project_dir: str | None, name: str | None, first_group_cli: str | None, 
         flat=flat,
     )
 
-    _write_project(
+    write_project(
         cfg,
         first_group,
         gen_git=gen_git or False,
@@ -229,7 +229,7 @@ def cmd(project_dir: str | None, name: str | None, first_group_cli: str | None, 
             click.echo("  cmake -B build && cmake --build build")
 
 
-def _write_project(
+def write_project(
     cfg: ProjectConfig,
     first_group: str,
     *,
@@ -246,6 +246,11 @@ def _write_project(
     gen_precommit: bool = False,
     gen_doxyfile: bool = False,
 ) -> None:
+    """Write a complete project skeleton at cfg.root from an already-built config.
+
+    Creates .gr4modtool.toml, build files, the blocks/ tree (with *first_group*
+    when given), and any optional tooling selected via the gen_* flags.
+    """
     root = cfg.root
     root.mkdir(parents=True, exist_ok=True)
 
