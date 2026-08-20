@@ -1,6 +1,6 @@
 # Development container for {{ project_name }}
 # Base image includes gcc, clang, cmake, ninja, git, and a non-root 'vscode' user.
-FROM mcr.microsoft.com/devcontainers/cpp:ubuntu-26.04
+FROM mcr.microsoft.com/devcontainers/cpp:ubuntu26.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -22,7 +22,7 @@ RUN curl -fsSL \
 # Choose one option and uncomment it:
 #
 # Option A — build from source (slow first build, fully self-contained):
-# RUN git clone --depth 1 https://github.com/fair-acc/gnuradio4.git /opt/gnuradio4 \
+# RUN git clone --depth 1 https://github.com/gnuradio/gnuradio4.git /opt/gnuradio4 \
 #     && cmake -S /opt/gnuradio4 -B /opt/gnuradio4/build \
 #              -DCMAKE_INSTALL_PREFIX=/usr/local \
 #              -DENABLE_TESTING=OFF \
