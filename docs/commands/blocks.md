@@ -160,7 +160,7 @@ gr4_modtool newparam LowPass cutoff_freq --group dsp \
 Inserts into the block struct (before `GR_MAKE_REFLECTABLE`):
 
 ```cpp
-Annotated<float, Doc<"Cutoff frequency in Hz">> cutoff_freq{1000.0f};
+Annotated<float, "cutoff_freq", Doc<"Cutoff frequency in Hz">> cutoff_freq{1000.0f};
 ```
 
 And updates:

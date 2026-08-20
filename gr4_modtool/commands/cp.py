@@ -43,16 +43,13 @@ def copy_block(
     text = src_header.read_text()
     text = re.sub(rf"\b{re.escape(src_name)}\b", dst_name, text)
 
-    # Update namespace if moving to different group
+    # Update namespace if moving to different group — everywhere the qualified
+    # namespace appears: the declaration, the closing comment, and the
+    # GR_REGISTER_BLOCK string/token references.
     if dst_group != src_group:
         src_ns = f"{cfg.cpp_namespace}::{src_group}"
         dst_ns = f"{cfg.cpp_namespace}::{dst_group}"
-        text = re.sub(rf"\bnamespace\s+{re.escape(src_ns)}\b", f"namespace {dst_ns}", text)
-        text = re.sub(
-            rf"//\s*namespace\s+{re.escape(src_ns)}\b",
-            f"// namespace {dst_ns}",
-            text,
-        )
+        text = re.sub(rf"\b{re.escape(src_ns)}\b", dst_ns, text)
 
     dst_header.write_text(text)
     written: list[Path] = [dst_header]
