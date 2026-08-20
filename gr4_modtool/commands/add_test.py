@@ -69,12 +69,27 @@ def parse_header_info(header_path: Path) -> dict:
 
 
 def parse_annotated_params(text: str) -> list[dict]:
-    """Extract Annotated<> member declarations from a block header."""
-    pattern = r'Annotated<([^,>]+),\s*Doc<"([^"]*)">>\s+(\w+)'
-    return [
-        {"type": m.group(1).strip(), "description": m.group(2), "name": m.group(3)}
-        for m in re.finditer(pattern, text)
-    ]
+    """Extract Annotated<> member declarations from a block header.
+
+    Handles the gnuradio4 form ``Annotated<T, "name", ..., Doc<"desc">> name``
+    as well as the legacy ``Annotated<T, Doc<"desc">> name``.
+    """
+    member_re = re.compile(r"Annotated<(.+)>\s+(\w+)\s*(?:\{|=)")
+    params = []
+    for line in text.splitlines():
+        m = member_re.search(line)
+        if not m:
+            continue
+        inner, name = m.group(1), m.group(2)
+        doc = re.search(r'Doc<"([^"]*)">', inner)
+        params.append(
+            {
+                "type": inner.split(",", 1)[0].strip(),
+                "description": doc.group(1) if doc else "",
+                "name": name,
+            }
+        )
+    return params
 
 
 def write_test_for_block(cfg, group: str, block_name: str) -> list[Path]:

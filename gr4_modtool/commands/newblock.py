@@ -165,7 +165,10 @@ def _build_template_ctx(
         "first_type": first_type,
         "first_port_type": first_port_type,
         "first_out_type": first_out_type,
-        "needs_graph_test": True,
+        # Source blocks (no inputs) get no graph-run test: the generated
+        # skeleton produces samples forever, so runAndWait() would never
+        # return. Bounded ConstantSource feeders give every other shape EOS.
+        "needs_graph_test": bool(in_ports),
         "simd": simd,
     }
 

@@ -36,7 +36,8 @@ def add_param(
         raise ValueError(f"'{param_name}' is already declared in {block_name}")
 
     param_line = (
-        f'    Annotated<{param_type}, Doc<"{description}">> {param_name}{{{default_value}}};\n'
+        f'    Annotated<{param_type}, "{param_name}", Doc<"{description}">> '
+        f"{param_name}{{{default_value}}};\n"
     )
 
     # Insert before the GR_MAKE_REFLECTABLE line

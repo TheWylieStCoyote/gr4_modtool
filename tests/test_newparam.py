@@ -43,7 +43,7 @@ def test_newparam_description_in_doc(project: ProjectConfig) -> None:
     write_block_files(project, _basic_answers())
     add_param(project, "basic", "MyFilter", "gain", "float", "Gain factor", "1.0f")
     text = (project.group_include_dir("basic") / "MyFilter.hpp").read_text()
-    assert 'Doc<"Gain factor">' in text
+    assert '"gain", Doc<"Gain factor">' in text
 
 
 def test_newparam_default_value_present(project: ProjectConfig) -> None:

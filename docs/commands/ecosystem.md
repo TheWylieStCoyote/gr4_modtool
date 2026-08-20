@@ -179,7 +179,7 @@ The command uses Python's `ast` module to parse the source file:
 | `gr.basic_block` | `processOne`, 1 in / 1 out (custom) |
 | `in_sig=[np.float32]` | `type_list = float` |
 | `in_sig=[np.complex64]` | `type_list = std::complex<float>` |
-| `__init__` parameters | `Annotated<float, Doc<"...">>` fields |
+| `__init__` parameters | `Annotated<float, "name", Doc<"...">>` fields |
 | Class docstring | Block `Doc<"...">` description |
 
 ### Type mapping

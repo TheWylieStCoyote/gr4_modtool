@@ -78,6 +78,10 @@ include_guard(GLOBAL)
 function({cmake_prefix}_resolve_dependencies)
   find_package(gnuradio4 CONFIG REQUIRED)
   find_package(GnuRadioBlockLib CONFIG REQUIRED)
+  # GnuRadioBlockLibConfig.cmake sets PARSER_EXECUTABLE (path to the installed
+  # gnuradio_4_0_parse_registrations); it must escape this function's scope or
+  # the blocklib macros fall back to a gnuradio4 build-tree path.
+  set(PARSER_EXECUTABLE "${{PARSER_EXECUTABLE}}" PARENT_SCOPE)
   set(
     GR4_OOT_GNURADIO4_TARGET
     "gnuradio4::gnuradio-core;gnuradio4::gnuradio-blocklib-core"

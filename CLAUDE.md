@@ -85,4 +85,4 @@ Tests that invoke CLI commands use `click.testing.CliRunner`. Tests that test pu
 - `write_*(cfg, ...) -> list[Path]` — every file-generating function returns the list of paths it wrote or modified. This is what the TUI and CLI both display.
 - Block names are always **CamelCase**; group names are **snake_case**.
 - The `GR_REGISTER_BLOCK` macro and `GR_MAKE_REFLECTABLE` are the two required GNURadio 4 macros. `check` and `add_test` parse headers with regex to detect their presence.
-- Parameters in block headers are `Annotated<T, Doc<"description">> name{default};`. `parse_annotated_params()` in `commands/add_test.py` extracts these for use by `info --verbose` and `docs --catalog`.
+- Parameters in block headers are `Annotated<T, "name", Doc<"description">> name{default};` (the legacy `Annotated<T, Doc<"...">>` form is still parsed). `parse_annotated_params()` in `commands/add_test.py` extracts these for use by `info --verbose` and `docs --catalog`.
