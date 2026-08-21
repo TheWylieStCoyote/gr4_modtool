@@ -75,7 +75,6 @@ gr4_modtool/
 ├── commands/        # One file per CLI command (business logic + Click command)
 ├── project/         # cmake.py, discovery.py — build-file utilities
 ├── templates/       # Jinja2 .j2 template files
-├── tui/             # Textual TUI application
 ├── cli.py           # Click group + command registration
 ├── plugins.py       # importlib.metadata entry-point loader
 └── templates.py     # Jinja2 render() with user-override search
@@ -90,8 +89,7 @@ tests/
 
 1. Create `gr4_modtool/commands/my_cmd.py` with a business-logic function and a `@click.command("my-cmd")` named `cmd`.
 2. Import and register it in `gr4_modtool/cli.py`.
-3. Optionally add a key binding and modal screen in `gr4_modtool/tui/app.py`.
-4. Add tests in `tests/test_my_cmd.py` using the `project` or `project_two_groups` fixture.
+3. Add tests in `tests/test_my_cmd.py` using the `project` or `project_two_groups` fixture.
 
 ---
 

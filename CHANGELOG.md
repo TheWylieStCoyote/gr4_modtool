@@ -45,10 +45,6 @@ Initial release.
 - `build` — configure and build using CMake; optional `--test` and `--clean` flags
 - `format` — run clang-format over all block headers and test sources; `--check` mode for CI
 
-**Interactive**
-
-- `tui` — Textual-based terminal UI with keyboard-driven block management (newblock, mv, cp, add-test, newbench, check)
-
 **Infrastructure**
 
 - Jinja2 template engine with per-project user-override search path

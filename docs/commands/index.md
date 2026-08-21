@@ -73,9 +73,3 @@ All commands accept `--help` for detailed option descriptions.
 | [`add-dep`](ecosystem.md#add-dep) | Add a library dependency to CMake build files      |
 | [`search`](ecosystem.md#search)   | Search GitHub for published GNURadio 4 OOT modules |
 | [`port`](ecosystem.md#port)       | Port a GNURadio 3.x Python block to a gr4 header   |
-
-## Interactive
-
-| Command         | Description                                |
-| --------------- | ------------------------------------------ |
-| [`tui`](tui.md) | Launch the interactive Textual terminal UI |

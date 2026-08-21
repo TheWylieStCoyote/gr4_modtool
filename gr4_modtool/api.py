@@ -5,7 +5,6 @@ internal command modules — the paths below are the supported surface.
 
 Every CLI command has a functional counterpart here (the ``rename`` and
 ``rename-block`` commands share :func:`rename_block`; ``info``/``ls``/``list``
-share :func:`collect_inventory`; ``completion`` and the TUI are CLI-only).
 
 Two layers are provided:
 

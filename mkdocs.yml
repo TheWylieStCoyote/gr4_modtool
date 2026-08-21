@@ -51,6 +51,5 @@ nav:
       - Testing & Benchmarks: commands/testing.md
       - Project Health: commands/project.md
       - Building & Formatting: commands/building.md
-      - TUI: commands/tui.md
   - Configuration: configuration.md
   - Contributing: contributing.md

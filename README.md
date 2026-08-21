@@ -21,12 +21,10 @@ A command-line tool for creating and managing [GNURadio 4](https://github.com/gn
 | CI / quality             | `ci`, `presets`, `pre-commit`                                                      |
 | Documentation & registry | `docs`, `add-dep`, `search`                                                        |
 | Migration                | `port`                                                                             |
-| Interactive              | `tui`                                                                              |
 
 - **CMake** build systems supported side-by-side
 - **Jinja2 templates** with per-project override support
 - **Plugin system** — third-party packages can register extra commands and templates via entry-points
-- **Textual TUI** for keyboard-driven block management
 
 ---
 
@@ -132,14 +130,6 @@ gr4_modtool pre-commit --yes     # write .pre-commit-config.yaml
 gr4_modtool completion --shell bash   # print shell completion setup
 ```
 
-### Interactive TUI
-
-```bash
-gr4_modtool tui
-```
-
----
-
 ## Command Reference
 
 See the [full documentation](https://thewyliestcoyote.github.io/gr4_modtool) for detailed options.
@@ -210,12 +200,6 @@ See the [full documentation](https://thewyliestcoyote.github.io/gr4_modtool) for
 | Command | Description                                                        |
 | ------- | ------------------------------------------------------------------ |
 | `port`  | Parse a GNURadio 3.x Python block and scaffold a gr4 header + test |
-
-### Interactive
-
-| Command | Description                        |
-| ------- | ---------------------------------- |
-| `tui`   | Launch the interactive Textual TUI |
 
 ---
 

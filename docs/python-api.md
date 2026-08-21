@@ -108,7 +108,6 @@ python3 examples/gr4_modtool_python_api/build_project.py
 | `publish`                | `pre_flight`                                                           | `pre_flight`                                                  |
 | `search`                 | `search_registry`                                                      | — (not project-bound)                                         |
 | `version-bump`           | `apply_version_bump`                                                   | `bump_version`                                                |
-| `completion`, `tui`      | — (CLI-only)                                                           | —                                                             |
 
 ## Conventions
 

@@ -174,7 +174,7 @@ def _build_template_ctx(
 
 
 # --------------------------------------------------------------------------- #
-# Prompt flow (shared between CLI and TUI)
+# Prompt flow CLI
 # --------------------------------------------------------------------------- #
 
 
@@ -394,7 +394,7 @@ def load_spec(path: Path, group_override: str | None = None) -> list[dict]:
 
 
 # --------------------------------------------------------------------------- #
-# File writing (shared between CLI and TUI)
+# File writing CLI
 # --------------------------------------------------------------------------- #
 
 

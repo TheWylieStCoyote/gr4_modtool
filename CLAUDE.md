@@ -35,8 +35,6 @@ Each command lives in its own file under `gr4_modtool/commands/`. The pattern is
 - One or more `write_*(cfg: ProjectConfig) -> list[Path]` functions that do the actual file writing
 - A `@click.command` function `cmd(...)` that loads config, calls the write functions, and prints results
 
-The `write_*` functions are imported directly by the TUI (`gr4_modtool/tui/app.py`) and by other commands, so they must not call `sys.exit` or `click.echo`.
-
 ### Project config and discovery
 
 `gr4_modtool/project/discovery.py` is the source of truth for project state:
@@ -82,7 +80,7 @@ Tests that invoke CLI commands use `click.testing.CliRunner`. Tests that test pu
 
 ## Key conventions
 
-- `write_*(cfg, ...) -> list[Path]` — every file-generating function returns the list of paths it wrote or modified. This is what the TUI and CLI both display.
+- `write_*(cfg, ...) -> list[Path]` — every file-generating function returns the list of paths it wrote or modified. This is what the CLI both display.
 - Block names are always **CamelCase**; group names are **snake_case**.
 - The `GR_REGISTER_BLOCK` macro and `GR_MAKE_REFLECTABLE` are the two required GNURadio 4 macros. `check` and `add_test` parse headers with regex to detect their presence.
 - Parameters in block headers are `Annotated<T, "name", Doc<"description">> name{default};` (the legacy `Annotated<T, Doc<"...">>` form is still parsed). `parse_annotated_params()` in `commands/add_test.py` extracts these for use by `info --verbose` and `docs --catalog`.

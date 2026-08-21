@@ -48,7 +48,6 @@ gr4_modtool build --test
 | `build`    | Configure and build (CMake)                          |
 | `test`     | Run one block's test without rebuilding              |
 | `format`   | Run clang-format over headers and test sources       |
-| `tui`      | Interactive terminal UI                              |
 
 Every command is also available as a Python library — see the
 [Python API](python-api.md).

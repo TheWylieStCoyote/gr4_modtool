@@ -97,24 +97,3 @@ gr4_modtool init --yes
 ```
 
 gr4_modtool will scan the directory tree, detect groups, and write the config file.
-
-## 8. Interactive TUI
-
-```bash
-gr4_modtool tui
-```
-
-Key bindings:
-
-| Key | Action        |
-| --- | ------------- |
-| `n` | New block     |
-| `m` | Move block    |
-| `c` | Copy block    |
-| `t` | Add test      |
-| `b` | New benchmark |
-| `k` | Run check     |
-| `s` | Show block    |
-| `p` | Add parameter |
-| `r` | Refresh       |
-| `q` | Quit          |

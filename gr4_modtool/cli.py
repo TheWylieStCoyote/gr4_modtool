@@ -100,18 +100,6 @@ cli.add_command(ls_cmd, name="list")
 cli.add_command(ls_cmd, name="ls")
 
 
-@cli.command("tui")
-@click.option("--project-dir", default=None, type=click.Path(exists=True))
-def tui_cmd(project_dir: str | None) -> None:
-    """Launch the interactive Textual TUI."""
-    from pathlib import Path
-
-    from gr4_modtool.tui.app import GR4ModtoolApp
-
-    app = GR4ModtoolApp(project_dir=Path(project_dir) if project_dir else None)
-    app.run()
-
-
 # Load plugin commands
 for _extra_cmd in _plugins.load_extra_commands():
     cli.add_command(_extra_cmd)
