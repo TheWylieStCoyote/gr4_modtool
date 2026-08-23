@@ -11,6 +11,8 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
+from gr4_modtool.log import get_logger, log_exit, log_run
 from gr4_modtool.project.discovery import (
     ProjectConfig,
     default_cmake_prefix,
@@ -19,19 +21,26 @@ from gr4_modtool.project.discovery import (
 )
 from gr4_modtool.templates import render
 
+log = get_logger(__name__)
+
 
 def write_git_init(cfg: ProjectConfig) -> list[Path]:
     """Run git init and write .gitignore. Returns list of created paths."""
     gitignore = cfg.root / ".gitignore"
-    gitignore.write_text(render("gitignore.j2", {"project_name": cfg.name}, cfg.root))
+    write_text(gitignore, render("gitignore.j2", {"project_name": cfg.name}, cfg.root))
     written = [gitignore]
 
     if shutil.which("git"):
-        subprocess.run(
-            ["git", "init", str(cfg.root)],
+        cmd = ["git", "init", str(cfg.root)]
+        log_run(log, cmd)
+        result = subprocess.run(
+            cmd,
             check=False,
             capture_output=True,
         )
+        log_exit(log, cmd, result.returncode)
+    else:
+        log.warning("git not found on PATH; skipping 'git init'")
 
     return written
 
@@ -48,7 +57,9 @@ def block_library_name(project_name: str, group_name: str = "") -> str:
     """Return the GNU Radio-style block-library target name for an OOT group."""
 
     def pascal_case(value: str) -> str:
-        return "".join(part[:1].upper() + part[1:] for part in re.split(r"[^A-Za-z0-9]+", value) if part)
+        return "".join(
+            part[:1].upper() + part[1:] for part in re.split(r"[^A-Za-z0-9]+", value) if part
+        )
 
     return f"Gr{pascal_case(project_name)}{pascal_case(group_name)}Blocks"
 
@@ -67,7 +78,9 @@ def _blocks_cmake(cfg: ProjectConfig) -> str:
     for name in cfg.groups:
         lines.append(f"  {cfg.cmake_prefix}::blocks_{name}_headers")
     lines.append(")")
-    lines.append(f"install(TARGETS {cfg.cmake_prefix}_blocks_headers EXPORT {cfg.cmake_prefix}Targets)")
+    lines.append(
+        f"install(TARGETS {cfg.cmake_prefix}_blocks_headers EXPORT {cfg.cmake_prefix}Targets)"
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -271,12 +284,13 @@ def write_project(
 
     # Top-level build files
     if cfg.build_cmake:
-        (root / "CMakeLists.txt").write_text(render("toplevel_CMakeLists.txt.j2", ctx, root))
+        write_text(root / "CMakeLists.txt", render("toplevel_CMakeLists.txt.j2", ctx, root))
         cmake_dir = root / "cmake"
         cmake_dir.mkdir(exist_ok=True)
-        (cmake_dir / "Dependencies.cmake").write_text(_deps_cmake(cfg.cmake_prefix))
-        (cmake_dir / f"{cfg.cmake_prefix}Config.cmake.in").write_text(
-            render("package_config.cmake.in.j2", ctx, root)
+        write_text(cmake_dir / "Dependencies.cmake", _deps_cmake(cfg.cmake_prefix))
+        write_text(
+            cmake_dir / f"{cfg.cmake_prefix}Config.cmake.in",
+            render("package_config.cmake.in.j2", ctx, root),
         )
 
     # blocks/ directory
@@ -285,15 +299,15 @@ def write_project(
 
     if cfg.flat:
         if cfg.build_cmake:
-            (blocks_dir / "CMakeLists.txt").write_text(_flat_blocks_cmake(cfg))
+            write_text(blocks_dir / "CMakeLists.txt", _flat_blocks_cmake(cfg))
         cfg.block_include_dir().mkdir(parents=True, exist_ok=True)
         test_dir = cfg.block_test_dir()
         test_dir.mkdir(parents=True, exist_ok=True)
         if cfg.build_cmake:
-            (test_dir / "CMakeLists.txt").write_text(f"# Tests for {cfg.name} blocks\n")
+            write_text(test_dir / "CMakeLists.txt", f"# Tests for {cfg.name} blocks\n")
     else:
         if cfg.build_cmake:
-            (blocks_dir / "CMakeLists.txt").write_text(_blocks_cmake(cfg))
+            write_text(blocks_dir / "CMakeLists.txt", _blocks_cmake(cfg))
         if first_group:
             _create_group_skeleton(cfg, first_group)
 

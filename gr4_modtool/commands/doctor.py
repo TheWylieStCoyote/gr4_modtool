@@ -15,7 +15,11 @@ import click
 from rich.console import Console
 from rich.table import Table
 
+from gr4_modtool.log import format_command, get_logger
 from gr4_modtool.project.discovery import load_config
+
+log = get_logger(__name__)
+
 
 _STATUS_STYLE = {
     "ok": "green",
@@ -35,11 +39,13 @@ class DoctorResult:
 
 def _run_version(cmd: list[str]) -> str | None:
     """Run cmd, return first X.Y.Z (or X.Y) from combined output, or None on failure."""
+    log.debug("probing version: %s", format_command(cmd))
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
         m = re.search(r"(\d+\.\d+(?:\.\d+)?)", r.stdout + r.stderr)
         return m.group(1) if m else "unknown"
-    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError) as exc:
+        log.debug("%s unavailable: %s", cmd[0], exc)
         return None
 
 

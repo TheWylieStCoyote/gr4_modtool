@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import ProjectConfig, load_config
 from gr4_modtool.templates import render
 
@@ -15,7 +16,7 @@ from gr4_modtool.templates import render
 def write_precommit(cfg: ProjectConfig) -> list[Path]:
     ctx = {"project_name": cfg.name}
     path = cfg.root / ".pre-commit-config.yaml"
-    path.write_text(render("pre_commit_config.yaml.j2", ctx, cfg.root))
+    write_text(path, render("pre_commit_config.yaml.j2", ctx, cfg.root))
     return [path]
 
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 import click
 
 from gr4_modtool import plugins as _plugins
@@ -46,14 +48,43 @@ from gr4_modtool.commands.tidy import cmd as tidy_cmd
 from gr4_modtool.commands.validate import cmd as validate_cmd
 from gr4_modtool.commands.version_bump import cmd as version_bump_cmd
 from gr4_modtool.commands.vscode import cmd as vscode_cmd
+from gr4_modtool.log import ENV_FILE, configure_logging, get_logger
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
+log = get_logger(__name__)
+
 
 @click.group(context_settings=CONTEXT_SETTINGS)
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    help="Log what the tool is doing: -v for progress, -vv for debug detail.",
+)
+@click.option("-q", "--quiet", is_flag=True, help="Log errors only.")
+@click.option(
+    "--log-file",
+    type=click.Path(dir_okay=False, writable=True),
+    default=None,
+    envvar=ENV_FILE,
+    help=f"Append a full debug log to this file (env: {ENV_FILE}).",
+)
 @click.version_option()
-def cli() -> None:
-    """GNURadio 4 OOT module management tool."""
+@click.pass_context
+def cli(ctx: click.Context, verbose: int, quiet: bool, log_file: str | None) -> None:
+    """GNURadio 4 OOT module management tool.
+
+    Logging: -v shows every file written and command run, -vv adds debug detail,
+    and --log-file records everything regardless of the console level. The
+    console level also honours $GR4_MODTOOL_LOG_LEVEL.
+    """
+    if quiet and verbose:
+        raise click.UsageError("--quiet and --verbose are mutually exclusive")
+    configure_logging(verbose=verbose, quiet=quiet, log_file=log_file)
+    ctx.obj = {"verbose": verbose, "quiet": quiet, "log_file": log_file}
+    if ctx.invoked_subcommand:
+        log.debug("gr4_modtool %s", " ".join(sys.argv[1:]))
 
 
 cli.add_command(newmod_cmd, name="newmod")

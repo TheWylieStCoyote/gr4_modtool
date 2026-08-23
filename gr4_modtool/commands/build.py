@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import click
 
+from gr4_modtool.fileops import remove_tree
+from gr4_modtool.log import get_logger, log_exit, log_run
 from gr4_modtool.project.discovery import find_project_root
+
+log = get_logger(__name__)
 
 
 def run_build(
@@ -36,7 +39,7 @@ def run_build(
 
     if clean and build_dir.exists():
         click.echo(f"Cleaning {build_dir} ...")
-        shutil.rmtree(build_dir)
+        remove_tree(build_dir)
 
     parallel = str(jobs) if jobs else str(os.cpu_count() or 4)
 
@@ -122,7 +125,9 @@ def _preset_cache_exists(project_root: Path, preset: str) -> bool:
 
 def _run(cmd: list[str], cwd: Path | None = None) -> int:
     click.echo(f"  $ {' '.join(cmd)}")
+    log_run(log, cmd, cwd)
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+    log_exit(log, cmd, result.returncode)
     if result.stdout:
         click.echo(result.stdout, nl=False)
     if result.stderr:

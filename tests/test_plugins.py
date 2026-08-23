@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import click
@@ -68,16 +69,16 @@ def test_load_commands_skips_non_basecommand() -> None:
     assert result == []
 
 
-def test_load_commands_load_raises_warns(capsys) -> None:
+def test_load_commands_load_raises_warns(caplog) -> None:
     ep = _make_ep("broken", raises=ImportError("no module named 'missing'"))
-    with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
-        result = plugins.load_extra_commands()
+    with caplog.at_level(logging.WARNING, logger="gr4_modtool.plugins"):
+        with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
+            result = plugins.load_extra_commands()
     assert result == []
-    captured = capsys.readouterr()
-    assert "Warning" in captured.err or "Warning" in captured.out
+    assert any(r.levelno == logging.WARNING for r in caplog.records)
 
 
-def test_load_commands_bad_ep_does_not_block_good(capsys) -> None:
+def test_load_commands_bad_ep_does_not_block_good() -> None:
     bad_ep = _make_ep("bad", raises=ImportError("boom"))
     good_ep = _make_ep("good", _dummy_cmd)
     with patch("gr4_modtool.plugins.entry_points", return_value=[bad_ep, good_ep]):
@@ -85,22 +86,20 @@ def test_load_commands_bad_ep_does_not_block_good(capsys) -> None:
     assert result == [_dummy_cmd]
 
 
-def test_load_commands_warning_contains_ep_name(capsys) -> None:
+def test_load_commands_warning_contains_ep_name(caplog) -> None:
     ep = _make_ep("my-special-plugin", raises=ImportError("boom"))
-    with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
-        plugins.load_extra_commands()
-    captured = capsys.readouterr()
-    full_output = captured.err + captured.out
-    assert "my-special-plugin" in full_output
+    with caplog.at_level(logging.WARNING, logger="gr4_modtool.plugins"):
+        with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
+            plugins.load_extra_commands()
+    assert "my-special-plugin" in caplog.text
 
 
-def test_load_commands_warning_contains_error_text(capsys) -> None:
+def test_load_commands_warning_contains_error_text(caplog) -> None:
     ep = _make_ep("plug", raises=ImportError("very specific error text"))
-    with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
-        plugins.load_extra_commands()
-    captured = capsys.readouterr()
-    full_output = captured.err + captured.out
-    assert "very specific error text" in full_output
+    with caplog.at_level(logging.WARNING, logger="gr4_modtool.plugins"):
+        with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
+            plugins.load_extra_commands()
+    assert "very specific error text" in caplog.text
 
 
 def test_load_commands_multiple_valid() -> None:
@@ -143,25 +142,25 @@ def test_load_template_dirs_nonexistent_dir_silently_skipped(tmp_path) -> None:
     assert result == []
 
 
-def test_load_template_dirs_callable_raises_warns(capsys) -> None:
+def test_load_template_dirs_callable_raises_warns(caplog) -> None:
     def bad_callable():
         raise RuntimeError("template dir discovery failed")
 
     ep = _make_ep("tmpl", bad_callable)
-    with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
-        result = plugins.load_extra_template_dirs()
+    with caplog.at_level(logging.WARNING, logger="gr4_modtool.plugins"):
+        with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
+            result = plugins.load_extra_template_dirs()
     assert result == []
-    captured = capsys.readouterr()
-    assert "Warning" in (captured.err + captured.out)
+    assert "template dir discovery failed" in caplog.text
 
 
-def test_load_template_dirs_load_raises_warns(capsys) -> None:
+def test_load_template_dirs_load_raises_warns(caplog) -> None:
     ep = _make_ep("tmpl", raises=ModuleNotFoundError("missing dep"))
-    with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
-        result = plugins.load_extra_template_dirs()
+    with caplog.at_level(logging.WARNING, logger="gr4_modtool.plugins"):
+        with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
+            result = plugins.load_extra_template_dirs()
     assert result == []
-    captured = capsys.readouterr()
-    assert "Warning" in (captured.err + captured.out)
+    assert any(r.levelno == logging.WARNING for r in caplog.records)
 
 
 def test_load_template_dirs_string_path_accepted(tmp_path) -> None:
@@ -172,12 +171,12 @@ def test_load_template_dirs_string_path_accepted(tmp_path) -> None:
     assert isinstance(result[0], __import__("pathlib").Path)
 
 
-def test_load_template_dirs_warning_contains_ep_name(capsys) -> None:
+def test_load_template_dirs_warning_contains_ep_name(caplog) -> None:
     ep = _make_ep("very-unique-plugin-name", raises=RuntimeError("boom"))
-    with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
-        plugins.load_extra_template_dirs()
-    captured = capsys.readouterr()
-    assert "very-unique-plugin-name" in (captured.err + captured.out)
+    with caplog.at_level(logging.WARNING, logger="gr4_modtool.plugins"):
+        with patch("gr4_modtool.plugins.entry_points", return_value=[ep]):
+            plugins.load_extra_template_dirs()
+    assert "very-unique-plugin-name" in caplog.text
 
 
 def test_load_template_dirs_multiple_valid(tmp_path) -> None:

@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 from gr4_modtool.templates import render
@@ -437,7 +438,7 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
     # Block header
     header_dir.mkdir(parents=True, exist_ok=True)
     header_path = header_dir / f"{block_name}.hpp"
-    header_path.write_text(render("block.hpp.j2", ctx, cfg.root))
+    write_text(header_path, render("block.hpp.j2", ctx, cfg.root))
     written.append(header_path)
 
     if gen_test:
@@ -445,7 +446,7 @@ def write_block_files(cfg, answers: dict) -> list[Path]:
 
         # Test source
         test_path = test_dir / f"qa_{block_name}.cpp"
-        test_path.write_text(render("qa_block.cpp.j2", ctx, cfg.root))
+        write_text(test_path, render("qa_block.cpp.j2", ctx, cfg.root))
         written.append(test_path)
 
         # Update CMakeLists.txt

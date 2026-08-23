@@ -25,6 +25,14 @@ Example usage::
     proj = Project.load("/path/to/mymod")
     proj.copy_block("basic", "Foo", "Bar")
     issues = proj.audit()
+
+Nothing here prints to the terminal; to see what the tool is doing, turn on
+logging once at start-up::
+
+    from gr4_modtool.api import configure_logging
+
+    configure_logging(verbose=1)          # every file written, every command run
+    configure_logging(verbose=2, log_file="build.log")
 """
 
 from __future__ import annotations
@@ -212,6 +220,11 @@ from gr4_modtool.commands.vscode import write_vscode
 from gr4_modtool.facade import Project
 
 # ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+from gr4_modtool.log import configure_logging, get_logger
+
+# ---------------------------------------------------------------------------
 # Project config
 # ---------------------------------------------------------------------------
 from gr4_modtool.project.discovery import (
@@ -230,6 +243,9 @@ from gr4_modtool.project.discovery import (
 __all__ = [
     # facade
     "Project",
+    # logging
+    "configure_logging",
+    "get_logger",
     # config
     "BlockInfo",
     "GroupInfo",

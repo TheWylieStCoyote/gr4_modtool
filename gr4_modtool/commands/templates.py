@@ -9,6 +9,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import load_config
 
 CONTEXT_FREE_TEMPLATES: frozenset[str] = frozenset()
@@ -339,7 +340,7 @@ def init_template_override(project_root: Path, template_name: str, *, force: boo
     if dest.exists() and not force:
         raise FileExistsError(f"{dest} already exists.")
 
-    dest.write_text(builtin_path.read_text())
+    write_text(dest, builtin_path.read_text())
     return dest
 
 

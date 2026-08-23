@@ -6,6 +6,7 @@ from pathlib import Path
 
 import click
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 from gr4_modtool.templates import render
 
@@ -17,7 +18,7 @@ def write_doxyfile(cfg: ProjectConfig) -> list[Path]:
         "gr4_include_prefix": cfg.gr4_include_prefix,
     }
     path = cfg.root / "Doxyfile"
-    path.write_text(render("Doxyfile.j2", ctx, cfg.root))
+    write_text(path, render("Doxyfile.j2", ctx, cfg.root))
     return [path]
 
 
@@ -72,7 +73,7 @@ def cmd(catalog: bool, output: str | None, project_dir: str | None) -> None:
     if catalog:
         text = build_catalog(cfg)
         if output:
-            Path(output).write_text(text)
+            write_text(Path(output), text)
             click.echo(f"Written: {output}")
         else:
             click.echo(text, nl=False)

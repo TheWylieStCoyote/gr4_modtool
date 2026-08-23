@@ -109,10 +109,45 @@ python3 examples/gr4_modtool_python_api/build_project.py
 | `search`                 | `search_registry`                                                      | — (not project-bound)                                         |
 | `version-bump`           | `apply_version_bump`                                                   | `bump_version`                                                |
 
+## Logging
+
+The API never prints. To watch what it does, turn on logging once at start-up:
+
+```python
+from gr4_modtool.api import configure_logging
+
+configure_logging(verbose=1)                        # INFO to stderr: every file written
+configure_logging(verbose=2, log_file="gr4.log")    # + debug detail, and a full log file
+configure_logging(console=False, log_file="gr4.log")  # file only, nothing on stderr
+```
+
+Records are emitted on the `gr4_modtool` logger hierarchy — one logger per module,
+named after it (`gr4_modtool.project.cmake`, `gr4_modtool.templates`, …). If your
+application already configures logging, skip `configure_logging()` and attach your
+own handler instead:
+
+```python
+import logging
+
+logging.getLogger("gr4_modtool").addHandler(my_handler)
+logging.getLogger("gr4_modtool").setLevel(logging.INFO)
+```
+
+What lands at each level:
+
+| Level | Records |
+|-------|---------|
+| `INFO` | Each file created or updated (with size), each external command and its exit code, the loaded project |
+| `DEBUG` | Project discovery, template search path and which template won, render timings, build-file edits that found nothing to change |
+| `WARNING` | Plugins that failed to load, missing external tools |
+
+See [Configuration](configuration.md#logging) for the CLI flags and environment
+variables that drive the same machinery.
+
 ## Conventions
 
 - **File-writing calls return `list[Path]`** — every path created or modified,
-  in write order. Nothing is printed.
+  in write order. Nothing is printed (but see [Logging](#logging)).
 - **Errors are exceptions, not exit codes**: `ValueError` for bad input or a
   missing block/group, `FileExistsError`/`FileNotFoundError` for filesystem
   conflicts. Only the process-running calls (`build`, `run_test`, `coverage`,

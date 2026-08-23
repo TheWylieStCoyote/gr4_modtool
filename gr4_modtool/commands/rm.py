@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import remove_file
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
@@ -28,7 +29,7 @@ def remove_block(cfg: ProjectConfig, group: str, block_name: str) -> list[Path]:
 
     affected: list[Path] = []
     for f in files_to_remove:
-        f.unlink()
+        remove_file(f, missing_ok=False)
         affected.append(f)
 
     build_cmake = cfg.group_test_dir(group) / "CMakeLists.txt"

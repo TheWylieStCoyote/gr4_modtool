@@ -5,6 +5,11 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from gr4_modtool.fileops import write_text
+from gr4_modtool.log import get_logger
+
+log = get_logger(__name__)
+
 
 def append_test_entry(cmake_path: Path, block_name: str, target_libs: str) -> None:
     """Add a gr4_modtool_add_ut_test + target_link_libraries pair."""
@@ -13,7 +18,8 @@ def append_test_entry(cmake_path: Path, block_name: str, target_libs: str) -> No
         f"\ngr4_modtool_add_ut_test(qa_{block_name} qa_{block_name}.cpp)\n"
         f"target_link_libraries(qa_{block_name} PRIVATE {target_libs})\n"
     )
-    cmake_path.write_text(text.rstrip() + new_entry)
+    log.debug("adding test target qa_%s to %s", block_name, cmake_path)
+    write_text(cmake_path, text.rstrip() + new_entry)
 
 
 def remove_test_entry(cmake_path: Path, block_name: str) -> bool:
@@ -25,7 +31,10 @@ def remove_test_entry(cmake_path: Path, block_name: str) -> bool:
     )
     new_text, count = re.subn(pattern, "\n", text)
     if count:
-        cmake_path.write_text(new_text)
+        log.debug("removing test target qa_%s from %s", block_name, cmake_path)
+        write_text(cmake_path, new_text)
+    else:
+        log.debug("no test target qa_%s found in %s", block_name, cmake_path)
     return count > 0
 
 
@@ -39,7 +48,10 @@ def rename_test_entry(cmake_path: Path, old_name: str, new_name: str) -> bool:
     )
     changed = new_text != text
     if changed:
-        cmake_path.write_text(new_text)
+        log.debug("renaming test target qa_%s -> qa_%s in %s", old_name, new_name, cmake_path)
+        write_text(cmake_path, new_text)
+    else:
+        log.debug("no test target qa_%s found in %s", old_name, cmake_path)
     return changed
 
 
@@ -48,7 +60,9 @@ def add_subdirectory(cmake_path: Path, subdir: str) -> None:
     text = cmake_path.read_text()
     entry = f"add_subdirectory({subdir})"
     if entry not in text:
-        cmake_path.write_text(text.rstrip() + f"\n{entry}\n")
+        write_text(cmake_path, text.rstrip() + f"\n{entry}\n")
+    else:
+        log.debug("%s already has %s", cmake_path, entry)
 
 
 def append_bench_entry(cmake_path: Path, block_name: str, target_libs: str) -> None:
@@ -58,7 +72,8 @@ def append_bench_entry(cmake_path: Path, block_name: str, target_libs: str) -> N
         f"\nadd_executable(bench_{block_name} bench_{block_name}.cpp)\n"
         f"target_link_libraries(bench_{block_name} PRIVATE {target_libs})\n"
     )
-    cmake_path.write_text(text.rstrip() + new_entry)
+    log.debug("adding benchmark target bench_%s to %s", block_name, cmake_path)
+    write_text(cmake_path, text.rstrip() + new_entry)
 
 
 def remove_bench_entry(cmake_path: Path, block_name: str) -> bool:
@@ -70,7 +85,10 @@ def remove_bench_entry(cmake_path: Path, block_name: str) -> bool:
     )
     new_text, count = re.subn(pattern, "\n", text)
     if count:
-        cmake_path.write_text(new_text)
+        log.debug("removing benchmark target bench_%s from %s", block_name, cmake_path)
+        write_text(cmake_path, new_text)
+    else:
+        log.debug("no benchmark target bench_%s found in %s", block_name, cmake_path)
     return count > 0
 
 
@@ -84,7 +102,12 @@ def rename_bench_entry(cmake_path: Path, old_name: str, new_name: str) -> bool:
     )
     changed = new_text != text
     if changed:
-        cmake_path.write_text(new_text)
+        log.debug(
+            "renaming benchmark target bench_%s -> bench_%s in %s", old_name, new_name, cmake_path
+        )
+        write_text(cmake_path, new_text)
+    else:
+        log.debug("no benchmark target bench_%s found in %s", old_name, cmake_path)
     return changed
 
 
@@ -93,7 +116,7 @@ def add_bench_subdirectory(cmake_path: Path) -> None:
     text = cmake_path.read_text()
     if "add_subdirectory(benchmarks)" not in text:
         block = "\nif(ENABLE_BENCHMARKING)\n  add_subdirectory(benchmarks)\nendif()\n"
-        cmake_path.write_text(text.rstrip() + block)
+        write_text(cmake_path, text.rstrip() + block)
 
 
 def add_group_to_blocks_cmake(blocks_cmake: Path, group_name: str, cmake_prefix: str) -> None:
@@ -124,4 +147,5 @@ def add_group_to_blocks_cmake(blocks_cmake: Path, group_name: str, cmake_prefix:
             count=1,
         )
 
-    blocks_cmake.write_text(text)
+    log.debug("wiring group '%s' into %s", group_name, blocks_cmake)
+    write_text(blocks_cmake, text)

@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import ProjectConfig, load_config
 from gr4_modtool.templates import render
 
@@ -27,8 +28,8 @@ def write_devcontainer(cfg: ProjectConfig) -> list[Path]:
     json_path = dc_dir / "devcontainer.json"
     dockerfile_path = dc_dir / "Dockerfile"
 
-    json_path.write_text(render("devcontainer.json.j2", ctx, cfg.root))
-    dockerfile_path.write_text(render("Dockerfile.devcontainer.j2", ctx, cfg.root))
+    write_text(json_path, render("devcontainer.json.j2", ctx, cfg.root))
+    write_text(dockerfile_path, render("Dockerfile.devcontainer.j2", ctx, cfg.root))
 
     return [json_path, dockerfile_path]
 

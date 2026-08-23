@@ -9,8 +9,12 @@ from pathlib import Path
 
 import click
 
+from gr4_modtool.fileops import write_text
+from gr4_modtool.log import get_logger, log_exit, log_run
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 from gr4_modtool.templates import render
+
+log = get_logger(__name__)
 
 
 def write_clang_config(cfg: ProjectConfig) -> list[Path]:
@@ -21,8 +25,8 @@ def write_clang_config(cfg: ProjectConfig) -> list[Path]:
     }
     clang_format = cfg.root / ".clang-format"
     clang_tidy = cfg.root / ".clang-tidy"
-    clang_format.write_text(render("clang-format.j2", ctx, cfg.root))
-    clang_tidy.write_text(render("clang-tidy.j2", ctx, cfg.root))
+    write_text(clang_format, render("clang-format.j2", ctx, cfg.root))
+    write_text(clang_tidy, render("clang-tidy.j2", ctx, cfg.root))
     return [clang_format, clang_tidy]
 
 
@@ -32,7 +36,7 @@ def write_ci_clang(cfg: ProjectConfig) -> list[Path]:
     ci_dir = cfg.root / ".github" / "workflows"
     ci_dir.mkdir(parents=True, exist_ok=True)
     path = ci_dir / "clang-ci.yml"
-    path.write_text(render("ci_clang.yml.j2", ctx, cfg.root))
+    write_text(path, render("ci_clang.yml.j2", ctx, cfg.root))
     return [path]
 
 
@@ -77,7 +81,10 @@ def run_tidy(
 
     n = len(files)
     click.echo(f"  $ clang-tidy -p {build_dir} … ({n} file{'s' if n != 1 else ''})")
-    return subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr).wait()
+    log_run(log, cmd)
+    rc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr).wait()
+    log_exit(log, cmd, rc)
+    return rc
 
 
 @click.command("tidy")

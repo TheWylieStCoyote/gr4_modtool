@@ -223,6 +223,36 @@ dsp = "blocks/dsp"
 channel = "blocks/channel"
 ```
 
+### Logging
+
+Every command is quiet by default and reports only its own summary. Global flags
+(before the subcommand) open up what the tool is doing:
+
+| Flag | Effect |
+|---|---|
+| `-v` | Log each file written, each build-file edit, and each external command run |
+| `-vv` | Add debug detail: config discovery, template resolution, render timings |
+| `-q` / `--quiet` | Errors only |
+| `--log-file PATH` | Append a full debug log to `PATH`, whatever the console level is |
+
+```bash
+gr4_modtool -v newblock --group dsp          # see every file it touches
+gr4_modtool -vv --log-file build.log build   # console detail plus a full log
+```
+
+Two environment variables set the defaults, so CI can turn logging on without
+changing the command lines:
+
+| Variable | Effect |
+|---|---|
+| `GR4_MODTOOL_LOG_LEVEL` | Console level (`DEBUG`, `INFO`, …) when no `-v`/`-q` is given |
+| `GR4_MODTOOL_LOG_FILE` | Default `--log-file` path |
+
+Library users get the same stream by calling `configure_logging()` once — see
+[Python API](docs/python-api.md). Records go to the `gr4_modtool` logger, which
+does not propagate to the root logger, so importing gr4_modtool never disturbs
+an application's own logging setup.
+
 ---
 
 ## License

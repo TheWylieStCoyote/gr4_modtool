@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import load_config, save_config
 
 
@@ -40,7 +41,7 @@ def _update_cmake(cmake_path: Path, old: str, new: str) -> bool:
     new_text = re.sub(pattern, rf"\g<1>{new}", text)
     if new_text == text:
         return False
-    cmake_path.write_text(new_text)
+    write_text(cmake_path, new_text)
     return True
 
 
@@ -53,7 +54,7 @@ def _update_doxyfile(doxy_path: Path, old: str, new: str) -> bool:
     new_text = re.sub(pattern, rf'\g<1>{new}"', text)
     if new_text == text:
         return False
-    doxy_path.write_text(new_text)
+    write_text(doxy_path, new_text)
     return True
 
 

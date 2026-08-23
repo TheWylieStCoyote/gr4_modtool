@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Logging throughout the tool, off by default. Global flags before the subcommand
+  control it: `-v` logs every file created/updated/removed/moved, every build-file
+  edit, and every external command with its exit code; `-vv` adds project discovery,
+  template resolution and render timings; `-q`/`--quiet` limits output to errors;
+  `--log-file PATH` appends a full debug log regardless of the console level.
+- `GR4_MODTOOL_LOG_LEVEL` and `GR4_MODTOOL_LOG_FILE` set the defaults for the above.
+- `configure_logging()` and `get_logger()` exported from `gr4_modtool.api`, so library
+  callers get the same stream. Records go to the `gr4_modtool` logger hierarchy, which
+  does not propagate to the root logger.
+
+### Changed
+
+- Plugin load failures are reported through the logger instead of being printed
+  directly to stderr.
+
+---
+
 ## [0.1.0] — 2025-05-17
 
 Initial release.

@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 from gr4_modtool.templates import render
@@ -38,7 +39,7 @@ def write_plot_script(cfg: ProjectConfig, group: str, block_name: str) -> list[P
     bench_dir.mkdir(parents=True, exist_ok=True)
     ctx = {"block_name": block_name}
     path = bench_dir / f"plot_{block_name}.py"
-    path.write_text(render("plot_bench.py.j2", ctx, cfg.root))
+    write_text(path, render("plot_bench.py.j2", ctx, cfg.root))
     return [path]
 
 
@@ -69,7 +70,7 @@ def write_bench_file(
     ctx = _build_bench_ctx(cfg, group, info)
 
     bench_dir.mkdir(parents=True, exist_ok=True)
-    bench_file.write_text(render("bench_block.cpp.j2", ctx, cfg.root))
+    write_text(bench_file, render("bench_block.cpp.j2", ctx, cfg.root))
     written: list[Path] = [bench_file]
 
     if wire_build and cfg.build_cmake:
@@ -77,8 +78,9 @@ def write_bench_file(
 
         bench_cmake = bench_dir / "CMakeLists.txt"
         if not bench_cmake.exists():
-            bench_cmake.write_text(
-                render("bench_CMakeLists.txt.j2", {"group_name": group}, cfg.root)
+            write_text(
+                bench_cmake,
+                render("bench_CMakeLists.txt.j2", {"group_name": group}, cfg.root),
             )
             written.append(bench_cmake)
         cmake_mod.append_bench_entry(bench_cmake, block_name, target_libs)
@@ -152,8 +154,7 @@ def cmd(
 
     if not wire_build and not yes:
         wire_build = (
-            questionary.confirm("Wire into build system (cmake)?", default=False).ask()
-            or False
+            questionary.confirm("Wire into build system (cmake)?", default=False).ask() or False
         )
 
     if not yes:

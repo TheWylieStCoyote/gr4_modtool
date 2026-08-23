@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import move_path, write_text
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 
@@ -18,7 +19,7 @@ def _rename_in_header(header: Path, old_name: str, new_name: str) -> None:
     text = header.read_text()
     # Rename the struct name (whole-word)
     text = re.sub(rf"\b{re.escape(old_name)}\b", new_name, text)
-    header.write_text(text)
+    write_text(header, text)
 
 
 @click.command("rename")
@@ -92,13 +93,13 @@ def cmd(
 
     if old_header.exists():
         _rename_in_header(old_header, old_name, new_name)
-        old_header.rename(new_header)
+        move_path(old_header, new_header)
 
     if old_test.exists():
         text = old_test.read_text()
         text = re.sub(rf"\b{re.escape(old_name)}\b", new_name, text)
-        old_test.write_text(text)
-        old_test.rename(new_test)
+        write_text(old_test, text)
+        move_path(old_test, new_test)
 
     if cfg.build_cmake and cmake_test.exists():
         cmake_mod.rename_test_entry(cmake_test, old_name, new_name)

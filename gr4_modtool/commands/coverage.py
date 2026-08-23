@@ -12,7 +12,10 @@ from pathlib import Path
 import click
 
 from gr4_modtool.commands.build import run_build
+from gr4_modtool.log import get_logger, log_exit, log_run
 from gr4_modtool.project.discovery import find_project_root
+
+log = get_logger(__name__)
 
 
 def _detect_tool(preferred: str) -> str | None:
@@ -64,15 +67,21 @@ def _run_tests(project_root: Path, build_dir: Path, env: dict[str, str] | None =
     """Run all tests, merging optional env vars for coverage profiling."""
     cmd = ["ctest", "--test-dir", str(build_dir), "--output-on-failure"]
     click.echo(f"  $ {' '.join(cmd)}")
+    log_run(log, cmd, project_root)
     merged = {**os.environ, **(env or {})}
     proc = subprocess.Popen(cmd, env=merged, stdout=sys.stdout, stderr=sys.stderr)
-    return proc.wait()
+    rc = proc.wait()
+    log_exit(log, cmd, rc)
+    return rc
 
 
 def _run(cmd: list[str]) -> int:
     click.echo(f"  $ {' '.join(cmd)}")
+    log_run(log, cmd)
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-    return proc.wait()
+    rc = proc.wait()
+    log_exit(log, cmd, rc)
+    return rc
 
 
 def _run_gcovr(project_root: Path, build_dir: Path, output_dir: Path) -> int:

@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import discover_groups, load_config
 from gr4_modtool.templates import render
@@ -122,7 +123,7 @@ def write_test_for_block(cfg, group: str, block_name: str) -> list[Path]:
         gr4_include_prefix=cfg.gr4_include_prefix,
     )
 
-    test.write_text(render("qa_block.cpp.j2", ctx, cfg.root))
+    write_text(test, render("qa_block.cpp.j2", ctx, cfg.root))
     written: list[Path] = [test]
 
     cmake_test = cfg.group_test_dir(group) / "CMakeLists.txt"

@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
 
@@ -54,7 +55,7 @@ def add_param(
         text,
     )
 
-    header.write_text(text)
+    write_text(header, text)
     return [header]
 
 

@@ -6,6 +6,11 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gr4_modtool.fileops import write_text
+from gr4_modtool.log import get_logger
+
+log = get_logger(__name__)
+
 CONFIG_FILE = ".gr4modtool.toml"
 _HEURISTIC_MARKERS = ("CMakeLists.txt",)
 
@@ -89,7 +94,9 @@ def find_project_root(start: Path | None = None) -> Path | None:
     current = (start or Path.cwd()).resolve()
     for directory in [current, *current.parents]:
         if (directory / CONFIG_FILE).exists():
+            log.debug("found %s in %s", CONFIG_FILE, directory)
             return directory
+    log.debug("no %s found in %s or its parents", CONFIG_FILE, current)
     return None
 
 
@@ -110,12 +117,13 @@ def load_config(project_dir: Path | None = None) -> ProjectConfig:
 
     with open(config_path, "rb") as f:
         data = tomllib.load(f)
+    log.debug("loaded config %s", config_path)
 
     proj = data.get("project", {})
     build = data.get("build", {})
     groups = data.get("groups", {})
 
-    return ProjectConfig(
+    cfg = ProjectConfig(
         root=root,
         name=proj.get("name", root.name),
         version=proj.get("version", "0.1.0"),
@@ -126,6 +134,15 @@ def load_config(project_dir: Path | None = None) -> ProjectConfig:
         groups=groups,
         flat=proj.get("flat", False),
     )
+    log.info(
+        "project %s v%s at %s (%s, %d group(s))",
+        cfg.name,
+        cfg.version,
+        cfg.root,
+        "flat" if cfg.flat else "grouped",
+        len(cfg.groups),
+    )
+    return cfg
 
 
 def save_config(cfg: ProjectConfig) -> None:
@@ -152,7 +169,8 @@ def save_config(cfg: ProjectConfig) -> None:
         lines.append(f'{name} = "{path}"')
     lines.append("")
 
-    (cfg.root / CONFIG_FILE).write_text("\n".join(lines))
+    log.debug("saving config with groups: %s", ", ".join(cfg.groups) or "(none)")
+    write_text(cfg.root / CONFIG_FILE, "\n".join(lines))
 
 
 def discover_groups(cfg: ProjectConfig) -> list[GroupInfo]:
@@ -167,6 +185,7 @@ def discover_groups(cfg: ProjectConfig) -> list[GroupInfo]:
         if include_dir.exists():
             for hpp in sorted(include_dir.glob("*.hpp")):
                 blocks.append(BlockInfo(name=hpp.stem, path=hpp))
+        log.debug("discovered %d block(s) in flat layout under %s", len(blocks), include_dir)
         return [GroupInfo(name="", path=cfg.blocks_dir, blocks=blocks)]
 
     groups = []
@@ -177,5 +196,8 @@ def discover_groups(cfg: ProjectConfig) -> list[GroupInfo]:
         if include_dir.exists():
             for hpp in sorted(include_dir.glob("*.hpp")):
                 blocks.append(BlockInfo(name=hpp.stem, path=hpp))
+            log.debug("group '%s': %d block(s) in %s", name, len(blocks), include_dir)
+        else:
+            log.debug("group '%s' has no include dir at %s", name, include_dir)
         groups.append(GroupInfo(name=name, path=group_path, blocks=blocks))
     return groups
