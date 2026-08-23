@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import remove_file, write_text
 from gr4_modtool.project.discovery import discover_groups, load_config
 
 _NAME_RE = re.compile(r"^[A-Z][A-Za-z0-9]*$")
@@ -38,8 +39,8 @@ def rename_block(cfg, group: str, old_name: str, new_name: str) -> list[Path]:
 
     # --- header ---
     text = old_header.read_text()
-    new_header.write_text(text.replace(old_name, new_name))
-    old_header.unlink()
+    write_text(new_header, text.replace(old_name, new_name))
+    remove_file(old_header, missing_ok=False)
     modified.append(new_header)
 
     # --- test source ---
@@ -52,8 +53,8 @@ def rename_block(cfg, group: str, old_name: str, new_name: str) -> list[Path]:
         text = text.replace(f"{old_lower}GraphTests", f"{new_lower}GraphTests")
         text = text.replace(f"{old_lower}Tests", f"{new_lower}Tests")
         text = text.replace(old_name, new_name)
-        new_test.write_text(text)
-        old_test.unlink()
+        write_text(new_test, text)
+        remove_file(old_test, missing_ok=False)
         modified.append(new_test)
 
     # --- test CMakeLists.txt ---
@@ -62,7 +63,7 @@ def rename_block(cfg, group: str, old_name: str, new_name: str) -> list[Path]:
         text = cmake_test.read_text()
         updated = text.replace(f"qa_{old_name}", f"qa_{new_name}")
         if updated != text:
-            cmake_test.write_text(updated)
+            write_text(cmake_test, updated)
             modified.append(cmake_test)
 
     return modified

@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import ProjectConfig, load_config, save_config
 from gr4_modtool.templates import render
@@ -82,9 +83,11 @@ def write_group_skeleton(cfg: ProjectConfig, group_name: str) -> None:
     test_ctx = {"group_name": group_name}
 
     if cfg.build_cmake:
-        (group_path / "CMakeLists.txt").write_text(
-            render("group_CMakeLists.txt.j2", group_ctx, cfg.root)
+        write_text(
+            group_path / "CMakeLists.txt",
+            render("group_CMakeLists.txt.j2", group_ctx, cfg.root),
         )
-        (test_dir / "CMakeLists.txt").write_text(
-            render("test_CMakeLists.txt.j2", test_ctx, cfg.root)
+        write_text(
+            test_dir / "CMakeLists.txt",
+            render("test_CMakeLists.txt.j2", test_ctx, cfg.root),
         )

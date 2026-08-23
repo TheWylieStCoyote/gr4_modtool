@@ -86,6 +86,65 @@ Place a `.j2` file with the same name as a built-in template in `.gr4modtool/tem
 | `pre_commit_config.yaml.j2`  | `.pre-commit-config.yaml`                           |
 | `gitignore.j2`               | `.gitignore`                                        |
 
+## Logging
+
+Commands print only their own summary by default. Global flags — placed **before**
+the subcommand — control the log stream:
+
+```bash
+gr4_modtool -v newblock --group dsp             # files written, commands run
+gr4_modtool -vv status                          # + config discovery, template resolution
+gr4_modtool --quiet check                       # errors only
+gr4_modtool --log-file gr4.log build            # full debug log to a file
+```
+
+| Flag | Console level |
+|------|---------------|
+| *(none)* | `WARNING` |
+| `-v` | `INFO` — every file created/updated, every external command and its exit code |
+| `-vv` | `DEBUG` — project discovery, template search path and which template won, render timings |
+| `-q`, `--quiet` | `ERROR` |
+
+`--log-file PATH` always records at `DEBUG`, independent of the console level, and
+appends rather than truncating. Its directory is created if missing.
+
+Defaults come from the environment when no flag is given:
+
+| Variable | Effect |
+|----------|--------|
+| `GR4_MODTOOL_LOG_LEVEL` | Console level by name (`DEBUG`, `INFO`, `WARNING`, `ERROR`) or number |
+| `GR4_MODTOOL_LOG_FILE` | Default `--log-file` path |
+
+An explicit flag always beats the environment. `--quiet` and `-v` together are an error.
+
+!!! note "TUI"
+    The TUI drops the console handler — stray writes to stderr would corrupt a
+    full-screen app — but keeps `--log-file` if you passed one:
+    `gr4_modtool --log-file tui.log tui`.
+
+### From Python
+
+Records are emitted on the `gr4_modtool` logger hierarchy, which has
+`propagate = False` once configured, so importing gr4_modtool never adds output to
+an application's own logging setup. Call `configure_logging()` to opt in:
+
+```python
+from gr4_modtool.api import configure_logging
+
+configure_logging(verbose=1)                            # INFO to stderr
+configure_logging(verbose=2, log_file="gr4.log")        # + full debug log
+configure_logging(console=False, log_file="gr4.log")    # file only
+```
+
+Or wire the loggers into your own handlers instead, and never call
+`configure_logging()` at all:
+
+```python
+import logging
+
+logging.getLogger("gr4_modtool").addHandler(my_handler)
+```
+
 ## Plugin system
 
 Third-party packages can register additional commands and templates by declaring entry points in their `pyproject.toml`:

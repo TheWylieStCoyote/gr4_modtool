@@ -12,6 +12,8 @@ import click
 from rich.console import Console
 from rich.table import Table
 
+from gr4_modtool.fileops import write_text
+
 _DEFAULT_TOPIC = "gnuradio4-oot"
 _GH_SEARCH_URL = "https://api.github.com/search/repositories"
 _CACHE_DIR = Path.home() / ".cache" / "gr4_modtool" / "search"
@@ -77,7 +79,7 @@ def search_registry(
     items = _fetch_from_github(query, topic, token, limit)
 
     _CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_file.write_text(json.dumps({"ts": time.time(), "items": items}))
+    write_text(cache_file, json.dumps({"ts": time.time(), "items": items}))
     return items
 
 

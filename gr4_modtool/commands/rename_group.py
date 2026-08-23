@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import move_path, write_text
 from gr4_modtool.project.discovery import ProjectConfig, load_config, save_config
 
 _NAME_RE = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -54,7 +55,7 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
     # ------------------------------------------------------------------
     # 1. Move the group directory
     # ------------------------------------------------------------------
-    old_group_path.rename(new_group_path)
+    move_path(old_group_path, new_group_path)
     modified.append(new_group_path)
 
     # ------------------------------------------------------------------
@@ -63,7 +64,7 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
     old_inc = new_group_path / "include" / cfg.gr4_include_prefix / old_name
     new_inc = new_group_path / "include" / cfg.gr4_include_prefix / new_name
     if old_inc.exists():
-        old_inc.rename(new_inc)
+        move_path(old_inc, new_inc)
 
     # ------------------------------------------------------------------
     # 3. Update block headers: namespace and include-path references
@@ -75,7 +76,7 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
             text = text.replace(f"::{old_name}", f"::{new_name}")
             # Include path: /old_name/
             text = text.replace(f"/{old_name}/", f"/{new_name}/")
-            hpp.write_text(text)
+            write_text(hpp, text)
             modified.append(hpp)
 
     # ------------------------------------------------------------------
@@ -86,7 +87,7 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
         for cpp in sorted(test_dir.glob("qa_*.cpp")):
             text = cpp.read_text()
             text = text.replace(f"/{old_name}/", f"/{new_name}/")
-            cpp.write_text(text)
+            write_text(cpp, text)
             modified.append(cpp)
 
     # ------------------------------------------------------------------
@@ -106,7 +107,7 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
             )
             # Comment header: # Tests for <old>
             text = text.replace(f"# Tests for {old_name}", f"# Tests for {new_name}")
-            cmake_path.write_text(text)
+            write_text(cmake_path, text)
             modified.append(cmake_path)
 
     # ------------------------------------------------------------------
@@ -117,7 +118,7 @@ def rename_group(cfg: ProjectConfig, old_name: str, new_name: str) -> list[Path]
         text = blocks_cmake.read_text()
         text = text.replace(f"add_subdirectory({old_name})", f"add_subdirectory({new_name})")
         text = text.replace(f"blocks_{old_name}", f"blocks_{new_name}")
-        blocks_cmake.write_text(text)
+        write_text(blocks_cmake, text)
         modified.append(blocks_cmake)
 
     # ------------------------------------------------------------------

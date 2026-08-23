@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import ProjectConfig, load_config
 from gr4_modtool.templates import render
 
@@ -18,8 +19,8 @@ def write_vscode(cfg: ProjectConfig) -> list[Path]:
     ctx = {"project_name": cfg.name, "cmake_prefix": cfg.cmake_prefix}
     settings = vscode_dir / "settings.json"
     launch = vscode_dir / "launch.json"
-    settings.write_text(render("vscode_settings.json.j2", ctx, cfg.root))
-    launch.write_text(render("vscode_launch.json.j2", ctx, cfg.root))
+    write_text(settings, render("vscode_settings.json.j2", ctx, cfg.root))
+    write_text(launch, render("vscode_launch.json.j2", ctx, cfg.root))
     return [settings, launch]
 
 

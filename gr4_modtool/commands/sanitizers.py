@@ -6,6 +6,7 @@ from pathlib import Path
 
 import click
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import ProjectConfig, load_config
 from gr4_modtool.templates import render
 
@@ -13,7 +14,7 @@ from gr4_modtool.templates import render
 def write_cmake_presets(cfg: ProjectConfig) -> list[Path]:
     ctx = {"project_name": cfg.name, "cmake_prefix": cfg.cmake_prefix}
     path = cfg.root / "CMakePresets.json"
-    path.write_text(render("cmake_presets.json.j2", ctx, cfg.root))
+    write_text(path, render("cmake_presets.json.j2", ctx, cfg.root))
     return [path]
 
 
@@ -22,7 +23,7 @@ def write_ci_sanitizers(cfg: ProjectConfig) -> list[Path]:
     ci_dir = cfg.root / ".github" / "workflows"
     ci_dir.mkdir(parents=True, exist_ok=True)
     path = ci_dir / "sanitizers.yml"
-    path.write_text(render("ci_sanitizers.yml.j2", ctx, cfg.root))
+    write_text(path, render("ci_sanitizers.yml.j2", ctx, cfg.root))
     return [path]
 
 

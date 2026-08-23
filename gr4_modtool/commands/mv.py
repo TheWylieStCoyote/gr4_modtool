@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import remove_file, write_text
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 
@@ -37,8 +38,8 @@ def move_block(cfg: ProjectConfig, src_group: str, block_name: str, dst_group: s
     src_ns = f"{cfg.cpp_namespace}::{src_group}"
     dst_ns = f"{cfg.cpp_namespace}::{dst_group}"
     text = text.replace(src_ns, dst_ns)
-    dst_header.write_text(text)
-    src_header.unlink()
+    write_text(dst_header, text)
+    remove_file(src_header, missing_ok=False)
     affected: list[Path] = [dst_header]
 
     # Update test source
@@ -53,8 +54,8 @@ def move_block(cfg: ProjectConfig, src_group: str, block_name: str, dst_group: s
         )
         # Update namespace references
         ttext = ttext.replace(src_ns, dst_ns)
-        dst_test.write_text(ttext)
-        src_test.unlink()
+        write_text(dst_test, ttext)
+        remove_file(src_test, missing_ok=False)
         affected.append(dst_test)
 
     # Source build files — remove

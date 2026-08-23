@@ -17,7 +17,10 @@ from gr4_modtool.commands.coverage import (
     regenerate_coverage_report,
 )
 from gr4_modtool.commands.lint_headers import lint_header as _lint_header
+from gr4_modtool.log import get_logger, log_exit, log_run
 from gr4_modtool.project.discovery import find_project_root
+
+log = get_logger(__name__)
 
 try:
     from watchdog.events import FileSystemEventHandler as _FileSystemEventHandler
@@ -55,17 +58,25 @@ def run_block_test(
         cmd.append("--verbose")
 
     click.echo(f"  $ {' '.join(cmd)}")
+    log_run(log, cmd, build_dir)
+    if extra_env:
+        log.debug("extra environment: %s", ", ".join(sorted(extra_env)))
     env = {**os.environ, **extra_env} if extra_env else None
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr, env=env)
-    return proc.wait()
+    rc = proc.wait()
+    log_exit(log, cmd, rc)
+    return rc
 
 
 def _incremental_build(project_root: Path, build_dir: Path, block_name: str) -> int:
     """Rebuild only qa_<block_name> without a full build."""
     cmd = ["cmake", "--build", str(build_dir), "--target", f"qa_{block_name}"]
     click.echo(f"  $ {' '.join(cmd)}")
+    log_run(log, cmd, project_root)
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-    return proc.wait()
+    rc = proc.wait()
+    log_exit(log, cmd, rc)
+    return rc
 
 
 def _find_block_info(project_root: Path, block_name: str) -> tuple[Path, str] | None:

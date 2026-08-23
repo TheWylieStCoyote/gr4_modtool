@@ -8,6 +8,7 @@ from pathlib import Path
 
 import click
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import load_config
 
 
@@ -41,7 +42,7 @@ def add_cmake_dep(
         )
 
     text = re.sub(r"(endfunction\(\))", snippet + r"\1", text, count=1)
-    deps_cmake.write_text(text)
+    write_text(deps_cmake, text)
 
 
 @click.command("add-dep")

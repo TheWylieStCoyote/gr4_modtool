@@ -62,6 +62,25 @@ GitHub Actions `${{ }}` expressions must be wrapped in `{% raw %}...{% endraw %}
 
 `gr4_modtool/project/cmake.py` manipulate build files with line-based regex, not AST parsers. They append, remove, and rename test/benchmark entries surgically. Both modules follow the same function signatures: `append_test_entry`, `remove_test_entry`, `rename_test_entry`, `append_bench_entry`, etc.
 
+### Logging and file mutations
+
+`gr4_modtool/log.py` owns logging setup; `gr4_modtool/fileops.py` wraps the filesystem
+mutations that should be visible in the log.
+
+- Modules get a logger with `log = get_logger(__name__)` at module scope. Never call
+  `logging.basicConfig`; `configure_logging()` (from the CLI group callback, or from a
+  library caller) installs the handlers, and the `gr4_modtool` logger does not propagate.
+- Write files with `fileops.write_text(path, text)`, not `path.write_text(text)`; likewise
+  `remove_file`, `remove_tree`, `move_path`, and `ensure_dir`. These log at INFO, which is
+  what `-v` shows, and they are the only reason a `write_*` function's output is visible
+  to library callers.
+- Before launching a subprocess call `log_run(log, cmd, cwd)`, and after it
+  `log_exit(log, cmd, returncode)` — the existing `click.echo(f"  $ …")` lines stay, since
+  they are user-facing output rather than log records.
+- Level guide: INFO for things that changed on disk or ran externally, DEBUG for how the
+  tool decided (config discovery, template search path, no-op build-file edits), WARNING
+  for degraded behavior (missing tool, plugin that failed to load).
+
 ### Plugin system
 
 `gr4_modtool/plugins.py` loads third-party extensions via Python entry points:

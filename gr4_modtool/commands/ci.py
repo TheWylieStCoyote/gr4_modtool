@@ -6,6 +6,7 @@ from pathlib import Path
 
 import click
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import ProjectConfig, load_config
 from gr4_modtool.templates import render
 
@@ -15,7 +16,7 @@ def write_ci_coverage(cfg: ProjectConfig) -> list[Path]:
     ci_dir = cfg.root / ".github" / "workflows"
     ci_dir.mkdir(parents=True, exist_ok=True)
     path = ci_dir / "coverage.yml"
-    path.write_text(render("ci_coverage.yml.j2", ctx, cfg.root))
+    write_text(path, render("ci_coverage.yml.j2", ctx, cfg.root))
     return [path]
 
 
@@ -24,7 +25,7 @@ def write_ci_release(cfg: ProjectConfig) -> list[Path]:
     ci_dir = cfg.root / ".github" / "workflows"
     ci_dir.mkdir(parents=True, exist_ok=True)
     path = ci_dir / "release.yml"
-    path.write_text(render("ci_release.yml.j2", ctx, cfg.root))
+    write_text(path, render("ci_release.yml.j2", ctx, cfg.root))
     return [path]
 
 
@@ -33,7 +34,7 @@ def write_ci_matrix(cfg: ProjectConfig) -> list[Path]:
     ci_dir = cfg.root / ".github" / "workflows"
     ci_dir.mkdir(parents=True, exist_ok=True)
     path = ci_dir / "matrix.yml"
-    path.write_text(render("ci_matrix.yml.j2", ctx, cfg.root))
+    write_text(path, render("ci_matrix.yml.j2", ctx, cfg.root))
     return [path]
 
 

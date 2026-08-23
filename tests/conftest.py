@@ -5,12 +5,30 @@ from __future__ import annotations
 import asyncio
 import functools
 import inspect
+import logging
 from pathlib import Path
 
 import pytest
 
 from gr4_modtool.commands.newgroup import write_group_skeleton
+from gr4_modtool.log import ROOT_NAME
 from gr4_modtool.project.discovery import ProjectConfig, save_config
+
+
+@pytest.fixture(autouse=True)
+def isolate_logging():
+    """Undo any configure_logging() a test performed, so handlers never leak."""
+    logger = logging.getLogger(ROOT_NAME)
+    handlers, level, propagate = list(logger.handlers), logger.level, logger.propagate
+    yield
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        if handler not in handlers:
+            handler.close()
+    for handler in handlers:
+        logger.addHandler(handler)
+    logger.setLevel(level)
+    logger.propagate = propagate
 
 
 def async_test(coro_func):

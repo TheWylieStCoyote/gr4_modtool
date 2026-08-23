@@ -9,7 +9,10 @@ from pathlib import Path
 
 import click
 
+from gr4_modtool.log import get_logger, log_exit, log_run
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
+
+log = get_logger(__name__)
 
 
 def _collect_files(cfg: ProjectConfig, group_names: list[str] | None) -> list[Path]:
@@ -58,8 +61,11 @@ def format_files(
         cmd.append(f"-style={style}")
     cmd.extend(str(f) for f in files)
 
+    log_run(log, cmd)
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-    return proc.wait()
+    rc = proc.wait()
+    log_exit(log, cmd, rc)
+    return rc
 
 
 @click.command("format")

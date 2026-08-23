@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 import questionary
 
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project import cmake as cmake_mod
 from gr4_modtool.project.discovery import ProjectConfig, discover_groups, load_config
 from gr4_modtool.templates import render
@@ -51,7 +52,7 @@ def copy_block(
         dst_ns = f"{cfg.cpp_namespace}::{dst_group}"
         text = re.sub(rf"\b{re.escape(src_ns)}\b", dst_ns, text)
 
-    dst_header.write_text(text)
+    write_text(dst_header, text)
     written: list[Path] = [dst_header]
 
     if gen_test:
@@ -74,7 +75,7 @@ def copy_block(
         test_dir = cfg.group_test_dir(dst_group)
         test_dir.mkdir(parents=True, exist_ok=True)
         test_path = test_dir / f"qa_{dst_name}.cpp"
-        test_path.write_text(render("qa_block.cpp.j2", ctx, cfg.root))
+        write_text(test_path, render("qa_block.cpp.j2", ctx, cfg.root))
         written.append(test_path)
 
         cmake_test = test_dir / "CMakeLists.txt"

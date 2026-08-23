@@ -9,6 +9,7 @@ import click
 
 from gr4_modtool.commands.add_test import parse_header_info
 from gr4_modtool.commands.newblock import ARCHETYPES
+from gr4_modtool.fileops import write_text
 from gr4_modtool.project.discovery import discover_groups, load_config
 
 try:
@@ -100,7 +101,7 @@ def export_spec(
                     click.echo(f"Warning: skipping {hpp.name}: {exc}", err=True)
         if all_entries:
             dest = out_dir / "blocks.yaml"
-            dest.write_text(_yaml.dump(all_entries, sort_keys=False, allow_unicode=True))
+            write_text(dest, _yaml.dump(all_entries, sort_keys=False, allow_unicode=True))
             written.append(dest)
 
     elif output == "per-group":
@@ -114,7 +115,7 @@ def export_spec(
                     click.echo(f"Warning: skipping {hpp.name}: {exc}", err=True)
             if entries:
                 dest = out_dir / f"{group.name}_blocks.yaml"
-                dest.write_text(_yaml.dump(entries, sort_keys=False, allow_unicode=True))
+                write_text(dest, _yaml.dump(entries, sort_keys=False, allow_unicode=True))
                 written.append(dest)
 
     elif output == "per-block":
@@ -129,7 +130,7 @@ def export_spec(
                     click.echo(f"Warning: skipping {hpp.name}: {exc}", err=True)
                     continue
                 dest = group_out / f"{entry['block_name']}.yaml"
-                dest.write_text(_yaml.dump(entry, sort_keys=False, allow_unicode=True))
+                write_text(dest, _yaml.dump(entry, sort_keys=False, allow_unicode=True))
                 written.append(dest)
 
     return written

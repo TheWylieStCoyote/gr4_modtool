@@ -17,7 +17,10 @@ from rich.table import Table
 
 from gr4_modtool.commands.validate import validate_project
 from gr4_modtool.commands.version_bump import _parse_semver
+from gr4_modtool.log import get_logger, log_run
 from gr4_modtool.project.discovery import ProjectConfig, load_config
+
+log = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Data
@@ -81,14 +84,17 @@ def _check_cmake_sync(cfg: ProjectConfig) -> PreFlightResult:
 
 
 def _git_run(args: list[str], cwd: Path) -> subprocess.CompletedProcess | None:
+    cmd = ["git"] + args
+    log_run(log, cmd, cwd)
     try:
         return subprocess.run(
-            ["git"] + args,
+            cmd,
             capture_output=True,
             text=True,
             cwd=cwd,
         )
     except FileNotFoundError:
+        log.warning("git not found on PATH; skipping '%s'", " ".join(args))
         return None
 
 
