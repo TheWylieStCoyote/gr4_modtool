@@ -6,8 +6,10 @@
 # Every gr4_modtool invocation is echoed before it runs, so the script reads
 # as a transcript of a working session. Non-interactive throughout.
 #
-# This is a demo, not a test — for the assertion-based integration test see
-# smoke_test.sh at the repository root.
+# This is a demo, not a test, but it is *verified* by one: tests/test_examples.py
+# runs it and asserts on the project it produces, so keep the two in step. For
+# the standalone assertion-based integration test see smoke_test.sh at the
+# repository root.
 #
 # Usage:
 #   ./tour.sh                 # work in a temp dir, clean up afterwards
