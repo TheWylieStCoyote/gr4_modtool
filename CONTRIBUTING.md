@@ -37,7 +37,16 @@ python3 -m pytest -k newparam -v
 
 # With coverage
 python3 -m pytest tests/ --cov=gr4_modtool --cov-report=term-missing
+
+# Just the examples (they are run and checked like any other test)
+python3 -m pytest tests/test_examples.py -v
 ```
+
+`tests/test_examples.py` runs everything under `examples/` end to end and
+asserts on what each one produces, so an example that stops working fails the
+suite instead of failing in a user's terminal. Change an example and its
+assertions in the same commit. Nothing there needs GNURadio 4: the CLI tour
+skips its compile step when `pkg-config` cannot find gnuradio4.
 
 ---
 
