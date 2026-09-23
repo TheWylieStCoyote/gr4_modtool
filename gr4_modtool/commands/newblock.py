@@ -519,7 +519,7 @@ def cmd(
     # Interactive flow
     archetype = template if template and template != "custom" else None
     answers = prompt_newblock(cfg, group_name=group, archetype=archetype)
-    if answers is None:
+    if answers is None or answers == "":
         sys.exit(0)
 
     answers["simd"] = simd

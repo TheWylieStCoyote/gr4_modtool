@@ -18,7 +18,7 @@ def load_extra_commands() -> list[click.BaseCommand]:
     for ep in entry_points(group="gr4_modtool.commands"):
         try:
             cmd = ep.load()
-            if isinstance(cmd, click.BaseCommand):
+            if isinstance(cmd, click.Command):
                 cmds.append(cmd)
                 log.debug("loaded command plugin '%s' from %s", ep.name, ep.value)
             else:
